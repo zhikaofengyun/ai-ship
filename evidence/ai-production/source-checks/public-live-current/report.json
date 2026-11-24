@@ -1,0 +1,18 @@
+{
+  "public_commit": "4d24184fe93e7713f2ad4c201a1cee1049e1be94",
+  "public_git_tree": "9b2d22761ae4e093815d0c24ed00de28200802f0",
+  "pristine_public_checkout": true,
+  "compared_to": "0a919ab5765c72065cef83f1d683bc41ab83440f",
+  "app_and_web_exact_paths": 56,
+  "test_driver": "External frozen browser regression driver; served application and web modules exclusively from the fresh public HTTPS clone, data directory empty at process start.",
+  "browser_report": "opening-chromium/report.json",
+  "observations": [
+    "Two real videos; OCR observed RED TEST BOX first, explicit FRESH LIME conflicts; UI exposes the actual observation and withholds adoption/render.",
+    "Clicked the measured suggested alternative, verified its source revision/range, submitted a new candidate and retained the old plan and other shots.",
+    "Adopted and rendered through the browser, downloaded the MP4, decoded all streams and independently read FRESH LIME from the actual first presentation frame.",
+    "Free-text legacy task with no literal constraint still returns an editable proposal and exposes adoption.",
+    "No source shows ORANGE PEEL. The UI reports unverified, offers no unmeasured alternative, and withholds approval and rendering."
+  ],
+  "passed": true,
+  "browser_output_hash": "382ae273e01d931b0f4406d378c8ce0f225c25e738fe13ab908dff3c4be84d1d"
+}
