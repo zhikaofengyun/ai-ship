@@ -1,0 +1,1064 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-ship.local/contracts/Publication.schema.json",
+  "title": "发布意图与映射",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 10000
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "status": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "feature_id": {
+      "type": "string",
+      "enum": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "G01",
+        "G02",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "I01",
+        "I02",
+        "I03",
+        "I04",
+        "I05",
+        "I06",
+        "L01",
+        "L02",
+        "L03",
+        "L04",
+        "L05",
+        "L06",
+        "L07",
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06",
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05",
+        "U06",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V06",
+        "V07",
+        "V08",
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05",
+        "E06",
+        "E07",
+        "E08",
+        "Y01",
+        "Y02",
+        "Y03",
+        "Y04",
+        "Y05",
+        "Y06",
+        "Y07",
+        "J01",
+        "J02",
+        "J03",
+        "J04",
+        "J05",
+        "J06",
+        "J07",
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "F05",
+        "F06",
+        "F07",
+        "F08",
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05",
+        "M06",
+        "M07",
+        "X01",
+        "X02",
+        "X03",
+        "X04",
+        "X05",
+        "X06",
+        "X07",
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06",
+        "H07",
+        "H08",
+        "D01",
+        "D02",
+        "D03",
+        "D04",
+        "D05",
+        "D06",
+        "D07",
+        "K01",
+        "K02",
+        "K03",
+        "K04",
+        "K05",
+        "K06",
+        "O01",
+        "O02",
+        "O03",
+        "O04",
+        "O05",
+        "O06",
+        "O07",
+        "W01",
+        "W02",
+        "W03",
+        "W04",
+        "W05",
+        "W06",
+        "W07",
+        "C08",
+        "C09",
+        "C10",
+        "H09",
+        "H10",
+        "H11",
+        "X08",
+        "W08",
+        "V09",
+        "E09",
+        "Y08",
+        "Y09",
+        "F09",
+        "M08",
+        "I07",
+        "A07",
+        "U07",
+        "C11",
+        "H12",
+        "W09",
+        "D08",
+        "M09"
+      ]
+    },
+    "route_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parameters": {
+      "type": "object"
+    },
+    "extensions": {
+      "type": "object"
+    },
+    "publication_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "publication_id"
+    },
+    "account_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "account_id"
+    },
+    "artifact_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "artifact_id"
+    },
+    "metadata_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "metadata_hash"
+    },
+    "idempotency_key": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "idempotency_key"
+    },
+    "publish_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "publish_id"
+    },
+    "post_refs": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "kind": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "x-shape": "immutable-reference"
+      },
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "post_refs"
+    },
+    "expected_post_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "expected_post_count"
+    },
+    "remote_draft_state": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "remote_draft_state"
+    },
+    "late_receipt_policy": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "late_receipt_policy"
+    },
+    "platform_music_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "platform_music_id"
+    },
+    "platform_music_parameters": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "x-shape": "named-object-extension",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "platform_music_parameters"
+    },
+    "music_application_status": {
+      "enum": [
+        "requested",
+        "confirmed",
+        "unknown",
+        null
+      ],
+      "x-source-field": "music_application_status:requested/confirmed/unknown",
+      "x-validation-level": "source-enum"
+    },
+    "metadata_snapshot_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "metadata_snapshot_ref"
+    },
+    "metadata_schema_version": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "kind": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "x-shape": "immutable-reference"
+        }
+      ],
+      "x-shape": "version-or-versioned-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "metadata_schema_version"
+    },
+    "channel_adapter_version": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "kind": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "x-shape": "immutable-reference"
+        }
+      ],
+      "x-shape": "version-or-versioned-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "channel_adapter_version"
+    },
+    "creator_info_snapshot_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "creator_info_snapshot_ref"
+    },
+    "requested_local_datetime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "requested_local_datetime"
+    },
+    "iana_timezone": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "iana_timezone"
+    },
+    "scheduled_at_utc": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "x-shape": "utc-instant",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "scheduled_at_utc"
+    },
+    "dst_resolution": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "x-shape": "named-object-extension",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "dst_resolution"
+    },
+    "schedule_mode": {
+      "enum": [
+        "local",
+        "platform",
+        "manual",
+        null
+      ],
+      "x-source-field": "schedule_mode:local/platform/manual",
+      "x-validation-level": "source-enum"
+    },
+    "schedule_generation": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "schedule_generation"
+    },
+    "scheduler_lease_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "scheduler_lease_ref"
+    },
+    "provider_schedule_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "provider_schedule_id"
+    },
+    "submission_request_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "submission_request_ref"
+    },
+    "raw_receipt_refs": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "kind": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "x-shape": "immutable-reference"
+      },
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "raw_receipt_refs"
+    },
+    "local_state": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "local_state"
+    },
+    "remote_submission_state": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "remote_submission_state"
+    },
+    "reconcile_state": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "reconcile_state"
+    },
+    "import_origin": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "import_origin"
+    },
+    "correlation_confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "correlation_confidence"
+    },
+    "approval_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "approval_id"
+    },
+    "requested_metadata_snapshot_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "requested_metadata_snapshot_ref"
+    },
+    "observed_metadata_snapshot_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "observed_metadata_snapshot_ref"
+    },
+    "metadata_application_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "metadata_application_status"
+    },
+    "post_info_ignored_fields": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {},
+      "x-shape": "declared-collection",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "post_info_ignored_fields"
+    },
+    "platform_audio_mix_snapshot_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "platform_audio_mix_snapshot_ref"
+    },
+    "precheck_task_refs": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "kind": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "x-shape": "immutable-reference"
+      },
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "precheck_task_refs"
+    },
+    "precheck_violation_result": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "x-shape": "named-object-extension",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "precheck_violation_result"
+    },
+    "precheck_quality_result": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "x-shape": "named-object-extension",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "precheck_quality_result"
+    },
+    "remote_media_upload_session_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "remote_media_upload_session_ref"
+    },
+    "provider": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "provider"
+    },
+    "adapter_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "adapter_id"
+    },
+    "grant_snapshot_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "grant_snapshot_ref"
+    },
+    "capability_snapshot_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "capability_snapshot_ref"
+    },
+    "platform_music_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "platform_music_ref"
+    }
+  },
+  "required": [],
+  "additionalProperties": true,
+  "x-source-entity": "Publication",
+  "x-boundary": "Unspecified field semantics are not claimed to be fully validated. Required fields depend on operation and selected route."
+}
