@@ -1,0 +1,496 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-ship.local/contracts/TimeMap.schema.json",
+  "title": "源到输出时间与贡献映射",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 10000
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "status": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "feature_id": {
+      "type": "string",
+      "enum": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "G01",
+        "G02",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "I01",
+        "I02",
+        "I03",
+        "I04",
+        "I05",
+        "I06",
+        "L01",
+        "L02",
+        "L03",
+        "L04",
+        "L05",
+        "L06",
+        "L07",
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06",
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05",
+        "U06",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V06",
+        "V07",
+        "V08",
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05",
+        "E06",
+        "E07",
+        "E08",
+        "Y01",
+        "Y02",
+        "Y03",
+        "Y04",
+        "Y05",
+        "Y06",
+        "Y07",
+        "J01",
+        "J02",
+        "J03",
+        "J04",
+        "J05",
+        "J06",
+        "J07",
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "F05",
+        "F06",
+        "F07",
+        "F08",
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05",
+        "M06",
+        "M07",
+        "X01",
+        "X02",
+        "X03",
+        "X04",
+        "X05",
+        "X06",
+        "X07",
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06",
+        "H07",
+        "H08",
+        "D01",
+        "D02",
+        "D03",
+        "D04",
+        "D05",
+        "D06",
+        "D07",
+        "K01",
+        "K02",
+        "K03",
+        "K04",
+        "K05",
+        "K06",
+        "O01",
+        "O02",
+        "O03",
+        "O04",
+        "O05",
+        "O06",
+        "O07",
+        "W01",
+        "W02",
+        "W03",
+        "W04",
+        "W05",
+        "W06",
+        "W07",
+        "C08",
+        "C09",
+        "C10",
+        "H09",
+        "H10",
+        "H11",
+        "X08",
+        "W08",
+        "V09",
+        "E09",
+        "Y08",
+        "Y09",
+        "F09",
+        "M08",
+        "I07",
+        "A07",
+        "U07",
+        "C11",
+        "H12",
+        "W09",
+        "D08",
+        "M09"
+      ]
+    },
+    "route_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parameters": {
+      "type": "object"
+    },
+    "extensions": {
+      "type": "object"
+    },
+    "time_map_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "time_map_id"
+    },
+    "input_refs": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "kind": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "x-shape": "immutable-reference"
+      },
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "input_refs"
+    },
+    "output_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "immutable-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "output_ref"
+    },
+    "source_timebase": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": true
+        },
+        {
+          "type": "string",
+          "pattern": "^-?[0-9]+/[1-9][0-9]*$"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-shape": "explicit-rational-timebase",
+      "x-validation-level": "engineering-structural",
+      "description": "{\"type\": \"map\", \"keys\": \"input_ref\", \"values\": \"{num:positive_integer,den:positive_integer}\", \"rule\": \"各源单独时间基，不用共享FPS代替\"}",
+      "x-source-field": "source_timebase"
+    },
+    "target_timebase": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "{\"type\": \"object\", \"required\": [\"num\", \"den\"], \"properties\": {\"num\": \"positive integer\", \"den\": \"positive integer\"}}",
+      "x-source-field": "target_timebase"
+    },
+    "segments": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "string",
+          "number"
+        ]
+      },
+      "x-validation-level": "engineering-structural",
+      "description": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"segment_id\": \"stable identity\", \"output_interval\": \"half-open integer rational ticks\", \"contributions\": {\"type\": \"array\", \"items\": {\"required\": [\"source_ref\", \"mapping_curve\", \"role\"], \"properties\": {\"source_ref\": \"typed reference to actual media version or declared generated layer\", \"source_interval\": \"ordered bounds [low_tick,high_tick); reverse direction is in mapping_curve\", \"mapping_curve\": \"source-time function of output-time; hold may be constant\", \"weight_curve\": \"effective contribution over output interval, including alpha/gain\", \"role\": \"visual/audio/mask/control; control is not content contribution\", \"precision\": \"exact/approximate/unknown\"}}}, \"map_kind\": {\"enum\": [\"identity\", \"cut\", \"forward_linear\", \"reverse\", \"hold\", \"piecewise_speed\", \"transition\", \"mix\", \"insert\"]}, \"curve\": \"piecewise invertible segments or explicit ambiguity\", \"endpoint_policy\": \"half-open ownership and rounding only at renderer\", \"mapping_quality\": \"exact/approximate/unknown\", \"provenance\": \"actual transform or manual evidence\"}, \"rules\": [\"一个输出点可有多个贡献源，权重随时间变化；透明或静音权重可为零\", \"定格输出多个时刻指向一个源点，源到输出反查返回区间而非伪一一映射\", \"倒放与速度坡道使用明确方向及分段单调区间；求逆返回所有可能输出区间\", \"插入独立素材按其真实来源映射，纯生成图层无原视频时间\", \"拼接半开边界恰属一段；浮点显示值不参与账本关联\", \"倒放源区间边界仍low<high，方向由映射函数表示；不可把start>end当合法半开区间\", \"定格用固定source_tick和非空输出区间表达，不伪造零长可播放源片段\", \"源时间反查只返回实际被使用的输出区间集合；未被消费的源段可以没有输出\", \"改变方向的速度坡道拆为单调区段并处理零速度点，禁止用未声明不可逆标量除法\"], \"required\": [\"segment_id\", \"output_interval\", \"contributions\", \"map_kind\", \"mapping_quality\"]}, \"authority\": \"唯一持久化时间贡献段；旧kind与单input_ref格式在入口显式迁移后使用\"}",
+      "x-source-field": "segments"
+    },
+    "removed_intervals": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {},
+      "x-shape": "declared-collection",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "removed_intervals"
+    },
+    "inserted_intervals": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {},
+      "x-shape": "declared-collection",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "inserted_intervals"
+    },
+    "audio_sample_maps": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {},
+      "x-shape": "declared-collection",
+      "x-validation-level": "engineering-structural",
+      "description": "source_sample_range→target_sample_range",
+      "x-source-field": "audio_sample_maps"
+    },
+    "spatial_map_refs": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "kind": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "x-shape": "immutable-reference"
+      },
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "spatial_map_refs"
+    },
+    "mapping_quality": {
+      "type": [
+        "string",
+        "object",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "mapping_quality"
+    },
+    "algorithm_version": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "kind": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "x-shape": "immutable-reference"
+        }
+      ],
+      "x-shape": "version-or-versioned-reference",
+      "x-validation-level": "engineering-structural",
+      "description": "Architecture field; domain semantics remain in source contract.",
+      "x-source-field": "algorithm_version"
+    },
+    "intent_mode": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "{\"enum\": [\"source_order_preserving\", \"creative_edit\"]}",
+      "x-source-field": "intent_mode"
+    },
+    "coverage_report": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "x-shape": "named-object-extension",
+      "x-validation-level": "engineering-structural",
+      "description": "covered output intervals, missing mappings, dropped source intervals, tolerance, exactness",
+      "x-source-field": "coverage_report"
+    },
+    "mapping_stage": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-validation-level": "engineering-structural",
+      "description": "{\"enum\": [\"planned\", \"realized\", \"reconstructed\"], \"rule\": \"planned可绑定Timeline，不能冒充实际渲染贡献；realized绑定真实产物与执行证据；reconstructed只声明有证据的范围\"}",
+      "x-source-field": "mapping_stage"
+    }
+  },
+  "required": [],
+  "additionalProperties": true,
+  "x-source-entity": "TimeMap",
+  "x-boundary": "Unspecified field semantics are not claimed to be fully validated. Required fields depend on operation and selected route."
+}
