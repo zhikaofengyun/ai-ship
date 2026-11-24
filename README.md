@@ -2,6 +2,8 @@
 
 按 **AI Video Agent Atlas 6.0** 实现的项目制视频制作工作区。创建项目后进入 AI 制作台。在同一项目选择原片、设定目标、生成和审阅方案、替换单个镜头、批准并下载成片。需要精剪时可接管指定时间线，再返回制作任务。项目侧栏保留原需求包的 8 个分区和 23 个模块。
 
+需要还原与本版回归一致的源码、配置及测试时，按[完整源码交付](RELEASE-SOURCE.md)校验仓内两份 Git 补丁。
+
 [逐功能交付核对](docs/feature-workflows.md)列出 178 项功能的输入、输出、执行器和剩余条件。[逐条质量门槛和失败路径](docs/quality-gate-evidence.md)保留原文 1,104 项质量门槛及 574 项失败路径，以及能对应到的实际证据。[本版五轮回归](docs/ai-production-regression.md)逐轮记录实测范围与未验项目。[视觉复核](docs/ai-production-visual-review.md)记录桌面、手机宽度、生成结果和实际导出画面的观察。
 
 ![AI 制作台审阅实拍。左侧为模型的镜头方案和可操作的采用入口，右侧为当前镜头、播放控制和来源证据](evidence/ai-production/demonstration/director-review.png)
