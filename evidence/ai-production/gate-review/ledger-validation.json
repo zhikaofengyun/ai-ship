@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "source_gate_and_failure_rows": 1678,
+  "raw_scenarios": 69,
+  "formal_rounds": 5,
+  "unit_tests_each_round": 171,
+  "source_sha256": "bf9029e8f8da37cd9e1f6067fc3c7b70a38b4f43b4d67e8dcaab0d64c7e0de3a",
+  "evidence_records": 129,
+  "original_quality_gate_counts": {
+    "qualityGates": {
+      "direct_verified": 26,
+      "partial": 216,
+      "no_direct_evidence": 862
+    },
+    "failurePaths": {
+      "direct_verified": 1,
+      "partial": 49,
+      "no_direct_evidence": 524
+    }
+  },
+  "model_initial_openings": [
+    "matched",
+    "matched",
+    "matched",
+    "matched",
+    "matched"
+  ],
+  "all_outputs_independently_read": [
+    "FRESH LIME",
+    "FRESH LIME",
+    "FRESH LIME",
+    "FRESH LIME",
+    "FRESH LIME"
+  ]
+}
