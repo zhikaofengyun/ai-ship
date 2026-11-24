@@ -1,0 +1,13 @@
+.git
+.data
+var
+runtime
+.env
+.env.*
+__pycache__
+.venv
+node_modules
+evidence
+docs
+tests
+backups
