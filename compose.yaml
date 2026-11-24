@@ -1,0 +1,17 @@
+services:
+  ai-ship:
+    build: .
+    ports:
+      - "127.0.0.1:8765:8765"
+    environment:
+      AI_SHIP_MODE: team
+      AI_SHIP_DATA_DIR: /data
+      AI_SHIP_API_KEYS: ${AI_SHIP_API_KEYS:?Set server-owned identities before starting}
+      AI_SHIP_COMFY_PROFILES: ${AI_SHIP_COMFY_PROFILES:-}
+      AI_SHIP_PROVIDERS: ${AI_SHIP_PROVIDERS:-}
+    volumes:
+      - ai_ship_data:/data
+    restart: unless-stopped
+    stop_grace_period: 30s
+volumes:
+  ai_ship_data:
