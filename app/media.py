@@ -1551,6 +1551,16 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
         "已提交",
     }:
         raise DomainError("TIMELINE_NOT_LOCKED", "渲染前请冻结当前时间线版本", 409)
+    # Opening literals bind the original accepted timeline and survive later editor revisions.
+    first_revision = store.get(timeline["id"], actor.tenant_id, version=1)
+    opening_text = first_revision["data"].get("opening_text")
+    if opening_text is not None and (
+        not isinstance(opening_text, str)
+        or not opening_text.strip()
+        or len(opening_text) > 120
+        or not opening_text.isprintable()
+    ):
+        raise DomainError("INVALID_OPENING_TEXT", "时间线初版的首镜原片文字条件无效。", 422)
     assert_supported(data)
     if data.get("keyframe_curves"):
         raise DomainError(
@@ -1783,16 +1793,34 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
                 "yuv420p",
                 "-movflags",
                 "+faststart",
-                "-t",
-                f"{duration:.9f}",
                 "-fs",
                 str(MAX_BYTES),
-                str(output),
             ]
-            run_process(args, min(MAX_RENDER_SECONDS, max(60, int(duration * 6))))
+            if opening_text:
+                from .opening_check import check_output, check_visible_origin
+
+                origin = check_visible_origin(opening_text, clips, normalized_captions)
+                preview = tempdir / "opening-preview.mp4"
+                # Use the current revision's complete composition and encoder settings.
+                run_process([*args, "-frames:v", "1", "-t", f"{1/fps:.9f}", str(preview)], 40)
+                preflight = check_output(preview, opening_text, 1 / fps)
+            run_process(
+                [*args, "-t", f"{duration:.9f}", str(output)],
+                min(MAX_RENDER_SECONDS, max(60, int(duration * 6))),
+            )
             qc = technical_qc(
                 output, {"width": width, "height": height, "fps": fps, "has_audio": True}, duration
             )
+            if opening_text:
+                qc["opening_check"] = {
+                    "expected_text": opening_text,
+                    "status": "matched",
+                    "timeline_id": timeline["id"],
+                    "timeline_version": timeline["version"],
+                    "origin": origin,
+                    "preflight": preflight,
+                    "encoded_first_frame": check_output(output, opening_text, duration),
+                }
             blob_data = persist_blob(output, actor.tenant_id)
         latest_timeline = store.get(timeline["id"], actor.tenant_id)
         check_revision(latest_timeline, timeline["version"])
