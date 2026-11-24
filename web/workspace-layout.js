@@ -157,14 +157,14 @@ export function installProductionResize(work) {
     prefs = loadView(key);
   const primary = work.querySelector(".director-primary");
   if (!primary) return () => {};
+  const desktop = matchMedia("(min-width: 751px)");
   const limits = () => {
     const gap = parseFloat(getComputedStyle(work).columnGap) || 0;
     const usable = Math.max(1, work.clientWidth - gap);
     return { usable, min: 250, max: Math.max(250, usable - 218), gap };
   };
   const apply = () => {
-    const wide =
-      matchMedia("(min-width: 751px)").matches && work.clientWidth >= 510;
+    const wide = desktop.matches && work.clientWidth >= 510;
     work.dataset.splittable = String(wide);
     if (!wide) return;
     const { usable, min, max, gap } = limits();
@@ -201,12 +201,39 @@ export function installProductionResize(work) {
       };
     },
   );
+  let frame = 0,
+    lastWidth,
+    lastDesktop,
+    lastGap;
   const update = () => {
+    frame = 0;
+    const width = work.clientWidth,
+      gap = limits().gap;
+    if (
+      width === lastWidth &&
+      desktop.matches === lastDesktop &&
+      gap === lastGap
+    )
+      return;
+    lastWidth = width;
+    lastDesktop = desktop.matches;
+    lastGap = gap;
     apply();
     measure();
   };
-  const ro = new ResizeObserver(update);
+  // Changing columns can rewrap text and resize the observed grid's height.
+  // Keep layout writes outside the observer's current delivery cycle.
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(update);
+  };
+  const ro = new ResizeObserver(schedule);
   ro.observe(work);
+  // The viewport can change the CSS gap or stacking mode even at a fixed grid width.
+  window.addEventListener("resize", schedule);
   update();
-  return () => ro.disconnect();
+  return () => {
+    ro.disconnect();
+    window.removeEventListener("resize", schedule);
+    cancelAnimationFrame(frame);
+  };
 }
