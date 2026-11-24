@@ -1,0 +1,37 @@
+{
+  "source_distribution": "Reconstructed exclusively from the anonymous public Git baseline and its two immutable GitHub patches. See ../public-final-source.json",
+  "indexed_source_tree": "afaa47ec9fdeede665373dfcf52f227db0688f82",
+  "business_test_count": 171,
+  "distinct_test_ids": true,
+  "errors": 0,
+  "failures": 0,
+  "skipped": 0,
+  "order_seed": 221124,
+  "test_report": "unit-report.json",
+  "started_at": "2026-11-24T10:38:10.991744+00:00",
+  "finished_at": "2026-11-24T10:39:53.136471+00:00",
+  "contract_catalog": {
+    "groups": 8,
+    "modules": 23,
+    "features": 178,
+    "source_routes": 534,
+    "source_controls": 742,
+    "source_steps": 574,
+    "source_quality_gates": 1104,
+    "source_failure_paths": 574
+  },
+  "http_contract": {
+    "paths": 79,
+    "operations": 87,
+    "openapi": "3.1.0"
+  },
+  "javascript": {
+    "files": 24,
+    "passed": true,
+    "check": "JavaScript syntax and local module resolution"
+  },
+  "source_contract_check": "contracts.log",
+  "worktree_unstaged_changes": [],
+  "scope": "Independent extra test of published source, not one of the five full frozen rounds. Local browser and actual inference results are linked separately.",
+  "passed": true
+}
