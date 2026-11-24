@@ -15,3 +15,4 @@ services:
     stop_grace_period: 30s
 volumes:
   ai_ship_data:
+
