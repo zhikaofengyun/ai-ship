@@ -1,0 +1,15 @@
+{
+  "name": "ai-ship-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Zero-build browser modules for the AI Ship workspace",
+  "scripts": {
+    "check": "node scripts/check-web.mjs",
+    "format": "prettier --write 'web/**/*.{js,css,html}' scripts/check-web.mjs",
+    "format:check": "prettier --check 'web/**/*.{js,css,html}' scripts/check-web.mjs"
+  },
+  "devDependencies": {
+    "prettier": "3.10.1"
+  }
+}
