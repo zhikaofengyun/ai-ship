@@ -1,0 +1,292 @@
+{
+  "passed": true,
+  "source_sha256": "bf9029e8f8da37cd9e1f6067fc3c7b70a38b4f43b4d67e8dcaab0d64c7e0de3a",
+  "gates": [
+    "source-contract-integrity",
+    "all-backend-media-cross-domain-tests",
+    "all-original-feature-workflow-crosswalk",
+    "new-module-production-forms",
+    "brief-shot-selection-and-editor-handoff",
+    "single-screen-edit-session",
+    "workspace-route-execution-and-revisions",
+    "all-browser-module-syntax",
+    "python-formatting",
+    "browser-formatting",
+    "openapi-snapshot-drift",
+    "typed-controls-and-imported-dom-boundaries",
+    "exhaustive-browser-and-real-media",
+    "webkit-single-screen-edit-session",
+    "chromium-ai-production",
+    "chromium-workspace-layout",
+    "chromium-visual-transitions",
+    "chromium-opening-text",
+    "webkit-ai-production",
+    "webkit-workspace-layout",
+    "webkit-visual-transitions",
+    "webkit-opening-text",
+    "actual-local-language-model",
+    "actual-local-multi-model-review",
+    "actual-local-opening-text",
+    "actual-local-diffusion-model"
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "seconds": 789.8,
+      "gates": 26,
+      "tests": 171,
+      "browser_checks": 30,
+      "suite_checks": {
+        "Chromium 制作台": 17,
+        "WebKit 制作台": 17,
+        "Chromium 自由布局": 10,
+        "WebKit 自由布局": 10,
+        "Chromium 转场": 7,
+        "WebKit 转场": 7,
+        "Chromium 首镜实帧": 5,
+        "WebKit 首镜实帧": 5,
+        "本地语言模型实推": 4,
+        "真实语言模型首镜核验": 3,
+        "真实三模型复核与裁决": 6,
+        "本地扩散模型实推": 4,
+        "数据控件与旧工作流": 32,
+        "模块表单": 7,
+        "分镜交接与创意选优": 6,
+        "单屏剪辑": 11,
+        "工作区": 13,
+        "WebKit 剪辑": 11
+      },
+      "viewport": {
+        "desktop": [
+          1440,
+          960
+        ],
+        "mobile": [
+          390,
+          844
+        ]
+      },
+      "pictures": 81,
+      "hashes": 169,
+      "exclusions": [
+        "付费云端供应商、真实平台OAuth/自动发布/回执/指标",
+        "尚未实现的专用路线与外部适配器",
+        "macOS/iOS Safari、Firefox、物理 iPhone 与辅助技术组合",
+        "原生Liquid Glass逐像素一致",
+        "分布式多主机与生产负载",
+        "全部路线语义门槛、所有控件组合、专业剪辑软件和真实平台往返"
+      ],
+      "path": "evidence/ai-production/round-1"
+    },
+    {
+      "round": 2,
+      "seconds": 806.1,
+      "gates": 26,
+      "tests": 171,
+      "browser_checks": 30,
+      "suite_checks": {
+        "Chromium 制作台": 17,
+        "WebKit 制作台": 17,
+        "Chromium 自由布局": 10,
+        "WebKit 自由布局": 10,
+        "Chromium 转场": 7,
+        "WebKit 转场": 7,
+        "Chromium 首镜实帧": 5,
+        "WebKit 首镜实帧": 5,
+        "本地语言模型实推": 4,
+        "真实语言模型首镜核验": 3,
+        "真实三模型复核与裁决": 6,
+        "本地扩散模型实推": 4,
+        "数据控件与旧工作流": 32,
+        "模块表单": 7,
+        "分镜交接与创意选优": 6,
+        "单屏剪辑": 11,
+        "工作区": 13,
+        "WebKit 剪辑": 11
+      },
+      "viewport": {
+        "desktop": [
+          1536,
+          960
+        ],
+        "mobile": [
+          414,
+          896
+        ]
+      },
+      "pictures": 81,
+      "hashes": 169,
+      "exclusions": [
+        "付费云端供应商、真实平台OAuth/自动发布/回执/指标",
+        "尚未实现的专用路线与外部适配器",
+        "macOS/iOS Safari、Firefox、物理 iPhone 与辅助技术组合",
+        "原生Liquid Glass逐像素一致",
+        "分布式多主机与生产负载",
+        "全部路线语义门槛、所有控件组合、专业剪辑软件和真实平台往返"
+      ],
+      "path": "evidence/ai-production/round-2"
+    },
+    {
+      "round": 3,
+      "seconds": 787.6,
+      "gates": 26,
+      "tests": 171,
+      "browser_checks": 30,
+      "suite_checks": {
+        "Chromium 制作台": 17,
+        "WebKit 制作台": 17,
+        "Chromium 自由布局": 10,
+        "WebKit 自由布局": 10,
+        "Chromium 转场": 7,
+        "WebKit 转场": 7,
+        "Chromium 首镜实帧": 5,
+        "WebKit 首镜实帧": 5,
+        "本地语言模型实推": 4,
+        "真实语言模型首镜核验": 3,
+        "真实三模型复核与裁决": 6,
+        "本地扩散模型实推": 4,
+        "数据控件与旧工作流": 32,
+        "模块表单": 7,
+        "分镜交接与创意选优": 6,
+        "单屏剪辑": 11,
+        "工作区": 13,
+        "WebKit 剪辑": 11
+      },
+      "viewport": {
+        "desktop": [
+          1280,
+          900
+        ],
+        "mobile": [
+          375,
+          812
+        ]
+      },
+      "pictures": 81,
+      "hashes": 169,
+      "exclusions": [
+        "付费云端供应商、真实平台OAuth/自动发布/回执/指标",
+        "尚未实现的专用路线与外部适配器",
+        "macOS/iOS Safari、Firefox、物理 iPhone 与辅助技术组合",
+        "原生Liquid Glass逐像素一致",
+        "分布式多主机与生产负载",
+        "全部路线语义门槛、所有控件组合、专业剪辑软件和真实平台往返"
+      ],
+      "path": "evidence/ai-production/round-3"
+    },
+    {
+      "round": 4,
+      "seconds": 760.3,
+      "gates": 26,
+      "tests": 171,
+      "browser_checks": 30,
+      "suite_checks": {
+        "Chromium 制作台": 17,
+        "WebKit 制作台": 17,
+        "Chromium 自由布局": 10,
+        "WebKit 自由布局": 10,
+        "Chromium 转场": 7,
+        "WebKit 转场": 7,
+        "Chromium 首镜实帧": 5,
+        "WebKit 首镜实帧": 5,
+        "本地语言模型实推": 4,
+        "真实语言模型首镜核验": 3,
+        "真实三模型复核与裁决": 6,
+        "本地扩散模型实推": 4,
+        "数据控件与旧工作流": 32,
+        "模块表单": 7,
+        "分镜交接与创意选优": 6,
+        "单屏剪辑": 11,
+        "工作区": 13,
+        "WebKit 剪辑": 11
+      },
+      "viewport": {
+        "desktop": [
+          1600,
+          1000
+        ],
+        "mobile": [
+          430,
+          932
+        ]
+      },
+      "pictures": 81,
+      "hashes": 169,
+      "exclusions": [
+        "付费云端供应商、真实平台OAuth/自动发布/回执/指标",
+        "尚未实现的专用路线与外部适配器",
+        "macOS/iOS Safari、Firefox、物理 iPhone 与辅助技术组合",
+        "原生Liquid Glass逐像素一致",
+        "分布式多主机与生产负载",
+        "全部路线语义门槛、所有控件组合、专业剪辑软件和真实平台往返"
+      ],
+      "path": "evidence/ai-production/round-4"
+    },
+    {
+      "round": 5,
+      "seconds": 793.6,
+      "gates": 26,
+      "tests": 171,
+      "browser_checks": 30,
+      "suite_checks": {
+        "Chromium 制作台": 17,
+        "WebKit 制作台": 17,
+        "Chromium 自由布局": 10,
+        "WebKit 自由布局": 10,
+        "Chromium 转场": 7,
+        "WebKit 转场": 7,
+        "Chromium 首镜实帧": 5,
+        "WebKit 首镜实帧": 5,
+        "本地语言模型实推": 4,
+        "真实语言模型首镜核验": 3,
+        "真实三模型复核与裁决": 6,
+        "本地扩散模型实推": 4,
+        "数据控件与旧工作流": 32,
+        "模块表单": 7,
+        "分镜交接与创意选优": 6,
+        "单屏剪辑": 11,
+        "工作区": 13,
+        "WebKit 剪辑": 11
+      },
+      "viewport": {
+        "desktop": [
+          1366,
+          900
+        ],
+        "mobile": [
+          360,
+          800
+        ]
+      },
+      "pictures": 81,
+      "hashes": 169,
+      "exclusions": [
+        "付费云端供应商、真实平台OAuth/自动发布/回执/指标",
+        "尚未实现的专用路线与外部适配器",
+        "macOS/iOS Safari、Firefox、物理 iPhone 与辅助技术组合",
+        "原生Liquid Glass逐像素一致",
+        "分布式多主机与生产负载",
+        "全部路线语义门槛、所有控件组合、专业剪辑软件和真实平台往返"
+      ],
+      "path": "evidence/ai-production/round-5"
+    }
+  ],
+  "catalog": {
+    "modules": 23,
+    "features": 178,
+    "routes": 534,
+    "controls": 742
+  },
+  "feature_acceptance": {
+    "features": 178,
+    "by_status": {
+      "local_business_subset": 124,
+      "generic_framework_only": 19,
+      "external_adapter_unverified": 0,
+      "contract_and_configuration_only": 35
+    },
+    "full_business_acceptance": 0,
+    "production_verified": 0,
+    "external_live_verified": 0
+  }
+}
