@@ -10,7 +10,7 @@
 | 2 | 26 | 171 | 81 / 16 | [逐组报告](https://github.com/zhikaofengyun/ai-ship/blob/cc8b6f2aeee9cd47ec57fe122c34c3077d806ab7/evidence/ai-production/round-2/round-report.json) · [个案与画面读数](https://github.com/zhikaofengyun/ai-ship/blob/cc8b6f2aeee9cd47ec57fe122c34c3077d806ab7/verification/round-2-results.json)，169 份原始产物 |
 | 3 | 26 | 171 | 81 / 16 | [逐组报告](https://github.com/zhikaofengyun/ai-ship/blob/cc8b6f2aeee9cd47ec57fe122c34c3077d806ab7/evidence/ai-production/round-3/round-report.json) · [个案与画面读数](https://github.com/zhikaofengyun/ai-ship/blob/cc8b6f2aeee9cd47ec57fe122c34c3077d806ab7/verification/round-3-results.json)，169 份原始产物 |
 | 4 | 26 | 171 | 81 / 16 | [逐组报告](https://github.com/zhikaofengyun/ai-ship/blob/cc8b6f2aeee9cd47ec57fe122c34c3077d806ab7/evidence/ai-production/round-4/round-report.json) · [个案与画面读数](https://github.com/zhikaofengyun/ai-ship/blob/cc8b6f2aeee9cd47ec57fe122c34c3077d806ab7/verification/round-4-results.json)，169 份原始产物 |
-| 5 | 26 | 171 | 81 / 16 | [逐组报告](https://github.com/zhikaofengyun/ai-ship/blob/cc8b6f2aeee9cd47ec57fe122c34c3077d806ab7/evidence/ai-production/round-5/round-report.json)，169 份原始产物 |
+| 5 | 26 | 171 | 81 / 16 | [逐组报告](https://github.com/zhikaofengyun/ai-ship/blob/cc8b6f2aeee9cd47ec57fe122c34c3077d806ab7/evidence/ai-production/round-5/round-report.json) · [个案与画面读数](round-5-results.json)，169 份原始产物 |
 
 ## 核对实际结果
 
@@ -19,10 +19,12 @@
 - 各轮对实际生成的图片、文生视频及参考图驱动的视频解码。镜头文字、编码和可播放性有机器证据，叙事、观感和商业用途需另行验收。
 - 完整工程包包含原始 PNG、MP4、WebM、逐例状态和日志，位于相同的 `evidence/ai-production/round-1` 至 `round-5` 目录。
 
-## 可单独还原的公开证据
+## 从 GitHub 取出实际录屏和成片
 
-以下清单只收录已从公开 Git 对象读回、逐字节匹配的证据补丁。
+公开仓库的 [样片包](review-films.patch) 包含 33.43 秒连续实操录屏、该次实际导出的 6.4 秒成片、首镜自主命中与保留双素材的两个样片、五轮扩散各自导出的 MP4，以及对应的六列画面对照图。下面的命令在新的临时目录还原 **9 份视频和 1 张对照图**，核对整棵媒体目录的文件名、权限和内容后打印位置。所有视频都曾从这一公开文件重新解码。[独立公开回读记录](../evidence/ai-production/source-checks/public-review-films.json)
 
-当前公开目录提供可独立回读的结构化报告。完整工程包直接包含视频、截图和逐项校验所需的原始文件。
+```sh
+python verification/extract_review_media.py
+```
 
-原生 iPhone／macOS Safari、付费云端生成、外部平台 OAuth、自动发布、真实平台回执以及分布式生产负载尚待实测。原文业务条件的证据等级另有逐条记录。
+完整验收包另含五轮全部 405 张截图、80 份视频、逐例状态和测量原件。原生 iPhone／macOS Safari、付费云端生成、外部平台 OAuth、自动发布、真实平台回执以及分布式生产负载尚待实测。原文业务条件的证据等级另有逐条记录。
