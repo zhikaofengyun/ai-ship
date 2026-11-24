@@ -1,0 +1,182 @@
+{
+  "checked_at": "2026-11-24T11:41:18.219627+00:00",
+  "passed": true,
+  "public_commit": "a2a61fff63fd4836cd5283b5df0fa70536aee277",
+  "public_blob": "f2d60d6c9a96e66513afbf122e8be577c8e05c5d",
+  "raw_http_200_and_git_bytes_identical": true,
+  "public_raw_url": "https://raw.githubusercontent.com/zhikaofengyun/ai-ship/a2a61fff63fd4836cd5283b5df0fa70536aee277/verification/review-films.patch",
+  "bytes": 2996245,
+  "sha256": "08b35048737627e0ef0572b40d46a3921de5c06610fc90335aa83e0b91ef524d",
+  "restored_single_terminal_blank_line_before_git_apply": true,
+  "canonical_patch_sha256": "67e01f74572874afd69dc99c12ac5b15f3700bb0621858a0556059693017fa6e",
+  "restored_git_tree": "5d1d4d28e8df34ba97b4a91e9e65874072fcaf30",
+  "files_checked_by_path_mode_bytes": 10,
+  "films_decoded": {
+    "evidence/ai-production/final-demonstration/blue-cup-export.mp4": {
+      "decoded_from_public_patch": true,
+      "sha256": "6fddfe598a10ab309cc4e33342ba720914c0e64aba04e6bc54dbff808ddd8c9d",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 960,
+          "height": 540,
+          "nb_read_frames": "160"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "nb_read_frames": "300"
+        }
+      ],
+      "duration": "6.400000"
+    },
+    "evidence/ai-production/final-demonstration/continuous-workspace.mp4": {
+      "decoded_from_public_patch": true,
+      "sha256": "af0ed34a8a9e28115aebb7ceb0b5b74aa2b9b3b4fdeebcbd5b1bcf7f3f756e13",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1440,
+          "height": 900,
+          "nb_read_frames": "1003"
+        }
+      ],
+      "duration": "33.433333"
+    },
+    "evidence/ai-production/gate-review/keep-both-sources/chromium/two-sources.mp4": {
+      "decoded_from_public_patch": true,
+      "sha256": "2fee2f4402c6ba4adab5139828f18b6e7d121978e3242e22265ee719be1a5760",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 640,
+          "height": 360,
+          "nb_read_frames": "80"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "nb_read_frames": "150"
+        }
+      ],
+      "duration": "3.200000"
+    },
+    "evidence/ai-production/opening-text/model-matched/opening-export.mp4": {
+      "decoded_from_public_patch": true,
+      "sha256": "392bd133e8a5a3aae36ce838826bff6113514bae5b721473f320f0a1581f941a",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 320,
+          "height": 180,
+          "nb_read_frames": "80"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "nb_read_frames": "150"
+        }
+      ],
+      "duration": "3.200000"
+    },
+    "evidence/ai-production/round-1/diffusion-model/generated-cut.mp4": {
+      "decoded_from_public_patch": true,
+      "sha256": "efd9e7a6df72cda81acf1b10ec8f191a19380f5dbb196fc57aa127c1be636921",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 384,
+          "height": 384,
+          "nb_read_frames": "24"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "nb_read_frames": "47"
+        }
+      ],
+      "duration": "1.000000"
+    },
+    "evidence/ai-production/round-2/diffusion-model/generated-cut.mp4": {
+      "decoded_from_public_patch": true,
+      "sha256": "5872e6e5e5cdad1565379c39ee4cf52e288f3396a18d5411ce4a5d2d69c99fec",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 384,
+          "height": 384,
+          "nb_read_frames": "24"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "nb_read_frames": "47"
+        }
+      ],
+      "duration": "1.000000"
+    },
+    "evidence/ai-production/round-3/diffusion-model/generated-cut.mp4": {
+      "decoded_from_public_patch": true,
+      "sha256": "49407d94f99c26dfc9e6e6df61e6d27d027b3ce0430e7ae30ccf9819a70bfb42",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 384,
+          "height": 384,
+          "nb_read_frames": "24"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "nb_read_frames": "47"
+        }
+      ],
+      "duration": "1.000000"
+    },
+    "evidence/ai-production/round-4/diffusion-model/generated-cut.mp4": {
+      "decoded_from_public_patch": true,
+      "sha256": "46c89754bba16ddece60da5a1e5d7508c4bece2762326357c5c6d24977011012",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 384,
+          "height": 384,
+          "nb_read_frames": "24"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "nb_read_frames": "47"
+        }
+      ],
+      "duration": "1.000000"
+    },
+    "evidence/ai-production/round-5/diffusion-model/generated-cut.mp4": {
+      "decoded_from_public_patch": true,
+      "sha256": "271dfc0bc3e3a2a23b1aaa70dda3b75cb23efa6b8f2dec8cec3d57bef09e978c",
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 384,
+          "height": 384,
+          "nb_read_frames": "24"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "nb_read_frames": "47"
+        }
+      ],
+      "duration": "1.000000"
+    }
+  }
+}
