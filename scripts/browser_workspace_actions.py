@@ -64,6 +64,12 @@ def main():
         page.goto(base + "/#module/trend/T04", wait_until="domcontentloaded")
         expect(page.locator(".feature-detail h2")).to_have_text("多路线创意")
         expect(page.locator("[data-action=run-feature]")).to_be_hidden()
+        expect(page.locator("#feature-state")).to_contain_text("专项操作")
+        expect(page.locator("[data-action=feature-action]")).to_be_visible()
+        checks.append("creative_feature_exposes_its_dedicated_action")
+        page.goto(base + "/#module/acquire/A03", wait_until="domcontentloaded")
+        expect(page.locator(".feature-detail h2")).to_have_text("采集适配器管理")
+        expect(page.locator("[data-action=run-feature]")).to_be_hidden()
         expect(page.locator("#feature-state")).to_contain_text("仅支持配置")
         checks.append("unsupported_route_truthful_configuration_status")
 

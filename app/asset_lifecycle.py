@@ -12,6 +12,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Request
 from pydantic import Field
 
+from .asset_controls import OUTPUT_FIELDS
 from .api import ok
 from .auth import Actor, current_actor, require_write, require_approval
 from .errors import DomainError
@@ -55,6 +56,35 @@ def current_pin(actor, pid, pin, kind="AssetVersion"):
     if item["version"] != pin.version:
         raise DomainError("STALE_ASSET_INPUT", "素材或策略版本已变化，请重新核对。", 409)
     return item
+
+
+def formal_result(actor, item, result_name, operation):
+    """The typed action's durable result is the authority for computed fields."""
+    data = item["data"]
+    key = data.get("lifecycle_request_id")
+    path = "$." + result_name
+    with get_store().connection() as conn:
+        if key:
+            row = conn.execute(
+                "SELECT json_extract(response_json,?) FROM command_results WHERE tenant_id=? AND idempotency_key=?",
+                (path, actor.tenant_id, operation + ":" + key),
+            ).fetchone()
+        else:
+            # Older locally calculated results did not keep their command key.
+            row = conn.execute(
+                "SELECT json_extract(response_json,?) FROM command_results WHERE tenant_id=? AND idempotency_key LIKE ? AND json_extract(response_json,?)=? LIMIT 1",
+                (path, actor.tenant_id, operation + ":%", path + ".id", item["id"]),
+            ).fetchone()
+    saved = json.loads(row[0]) if row and row[0] else {}
+    fields = OUTPUT_FIELDS.get((item["kind"], data.get("feature_id")))
+    if (
+        saved.get("id") != item["id"]
+        or not fields
+        or any(data.get(k) != saved["data"].get(k) for k in fields)
+    ):
+        raise DomainError(
+            "UNVERIFIED_ASSET_PROJECTION", "请使用专用素材操作重新生成或选取经核实的结果。", 409
+        )
 
 
 class CooldownRule(Body):
@@ -309,6 +339,7 @@ def cooldown(body: Cooldown, request: Request, actor: Actor = Depends(current_ac
             body.project_id,
             {
                 "name": rule.reason[:180],
+                "lifecycle_request_id": body.request_id,
                 "feature_id": "U04",
                 "route_id": route,
                 "status": "selectable",
@@ -504,6 +535,7 @@ def exploration(body: Exploration, request: Request, actor: Actor = Depends(curr
         policies = []
         for pin in body.policies:
             policy = current_pin(actor, pid, pin, "Policy")
+            formal_result(actor, policy, "policy", "asset-cooldown")
             d = policy["data"]
             if d.get("feature_id") != "U04" or d.get("status") != "selectable":
                 raise DomainError("WRONG_COOLDOWN_POLICY", "请选择已计算的冷却规则。")
@@ -580,6 +612,7 @@ def exploration(body: Exploration, request: Request, actor: Actor = Depends(curr
             pid,
             {
                 "name": body.name,
+                "lifecycle_request_id": body.request_id,
                 "feature_id": "U05",
                 "route_id": "U05-R2",
                 "status": "draft",
@@ -610,6 +643,7 @@ def verify_exploration_selection(actor, pid, chosen, media_ids):
     if chosen is None:
         return None
     plan = current_pin(actor, pid, ChosenVersion.model_validate(chosen), "Plan")
+    formal_result(actor, plan, "plan", "asset-exploration")
     data = plan["data"]
     candidates = data.get("candidates") or []
     if data.get("feature_id") != "U05" or data.get("status") != "draft" or not candidates:
@@ -620,6 +654,7 @@ def verify_exploration_selection(actor, pid, chosen, media_ids):
         policy = current_pin(
             actor, pid, ChosenVersion(id=entry["id"], version=entry["version"]), "Policy"
         )
+        formal_result(actor, policy, "policy", "asset-cooldown")
         cfg = policy["data"]["typed_config"]
         rule = CooldownRule.model_validate(
             {k: cfg[k] for k in CooldownRule.model_fields if k in cfg}

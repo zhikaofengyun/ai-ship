@@ -5,6 +5,7 @@ import copy
 import uuid
 from .auth import require_write, require_approval
 from .catalog import FEATURES, MACHINES
+from .asset_controls import manual_asset_data
 from .errors import DomainError
 from .store import now, new_id, digest
 from .workflow import validate_controls, validate_workflow
@@ -134,7 +135,7 @@ def _dispatch(store, actor, command):
 
     if typ in LOCAL_CREATE:
         kind = LOCAL_CREATE[typ]
-        data = copy.deepcopy(_record_data(params))
+        data = manual_asset_data(kind, copy.deepcopy(_record_data(params)))
         if kind == "Workflow":
             spec = data.get("DAG", data)
             report = validate_workflow(spec)
@@ -159,7 +160,7 @@ def _dispatch(store, actor, command):
         }
     if typ in LOCAL_UPDATE:
         old = _target(store, actor, command, LOCAL_UPDATE[typ])
-        data = copy.deepcopy(_record_data(params))
+        data = manual_asset_data(old["kind"], copy.deepcopy(_record_data(params)), old)
         if old["kind"] == "Workflow":
             report = validate_workflow(data.get("DAG", data))
             if not report["valid"]:

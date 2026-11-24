@@ -630,7 +630,17 @@ def resolve_media(
         raise DomainError("PROJECT_SCOPE_MISMATCH", "媒体属于不同项目，请显式复制或授权后使用", 403)
     if version_id and record["data"].get("asset_id") != media_id:
         raise DomainError("INVALID_MEDIA_REFERENCE", "素材版本不属于选定素材", 422)
-    if record["data"].get("storage_tier") in {"local_cold", "quarantine"}:
+    tier = record["data"].get("storage_tier")
+    if record["kind"] == "AssetVersion" and record["data"].get("asset_id"):
+        asset = store.get(record["data"]["asset_id"], actor.tenant_id)
+        same_object = record["data"].get("blob_location_id") and record["data"][
+            "blob_location_id"
+        ] == asset["data"].get("blob_location_id")
+        if (record["data"].get("variant") == "original" or same_object) and asset["data"].get(
+            "storage_tier"
+        ) in {"local_cold", "quarantine"}:
+            tier = asset["data"]["storage_tier"]
+    if tier in {"local_cold", "quarantine"}:
         raise DomainError("ASSET_OFFLINE", "素材已冷藏或隔离，请先核权并恢复在线。", 409)
     check_current_media_rights(store, actor, record, purpose)
     blob_id = record["data"].get("blob_location_id")

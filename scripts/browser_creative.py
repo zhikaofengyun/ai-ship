@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -14,7 +15,7 @@ def run(output):
     output.mkdir(parents=True, exist_ok=True)
     errors = []
     with TemporaryDirectory() as tmp, server(Path(tmp), output) as base, sync_playwright() as pw:
-        browser = pw.webkit.launch()
+        browser = pw.webkit.launch(executable_path=os.environ.get("AI_SHIP_WEBKIT"))
         page = browser.new_page(viewport={"width": 1280, "height": 900}, locale="zh-CN")
         page.on("pageerror", lambda e: errors.append(str(e)))
         dialog = page.locator("#dialog[open]")

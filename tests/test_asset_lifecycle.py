@@ -392,6 +392,64 @@ class AssetLifecycleTests(ProductionBase):
         self.assertIn("冷藏副本缺失", rejected.stderr)
         self.assertFalse(missing.exists())
 
+    def test_generic_edits_preserve_archive_and_cannot_mint_computed_selection(self):
+        a = self.media("orange")
+        policy = self.call("cooldown", asset=pin(a), rule={"reason": "控制使用"})["policy"]
+        payload = {
+            "assets": [pin(a)],
+            "policies": [pin(policy)],
+            "slots": 1,
+            "exploration_share": 1,
+            "quality_floor": 0.6,
+            "name": "本机选材",
+        }
+        plan = self.call("exploration", **payload)["plan"]
+
+        def patch_record(r, data, code=200):
+            result = self.client.patch(
+                "/api/v1/records/" + r["id"], json={"data": data, "expected_revision": r["version"]}
+            )
+            self.assertEqual(result.status_code, code, result.text)
+            return result.json().get("data")
+
+        for item in (policy, plan):
+            result = self.client.post(
+                "/api/v1/records",
+                json={"kind": item["kind"], "project_id": self.pid, "data": item["data"]},
+            )
+            self.assertEqual(result.status_code, 403, result.text)
+        patch_record(policy, {**policy["data"], "typed_config": {"mode": "retain"}}, 403)
+        patch_record(plan, {**plan["data"], "candidates": []}, 403)
+        renamed = patch_record(plan, {"name": "编辑显示名称"})
+        self.assertEqual(renamed["data"]["candidates"], plan["data"]["candidates"])
+        from app.asset_lifecycle import verify_exploration_selection
+
+        self.assertEqual(
+            verify_exploration_selection(LOCAL_ACTOR, self.pid, pin(renamed), [a["id"]])["id"],
+            plan["id"],
+        )
+        # An old manually constructed draft has no action receipt, even with copied fields.
+        draft = self.create("Plan", plan["data"], plan["refs"])
+        with self.assertRaises(DomainError) as denied:
+            verify_exploration_selection(LOCAL_ACTOR, self.pid, pin(draft), [a["id"]])
+        self.assertEqual(denied.exception.code, "UNVERIFIED_ASSET_PROJECTION")
+        archived = self.call("tier", asset=pin(a), tier="local_cold", reason="季末存档")["asset"]
+        original = self.store.get(a["data"]["asset_id"], "local")
+        for item in (archived, original):
+            patch_record(item, {**item["data"], "storage_tier": "online"}, 403)
+            modified = patch_record(item, {"name": "档案显示名称"})
+            self.assertEqual(modified["data"]["storage_tier"], "local_cold")
+            self.assertEqual(modified["data"]["blob_location_id"], a["data"]["blob_location_id"])
+            with self.assertRaises(DomainError) as caught:
+                resolve_media(self.store, LOCAL_ACTOR, modified["id"])
+            self.assertEqual(caught.exception.code, "ASSET_OFFLINE")
+        older_alias = self.create("AssetVersion", a["data"], a["refs"])
+        with self.assertRaises(DomainError) as cannot_use:
+            resolve_media(self.store, LOCAL_ACTOR, older_alias["id"])
+        self.assertEqual(cannot_use.exception.code, "ASSET_OFFLINE")
+        ordinary = self.create("Plan", {"feature_id": "U05", "name": "自由编排草稿"})
+        self.assertEqual(patch_record(ordinary, {"name": "普通修改"})["data"]["name"], "普通修改")
+
 
 def ref_key(record):
     return record["id"], record["version"]

@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, ConfigDict, StrictInt
 from .auth import Actor, current_actor, require_write, require_approval
 from .catalog import catalog, workspace_catalog, COUNTS, SOURCE_SHA256, MACHINES, ENTITIES
 from .commands import dispatch, command_capabilities
+from .asset_controls import manual_asset_data
 from .errors import DomainError
 from .schemas import SCHEMAS
 from .store import get_store, now
@@ -266,6 +267,7 @@ def records(
 def create_record(body: RecordCreate, request: Request, actor: Actor = Depends(current_actor)):
     if body.kind == "Source" and SOURCE_SYNC_FIELDS.intersection(body.data):
         raise DomainError("SOURCE_SYNC_REQUIRED", "来源同步状态由已核实的变更清单产生。", 403)
+    manual_asset_data(body.kind, body.data)
     admit_manual_record(body.kind, body.data, actor)
     return ok(
         get_store().create(
@@ -310,7 +312,7 @@ def patch_record(
     if record_id.startswith((SCORE_RELEASE_PREFIX, COMMENT_PREFIX)):
         raise DomainError("DEDICATED_ENDPOINT_REQUIRED", "该记录仅由其专用流程写入。", 403)
     admit_manual_record(old["kind"], body.data, actor)
-    data = dict(body.data)
+    data = dict(manual_asset_data(old["kind"], body.data, old))
     if old["kind"] == "Source":
         managed = set(SOURCE_SYNC_FIELDS)
         if "rights" in (old["data"].get("sync_watermarks") or {}):
