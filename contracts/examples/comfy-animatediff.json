@@ -1,0 +1,369 @@
+{
+  "animatediff-local": {
+    "label": "文生短片 · 本机 8 帧",
+    "model": "Stable Diffusion 1.5 + AnimateDiff-Lightning 2-step",
+    "base_url": "http://127.0.0.1:8188",
+    "text_input": [
+      "2",
+      "text"
+    ],
+    "seed_input": [
+      "6",
+      "seed"
+    ],
+    "output_node": "8",
+    "workflow": {
+      "1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": "sd15.safetensors"
+        }
+      },
+      "2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": ""
+        }
+      },
+      "3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": "letters, price, text, watermark"
+        }
+      },
+      "4": {
+        "class_type": "ADE_AnimateDiffLoaderGen1",
+        "inputs": {
+          "model": [
+            "1",
+            0
+          ],
+          "model_name": "animatediff_lightning_2step_comfyui.safetensors",
+          "beta_schedule": "autoselect"
+        }
+      },
+      "5": {
+        "class_type": "EmptyLatentImage",
+        "inputs": {
+          "width": 256,
+          "height": 256,
+          "batch_size": 8
+        }
+      },
+      "6": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "4",
+            0
+          ],
+          "seed": 1,
+          "steps": 2,
+          "cfg": 1.0,
+          "sampler_name": "euler",
+          "scheduler": "sgm_uniform",
+          "positive": [
+            "2",
+            0
+          ],
+          "negative": [
+            "3",
+            0
+          ],
+          "latent_image": [
+            "5",
+            0
+          ],
+          "denoise": 1.0
+        }
+      },
+      "7": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "6",
+            0
+          ],
+          "vae": [
+            "1",
+            2
+          ]
+        }
+      },
+      "8": {
+        "class_type": "SaveWEBM",
+        "inputs": {
+          "images": [
+            "7",
+            0
+          ],
+          "filename_prefix": "AI_Ship/shot",
+          "codec": "vp9",
+          "fps": 8.0,
+          "crf": 20
+        }
+      }
+    }
+  },
+  "sd15-still": {
+    "label": "商品静帧候选 · 512 px",
+    "model": "Stable Diffusion 1.5",
+    "base_url": "http://127.0.0.1:8188",
+    "output_kind": "image",
+    "text_input": [
+      "2",
+      "text"
+    ],
+    "seed_input": [
+      "6",
+      "seed"
+    ],
+    "output_node": "8",
+    "workflow": {
+      "1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": "sd15.safetensors"
+        }
+      },
+      "2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": ""
+        }
+      },
+      "3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": "letters, price, text, watermark"
+        }
+      },
+      "5": {
+        "class_type": "EmptyLatentImage",
+        "inputs": {
+          "width": 512,
+          "height": 512,
+          "batch_size": 1
+        }
+      },
+      "6": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "1",
+            0
+          ],
+          "seed": 1,
+          "steps": 18,
+          "cfg": 6.0,
+          "sampler_name": "euler",
+          "scheduler": "sgm_uniform",
+          "positive": [
+            "2",
+            0
+          ],
+          "negative": [
+            "3",
+            0
+          ],
+          "latent_image": [
+            "5",
+            0
+          ],
+          "denoise": 1.0
+        }
+      },
+      "7": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "6",
+            0
+          ],
+          "vae": [
+            "1",
+            2
+          ]
+        }
+      },
+      "8": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "7",
+            0
+          ],
+          "filename_prefix": "AI_Ship/still"
+        }
+      }
+    }
+  },
+  "animatediff-reference": {
+    "label": "参考图生成短片 · 8 帧",
+    "model": "Stable Diffusion 1.5 + AnimateDiff-Lightning image conditioned",
+    "base_url": "http://127.0.0.1:8188",
+    "text_input": [
+      "2",
+      "text"
+    ],
+    "seed_input": [
+      "6",
+      "seed"
+    ],
+    "output_node": "8",
+    "workflow": {
+      "1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": "sd15.safetensors"
+        }
+      },
+      "2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": ""
+        }
+      },
+      "3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": "letters, price, text, watermark"
+        }
+      },
+      "4": {
+        "class_type": "ADE_AnimateDiffLoaderGen1",
+        "inputs": {
+          "model": [
+            "1",
+            0
+          ],
+          "model_name": "animatediff_lightning_2step_comfyui.safetensors",
+          "beta_schedule": "autoselect"
+        }
+      },
+      "6": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "4",
+            0
+          ],
+          "seed": 1,
+          "steps": 3,
+          "cfg": 1.0,
+          "sampler_name": "euler",
+          "scheduler": "sgm_uniform",
+          "positive": [
+            "2",
+            0
+          ],
+          "negative": [
+            "3",
+            0
+          ],
+          "latent_image": [
+            "12",
+            0
+          ],
+          "denoise": 0.35
+        }
+      },
+      "7": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "6",
+            0
+          ],
+          "vae": [
+            "1",
+            2
+          ]
+        }
+      },
+      "8": {
+        "class_type": "SaveWEBM",
+        "inputs": {
+          "images": [
+            "7",
+            0
+          ],
+          "filename_prefix": "AI_Ship/shot",
+          "codec": "vp9",
+          "fps": 8.0,
+          "crf": 20
+        }
+      },
+      "9": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": "reference.png"
+        }
+      },
+      "10": {
+        "class_type": "ImageScale",
+        "inputs": {
+          "image": [
+            "9",
+            0
+          ],
+          "upscale_method": "lanczos",
+          "width": 384,
+          "height": 384,
+          "crop": "center"
+        }
+      },
+      "11": {
+        "class_type": "VAEEncode",
+        "inputs": {
+          "pixels": [
+            "10",
+            0
+          ],
+          "vae": [
+            "1",
+            2
+          ]
+        }
+      },
+      "12": {
+        "class_type": "RepeatLatentBatch",
+        "inputs": {
+          "samples": [
+            "11",
+            0
+          ],
+          "amount": 8
+        }
+      }
+    },
+    "image_input": [
+      "9",
+      "image"
+    ]
+  }
+}
