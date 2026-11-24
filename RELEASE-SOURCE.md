@@ -1,50 +1,49 @@
-# AI Ship 源码交付 · Source release
+# AI Ship 制作台源码交付
 
-从公开基准提交 [a29463c](https://github.com/zhikaofengyun/ai-ship/commit/a29463c1a9e55ffb6686b38cec0c54b57fc58e20) 可还原冻结版本 `531c292692a7431d762ac7964a1592156bacd4e5` 除 `evidence/` 外的全部 213 个跟踪文件。新增 100 个、修改 6 个、删除 1 个误放路径，107 个原样保留。补丁同时还原了原始 HTML 和三个合同 JSON 的文件尾字节。[下载标准 Git 补丁](https://raw.githubusercontent.com/zhikaofengyun/ai-ship/main/verified-source.patch)
+本版在同一项目中完成 AI 编排、实帧审阅、局部改镜、人工接管与导出。制作台新增可选的首镜原片文字核验，窄屏控件和横向音量操作也已修正。
 
-The patch reconstructs every tracked source, configuration, test and documentation file outside `evidence/` at the target revision. The complete Git bundle is a separate delivery for regression evidence and final quality-audit material. The isolated checkout below keeps your current working tree intact.
+从公开仓库固定基准提交 `a29463c1a9e55ffb6686b38cec0c54b57fc58e20` 顺次应用仓内两份标准 Git 补丁，可以还原开发提交 `0a919ab5765c72065cef83f1d683bc41ab83440f` 的 **220 个源码、配置、测试和开发文档文件**。工程树为 `afaa47ec9fdeede665373dfcf52f227db0688f82`。完整工程压缩包还含逐轮视频、截图、逐例结果与最终审计文档。
 
-| 核验项 / Verification | 值 / Value |
-| --- | --- |
-| 补丁字节 / Patch bytes | 2,897,639 |
-| 补丁 / Patch SHA-256 | `2391360e928ee750700500de2c7046af68831bb393ae03de7ded704b72be8be8` |
-| 还原后源码树 / Restored source Git tree | `f12dd83aedff417a63a70c626e6b635b6e77b2b6` |
-| 还原后源码 / Restored source | 213 files, 29,467,122 bytes |
+| 仓库文件 | 用途 | 字节 | SHA-256 |
+| --- | --- | ---: | --- |
+| [verified-source.patch](verified-source.patch) | 还原原始 HTML、全量合同、基础实现和测试 | 2,897,639 | `2391360e928ee750700500de2c7046af68831bb393ae03de7ded704b72be8be8` |
+| [production-update.patch](production-update.patch) | 应用首帧核验、触控调整、配套测试和文档 | 246,801 | `5a1b68d127f3e7f826fa05495a227fd7ab599c169d57deb6336a28e57e315e4b` |
 
-在有 Git、curl 和 Python 3 的终端中整段执行。命令新建独立目录、取回指定公开提交、核验补丁 SHA-256，先干跑，再写入该目录的工作树及索引，最后复核整棵树。若已下载补丁，可在执行前设置 `PATCH=/绝对路径/verified-source.patch`。当前发布位置使用 `main`，摘要将下载内容锁定到本版。
-
-Run this block in a POSIX shell with Git, curl and Python 3. It fetches the immutable base commit into a new repository, checks the downloaded bytes, stages the patch in a separate worktree and prints the resulting source location. Set `PATCH` to an existing local copy to skip downloading the patch.
+下面的命令用 Git 和 Python 3 创建独立工作目录，校验两份输入，逐份预检并应用补丁，最后比对整棵源码树。目录由终端最后一行给出。
 
 ```sh
 set -eu
-base=a29463c1a9e55ffb6686b38cec0c54b57fc58e20
-stage=$(mktemp -d)
-patch_path=${PATCH:-"$stage/verified-source.patch"}
-if [ -z "${PATCH:-}" ]; then
-  curl --fail --location --silent --show-error --retry 2 \
-    https://raw.githubusercontent.com/zhikaofengyun/ai-ship/main/verified-source.patch \
-    --output "$patch_path"
-fi
-patch_path=$(python3 - "$patch_path" <<'PY'
-from hashlib import sha256
-from pathlib import Path
+work_dir=$(mktemp -d)
+base_commit=a29463c1a9e55ffb6686b38cec0c54b57fc58e20
+git clone --quiet --no-checkout --single-branch https://github.com/zhikaofengyun/ai-ship.git "$work_dir/github"
+git -C "$work_dir/github" config core.autocrlf false
+git -C "$work_dir/github" worktree add --quiet --detach "$work_dir/source" "$base_commit"
+for patch_name in verified-source.patch production-update.patch
+do
+  git -C "$work_dir/github" show "origin/main:$patch_name" > "$work_dir/$patch_name"
+done
+python3 - "$work_dir" <<'PY'
+import hashlib
 import sys
-path = Path(sys.argv[1]).resolve()
-data = path.read_bytes()
-if len(data) != 2897639 or sha256(data).hexdigest() != "2391360e928ee750700500de2c7046af68831bb393ae03de7ded704b72be8be8":
-    raise SystemExit("补丁校验失败 · Patch checksum mismatch")
-print(path)
+from pathlib import Path
+root = Path(sys.argv[1])
+expected = {
+    "verified-source.patch": "2391360e928ee750700500de2c7046af68831bb393ae03de7ded704b72be8be8",
+    "production-update.patch": "5a1b68d127f3e7f826fa05495a227fd7ab599c169d57deb6336a28e57e315e4b",
+}
+for name, digest in expected.items():
+    if hashlib.sha256((root / name).read_bytes()).hexdigest() != digest:
+        raise SystemExit(f"文件校验失败 · {name}")
 PY
-)
-git init --quiet "$stage/repository"
-git -C "$stage/repository" config core.autocrlf false
-git -C "$stage/repository" fetch --quiet --no-tags --depth=1 \
-  https://github.com/zhikaofengyun/ai-ship.git "$base"
-git -C "$stage/repository" worktree add --quiet --detach "$stage/source" "$base"
-test "$(git -C "$stage/source" rev-parse HEAD)" = "$base"
-git -C "$stage/source" apply --index --check --whitespace=nowarn "$patch_path"
-git -C "$stage/source" apply --index --whitespace=nowarn "$patch_path"
-tree=$(git -C "$stage/source" write-tree)
-test "$tree" = f12dd83aedff417a63a70c626e6b635b6e77b2b6
-printf '源码位置 / Source directory: %s\nGit tree: %s\n' "$stage/source" "$tree"
+for patch_name in verified-source.patch production-update.patch
+do
+  git -C "$work_dir/source" apply --index --check --whitespace=nowarn "$work_dir/$patch_name"
+  git -C "$work_dir/source" apply --index --whitespace=nowarn "$work_dir/$patch_name"
+done
+test "$(git -C "$work_dir/source" write-tree)" = afaa47ec9fdeede665373dfcf52f227db0688f82
+printf '%s\n' "$work_dir/source"
 ```
+
+进入输出的路径后，按 [工作台启动说明](README.md) 安装项目依赖并运行 `python scripts/run.py`。本机导演和图生视频服务各有独立接入步骤。[本机导演启动](docs/local-director-start.md) · [制作与生成接口](docs/ai-production-runtime.md)
+
+The two checked patches reconstruct the application source, configuration, tests and development documentation from the public Git baseline. All 220 paths, file modes and Git blobs were compared to the frozen revision. Regression media, delivery packaging and subsequent audit reports are provided in the complete Git bundle.
