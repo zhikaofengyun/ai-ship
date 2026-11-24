@@ -112,18 +112,19 @@ def model_hash(path, size, mtime):
         return hashlib.file_digest(file, "sha256").hexdigest()
 
 
-def recognize_text(path, at, seek):
+def recognize_text(path, at, seek, *, frame_receipt=False):
     """Optional LSTM OCR on one bounded source frame; a reading is never a verified product claim."""
     if not shutil.which("tesseract"):
         return {"status": "unavailable", "at": at, "words": []}
     try:
         with tempfile.TemporaryDirectory(prefix="ai-ship-frame-") as d:
             image = Path(d) / "sample.png"
-            run_process(
+            _, log = run_process(
                 [
                     "ffmpeg",
                     "-v",
-                    "error",
+                    "info" if frame_receipt else "error",
+                    *(["-copyts", "-start_at_zero"] if frame_receipt else []),
                     "-protocol_whitelist",
                     "file,pipe",
                     "-ss",
@@ -135,13 +136,18 @@ def recognize_text(path, at, seek):
                     "-frames:v",
                     "1",
                     "-vf",
-                    "scale=w='min(1280,iw)':h=-1",
+                    ("showinfo," if frame_receipt else "") + "scale=w='min(1280,iw)':h=-1",
                     "-threads",
                     "1",
                     str(image),
                 ],
                 timeout=15,
             )
+            if frame_receipt:
+                pts = re.search(r"\bn:\s*0\s+pts:\s*-?\d+\s+pts_time:([\d.eE+-]+)", log)
+                if not pts or not image.is_file():
+                    return {"status": "unavailable", "at": None, "words": []}
+                at = float(pts[1])
             langs, _ = run_process(["tesseract", "--list-langs"], timeout=5)
             languages = [
                 lang for lang in ("eng", "chi_sim", "chi_tra") if lang in langs.splitlines()
@@ -178,16 +184,34 @@ def recognize_text(path, at, seek):
             )
             words = []
             for row in csv.DictReader(io.StringIO(result), delimiter="\t"):
-                if row["level"] == "5" and row["text"].strip() and float(row["conf"]) >= 50:
+                if (
+                    row["level"] == "5"
+                    and row["text"].strip()
+                    and float(row["conf"]) >= (0 if frame_receipt else 50)
+                ):
                     words.append(
                         {
                             "text": row["text"][:120],
                             "confidence": round(float(row["conf"]) / 100, 3),
+                            **(
+                                {
+                                    "line": [
+                                        int(row[k]) for k in ("block_num", "par_num", "line_num")
+                                    ]
+                                }
+                                if frame_receipt
+                                else {}
+                            ),
                             "box_px": [int(row[k]) for k in ("left", "top", "width", "height")],
                         }
                     )
             return {
                 "status": "read",
+                **(
+                    {"frame_sha256": hashlib.sha256(image.read_bytes()).hexdigest()}
+                    if frame_receipt
+                    else {}
+                ),
                 "engine": "tesseract_lstm",
                 "engine_version": version.splitlines()[0] if version else None,
                 "model_sha256": language_hashes,
