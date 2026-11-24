@@ -1,0 +1,813 @@
+{
+  "started_at": "2026-11-24T10:27:06.254576+00:00",
+  "passed": true,
+  "processes": [
+    {
+      "label": "old-before-stop",
+      "pid": 16,
+      "started": "2026-11-24T10:27:06.662327+00:00",
+      "source_tree": "f12dd83aedff417a63a70c626e6b635b6e77b2b6",
+      "health": {
+        "fastapi": "0.141.1",
+        "pydantic": "2.13.4",
+        "sqlite": "3.53.1",
+        "ffmpeg": true,
+        "ffprobe": true
+      },
+      "stopped": "2026-11-24T10:27:11.941460+00:00",
+      "returncode": -15
+    },
+    {
+      "label": "new-after-old-stop",
+      "pid": 364,
+      "started": "2026-11-24T10:27:11.942324+00:00",
+      "source_tree": "16100801a152f08ba6d30de7a27c8bcd19f305ef",
+      "health": {
+        "fastapi": "0.141.1",
+        "pydantic": "2.13.4",
+        "sqlite": "3.53.1",
+        "ffmpeg": true,
+        "ffprobe": true
+      },
+      "stopped": "2026-11-24T10:27:18.133135+00:00",
+      "returncode": -15
+    },
+    {
+      "label": "new-after-role-downgrade-and-restart",
+      "pid": 842,
+      "started": "2026-11-24T10:27:18.136415+00:00",
+      "source_tree": "16100801a152f08ba6d30de7a27c8bcd19f305ef",
+      "health": {
+        "fastapi": "0.141.1",
+        "pydantic": "2.13.4",
+        "sqlite": "3.53.1",
+        "ffmpeg": true,
+        "ffprobe": true
+      },
+      "stopped": "2026-11-24T10:27:19.666974+00:00",
+      "returncode": -15
+    }
+  ],
+  "old_source_tree": "f12dd83aedff417a63a70c626e6b635b6e77b2b6",
+  "old_public_baseline": "a29463c1a9e55ffb6686b38cec0c54b57fc58e20",
+  "old_public_patch_commit": "7550f90ed497057518d2c20418825c498747426c",
+  "new_source_commit": "0a919ab5765c72065cef83f1d683bc41ab83440f",
+  "new_git_tree": "16100801a152f08ba6d30de7a27c8bcd19f305ef",
+  "dependencies": "same public requirements venv and system FFmpeg/FFprobe/Tesseract; CPU only; no providers",
+  "old_export": {
+    "artifact_id": "artifact_43c679d4132a45ffa9c89b355ce5f91f",
+    "bytes": 61525,
+    "sha256": "cadac8b7cbc15c465e0c6d7202a399d7288c2d96b58c95ec0d76bf444ce6954a",
+    "frame_index": 0,
+    "independent_ocr": "FRESH LIME",
+    "ocr_crop_xywh": [
+      0,
+      30,
+      320,
+      120
+    ],
+    "ffprobe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 320,
+          "height": 180,
+          "r_frame_rate": "25/1"
+        },
+        {
+          "codec_name": "aac",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "3.200000"
+      }
+    },
+    "full_decode": true
+  },
+  "legacy": {
+    "projects": [
+      "project_469bdda465724e7aadd7b13cfee14c4e",
+      "project_a5dbd9840e6947ebbb1b128bde81440d"
+    ],
+    "source_files": {
+      "asset_d7c2e44da9f9437c9fa42944c30d7e80": "35c172c352fc0596c6ed995896bf6f07f5b378a4c1dd3f7627bc61fc97389871",
+      "asset_3491119d61a2406b9dadf7d9426f61cd": "81026077ac2d6aa8098837630bc21a518e38f1f4a8ce51a64ffa5355f4e7f5ef"
+    },
+    "run": "edit_7b9333a7403345e7658cb0fbbb09e014d019",
+    "old_approved_timeline": "timeline_53c010ebe757495a895fda19b479e394",
+    "old_plan": "plan_d4481f80719d4f5aa3f6a72d9311371b",
+    "old_artifact": "artifact_43c679d4132a45ffa9c89b355ce5f91f",
+    "version_manifest": {
+      "audit_dcc006715f164ea39cbaadb484a18c76": {
+        "kind": "Audit",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "ca4f45fa0127639ac8889ce8134abb42ce6c3630789615aa4cace2d1ebdce09a",
+            "full_response_sha256": "091235cee1791b0ffa6c597fabc1cd10a8e2e9dba65b6be3bfb11caacd1efd62"
+          }
+        }
+      },
+      "cost_58e56ccdb71648be8a518434e3a8109c": {
+        "kind": "Cost",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "8e0deb2c6846c1d417ba94a44a8bc8c47900cc3567139290d842a8b21f0b0da7",
+            "full_response_sha256": "531e41bfe247548b5df3f2b61f93b62e43bcb96731c38b7fd51e6589ab0fe4c2"
+          }
+        }
+      },
+      "usage_fcc2e23efa104877aea5161d4bc98160": {
+        "kind": "Usage",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "1d8d2413b5a4133ed33a43dcbd4c39559773a3b5f96eb23740a181367d4c28a6",
+            "full_response_sha256": "95d11e9ede4e5cdd38849c7267b7be4a042841975081e6b71ba71dea96c10145"
+          }
+        }
+      },
+      "usage_9ba0028383c146379866106ffdf2549f": {
+        "kind": "Usage",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "82b371fb503990dc27c34ffaf22db0f6ad20d0d523859da58ced2fc878b310af",
+            "full_response_sha256": "cf137287f9f0030ce3a5cf448def0cabb9f604c24a99282c0631555bf41d2abb"
+          }
+        }
+      },
+      "rendermanifest_188f84b2dc804cba914d2abf7fdbbfc0": {
+        "kind": "RenderManifest",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "45fd1d5992e9b02c4430401a8f41a73c791e6ca356e01449d40754b2262ccf5f",
+            "full_response_sha256": "23ca1f243818c9eb3ca68b63ef9734cbdbd4836ab5485bd8ce97243a32871471"
+          }
+        }
+      },
+      "timemap_7ec90593b4b1432f93483d9275bc3d7e": {
+        "kind": "TimeMap",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "7d2864251299551af9167bbd40eb0c12a0222de6cde87baf34c1b6ce9c3249b9",
+            "full_response_sha256": "d7770c0a95b67c33f807e11e60876b967879f867fd487d1487db4d16b7a38ca0"
+          }
+        }
+      },
+      "artifact_43c679d4132a45ffa9c89b355ce5f91f": {
+        "kind": "Artifact",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "c0562c411f19a201d3c1e3000be2e85a7f1f35d38f6cd2139a0cc120076e34ca",
+            "full_response_sha256": "5cce0ea3833ee3c82fc99e1ac005b99c6e75c90a305e64ec346206d86625c5fe"
+          }
+        }
+      },
+      "bloblocation_8053f08d7d5c4d2ab4902fe49a677b55": {
+        "kind": "BlobLocation",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "e9dda804a3dd97440f1a636858fd52e89403b93c79a4d10b435630de75d3cd62",
+            "full_response_sha256": "2f58a87b0ff1d4265c45b1fe8b7505173392d2f4cdf62c986f349dd1ef60f11f"
+          }
+        }
+      },
+      "renderjob_d81b4739d1744caea6ff683b3aa98cf5": {
+        "kind": "RenderJob",
+        "revisions": {
+          "2": {
+            "version": 2,
+            "record_hash": "b73b9e1600ba97c3f55985e280092b4be11fd042fe51b1020e9a172ae269dcd4",
+            "full_response_sha256": "e5f5eead677f480c531c5205fbe8e81ba43874f00d7bf7d460d770ae50a53eac"
+          },
+          "1": {
+            "version": 1,
+            "record_hash": "7840e079d749111b017770df28ff3f53eb59ca5ece4b8c3881fe605b21cbf05d",
+            "full_response_sha256": "92f056abbb9a8e750aac72f1623da9e78451c7f52c4ec6bac7964e2c11ea0112"
+          }
+        }
+      },
+      "timeline_53c010ebe757495a895fda19b479e394": {
+        "kind": "Timeline",
+        "revisions": {
+          "2": {
+            "version": 2,
+            "record_hash": "da3bc237c7bda443abca35e249857e2deb264b233f758c91bf93973232e34c0d",
+            "full_response_sha256": "55000cca82b5849f2e3d19ae67258253852a430d94705653658668fab7166d77"
+          },
+          "1": {
+            "version": 1,
+            "record_hash": "77408d342bb63da81671aa0b73a7136bb2b61cdf462e5ebad84ace1cb9fa9fb5",
+            "full_response_sha256": "f88bf83505ddd10f88f1c412d7687c4304cb570b72c6d1653bfdba56bb74c09c"
+          }
+        }
+      },
+      "approval_7b3f933a8d11402fa7af46822085eef6": {
+        "kind": "Approval",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "bc1552cea43f877f6235f98ef40d112a917d35c848092868d5e62e6b858ae3c4",
+            "full_response_sha256": "4af3b5943e5909fb2fa46471fcdaa81b95f124b6f9c1614444f274687b672288"
+          }
+        }
+      },
+      "plan_d4481f80719d4f5aa3f6a72d9311371b": {
+        "kind": "Plan",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "1efd8ab1df07c2c2a49f3f111c92f55c052bc5c7e7d5700425b7a0b9bcafb1f3",
+            "full_response_sha256": "9fce469461465c5e0c58512e8e61e01c2788c6bdad41214afbd25b0495c20967"
+          }
+        }
+      },
+      "edit_7b9333a7403345e7658cb0fbbb09e014d019": {
+        "kind": "Run",
+        "revisions": {
+          "6": {
+            "version": 6,
+            "record_hash": "d1fa4133f295a3bc574db7ca33abaf705ea56e2bf95943339c9290f66e877a36",
+            "full_response_sha256": "e6a4ea6745c5e284b22abbed7379e38cdf4d03bc9ce23ab03bd299c3343e076c"
+          },
+          "5": {
+            "version": 5,
+            "record_hash": "cfa1e447a6a0107b1f184df769d43fa6d02bbfa91c499383d6ae3aa800b7d6ca",
+            "full_response_sha256": "0ff44dfc8b0a4a20854a5f7a6cc03b489a777cb0628176b068616355c00e302e"
+          },
+          "4": {
+            "version": 4,
+            "record_hash": "15aca051a858d58fa04e72fe4da520c0e2cc96479929b6f87998388034e2bd45",
+            "full_response_sha256": "749e44ece644341c1b870994b20a918086f20e09e646e6c4ce77d6fcacd4fc66"
+          },
+          "3": {
+            "version": 3,
+            "record_hash": "1c6538562ef48e2579c15d61fd1da3ad2c5e8841e95d1902af58e89bc17a000a",
+            "full_response_sha256": "168b9585be37eca0e96b252d85a09b26fb30c6bc86a9f476a62c43d270982e0f"
+          },
+          "2": {
+            "version": 2,
+            "record_hash": "0b6dc086dd6f3ce532ecec7aa6f58d25073e46f596448d04b8746e5353c92666",
+            "full_response_sha256": "7c70a320c6715b5bbeab4f99fa33e2e4793df0ee382c2eb508819dacc50b3afb"
+          },
+          "1": {
+            "version": 1,
+            "record_hash": "ea176ae8ce86955fac50d25c7f541ba1d4d216f27ce065d6986ee68abdbbba33",
+            "full_response_sha256": "fc65af49d22799649b77a12ba991aa571db383817c11c214088880ee4cc65004"
+          }
+        }
+      },
+      "importentry_db5897fd7554437185cccdbc6ee560ff": {
+        "kind": "ImportEntry",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "6f2ed136b39af1a140ca27a3db660f1f0f397e045afc1282bca18aee96b846d3",
+            "full_response_sha256": "76d36982b705ea8d02dacd7770cea1ad6d8ce61c003c7e4022a66c88caa645d8"
+          }
+        }
+      },
+      "assetversion_4e957c2d3cf340129c2e847a69fffc89": {
+        "kind": "AssetVersion",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "e86b4a3e3fb4f80434cde98180a757b83d8158ddfdd5de2621524d453bb9b2ca",
+            "full_response_sha256": "14cc167a2fa1e6d76432519680abc37779a1f0824427918cef0c0f14ecf3930b"
+          }
+        }
+      },
+      "asset_3491119d61a2406b9dadf7d9426f61cd": {
+        "kind": "Asset",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "718bef575c6b9f95a53637aa6104c22dde016c1d1f5144136b2fa2c145f36e0a",
+            "full_response_sha256": "b1880f482695d34ee1a3a7bc74a2612b562296892f4cd70ff5ba42cc9e307fa7"
+          }
+        }
+      },
+      "bloblocation_05804cafc46d441d8b5ac53f7fc1502f": {
+        "kind": "BlobLocation",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "505b65623703050e85797ecf5d37912bd8ed72888a6a55fd4ba366995a1a654f",
+            "full_response_sha256": "cf438deb80284bc02da46687f1254b3a4e54003d0451d011f75580897ac5b87a"
+          }
+        }
+      },
+      "source_90b71ddc4ff34b5b86718866a13a941d": {
+        "kind": "Source",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "e5eb64a3c503021bf58ae37cd12cb1b9dd110ef6953db40c27ce43b2206c4caf",
+            "full_response_sha256": "6dd93a9d8b14e63c0508c4b997accc5588e58fac265c9ed5b529410d8949110f"
+          }
+        }
+      },
+      "importbatch_ce1d20541e864aa1b39356bb24b53a0a": {
+        "kind": "ImportBatch",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "b1d692b6d8a3380017fd7cfefb4e52b42500d1cf1f56cfee2f03016b9c8ca352",
+            "full_response_sha256": "1fb3aa18117a970516ab2affab102190c719dbe201c3d7ca378a3090f181144e"
+          }
+        }
+      },
+      "importentry_ece92a8d3b674d05806b5d5ed1622560": {
+        "kind": "ImportEntry",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "a5e0685a34372ed73a3f8d1f53963d12fe2464319aff7f410ffc315c85755023",
+            "full_response_sha256": "c33ff0737e81af0d9a6c7f842fe046cf75d64f83f0e7bf7a553ed1a4b2477401"
+          }
+        }
+      },
+      "assetversion_b3a2bedd41694d7daaf59efb2fd7a23c": {
+        "kind": "AssetVersion",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "38d6fda2eb2574d33e212be0366bdf13c5021b232b5c49edc0b13e4727744fa2",
+            "full_response_sha256": "4dc8796a2fa3e9be8f8da83ee5fcdd9170b61887c1af86420cc15723d7e517ed"
+          }
+        }
+      },
+      "asset_d7c2e44da9f9437c9fa42944c30d7e80": {
+        "kind": "Asset",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "dd8281f58d65d65b4b0675e296d7d78fb50ba5d973311216dd2eab0c159b6c44",
+            "full_response_sha256": "dd16399bad195b9f8cbdf0c492ea213c3aab514d02e5d21d238402bbadfdd260"
+          }
+        }
+      },
+      "bloblocation_b780043ff1644b9e911f8b9fa02298d0": {
+        "kind": "BlobLocation",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "0d95fcfc115a8cfcb84b477c0974844194a5c1143ccd6005d87b91cd158c3ec9",
+            "full_response_sha256": "c0b807de4c5ff4bba1e5201809e706251d442e1f6c30316744ebcbfeeb2eda9e"
+          }
+        }
+      },
+      "source_a6ccf7cecae8419db4452e7b18b19a2f": {
+        "kind": "Source",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "2a60807378f5382b80c0ab00b3bafbe79d86c149df2afff47e7a8eb7a3b3a943",
+            "full_response_sha256": "73f3abea899b7b6b27926409f3ba2345c0757ad37f34dab30d50b269ef1799ad"
+          }
+        }
+      },
+      "importbatch_79416128d734432cb0752c46b5d2bbf8": {
+        "kind": "ImportBatch",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "94f67ed2b60466866981a8cee884b817e54bd628ce8b87fd4b65486801dc8eff",
+            "full_response_sha256": "199f7c58c07303b101ec0ac25c7218fe03c0285eb512b94fc4985eb08b8a0ba1"
+          }
+        }
+      },
+      "project_a5dbd9840e6947ebbb1b128bde81440d": {
+        "kind": "Project",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "c72cdf0a8902d8247e3f4ef528dec501ab5e33239c136b17250df1b1f3356ad4",
+            "full_response_sha256": "88928f3bb6aeff4a403766d842f74fa134501216ff3b96c6dfd9d692f8aa7e52"
+          }
+        }
+      },
+      "project_469bdda465724e7aadd7b13cfee14c4e": {
+        "kind": "Project",
+        "revisions": {
+          "1": {
+            "version": 1,
+            "record_hash": "0d84b045978278132962c09eda199233bc85b601e0e2e3032dae93f230de7b47",
+            "full_response_sha256": "a7a9ae2585ccaf284f1dbfe2166ae5d0cf2218d4e09e0a460400ab73f1693cef"
+          }
+        }
+      }
+    },
+    "record_count": 27,
+    "revision_count": 34,
+    "asset_and_artifact_download_hashes": {
+      "asset_d7c2e44da9f9437c9fa42944c30d7e80": "35c172c352fc0596c6ed995896bf6f07f5b378a4c1dd3f7627bc61fc97389871",
+      "asset_3491119d61a2406b9dadf7d9426f61cd": "81026077ac2d6aa8098837630bc21a518e38f1f4a8ce51a64ffa5355f4e7f5ef",
+      "artifact_43c679d4132a45ffa9c89b355ce5f91f": "cadac8b7cbc15c465e0c6d7202a399d7288c2d96b58c95ec0d76bf444ce6954a"
+    }
+  },
+  "verified_after_upgrade": {
+    "all_old_response_versions_unchanged": true,
+    "all_old_media_bytes_unchanged": true,
+    "old_idempotency_key_returns_original_rendered_detail": true,
+    "previous_browser_session_rejected_after_restart": true
+  },
+  "new_export": {
+    "artifact_id": "artifact_fef417ce77574de299fb905233f291f3",
+    "bytes": 61525,
+    "sha256": "cadac8b7cbc15c465e0c6d7202a399d7288c2d96b58c95ec0d76bf444ce6954a",
+    "frame_index": 0,
+    "independent_ocr": "FRESH LIME",
+    "ocr_crop_xywh": [
+      0,
+      30,
+      320,
+      120
+    ],
+    "ffprobe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 320,
+          "height": 180,
+          "r_frame_rate": "25/1"
+        },
+        {
+          "codec_name": "aac",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "3.200000"
+      }
+    },
+    "full_decode": true
+  },
+  "new_locked_task": {
+    "parallel_result_stages": [
+      "planning",
+      "review"
+    ],
+    "parallel_run_ids": [
+      "edit_ec85f6ec648995ff4e7b9c49f6ac3c080a3b",
+      "edit_ec85f6ec648995ff4e7b9c49f6ac3c080a3b"
+    ],
+    "distinct_project_runs_after_both_posts": 2,
+    "single_new_plan_count": 1,
+    "run_id": "edit_ec85f6ec648995ff4e7b9c49f6ac3c080a3b",
+    "proposal_id": "plan_ed02b400ee5a4ca68034f778a6b5c00f",
+    "timeline_id": "timeline_982d76245f5a47d79c94356d5c4f8a7f",
+    "timeline_revision": 2,
+    "different_body_same_key": "IDEMPOTENCY_CONFLICT",
+    "stale_approval": "REVISION_CONFLICT",
+    "stale_candidate_version": "REVISION_CONFLICT",
+    "immutable_cut_observation": {
+      "alternatives": [],
+      "expected_text": "FRESH LIME",
+      "observation": {
+        "analysis_size": [
+          640,
+          240
+        ],
+        "asset_id": "asset_3491119d61a2406b9dadf7d9426f61cd",
+        "asset_version": 1,
+        "at": 0.0,
+        "coordinate_space": "analysis_frame_pixels",
+        "engine": "tesseract_lstm",
+        "engine_version": "tesseract 5.5.0",
+        "frame_sha256": "2c89246c6362f120ae61d3173b50afad02ac41f55873ed97ba824cac53110a0c",
+        "languages": [
+          "eng"
+        ],
+        "model_sha256": {
+          "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+        },
+        "source_in": 0.0,
+        "source_out": 1.6,
+        "status": "read",
+        "words": [
+          {
+            "box_px": [
+              101,
+              92,
+              235,
+              57
+            ],
+            "confidence": 0.967,
+            "line": [
+              1,
+              1,
+              1
+            ],
+            "text": "FRESH"
+          },
+          {
+            "box_px": [
+              375,
+              92,
+              166,
+              56
+            ],
+            "confidence": 0.969,
+            "line": [
+              1,
+              1,
+              1
+            ],
+            "text": "LIME"
+          }
+        ]
+      },
+      "status": "matched"
+    },
+    "actual_output_opening": {
+      "encoded_first_frame": {
+        "analysis_size": [
+          320,
+          180
+        ],
+        "at": 0.0,
+        "coordinate_space": "analysis_frame_pixels",
+        "engine": "tesseract_lstm",
+        "engine_version": "tesseract 5.5.0",
+        "frame_sha256": "3f4f5de516116ea876e48a6c7a6c3e219a9f13d2fcc9d79d5e3195545c4285f5",
+        "languages": [
+          "eng"
+        ],
+        "model_sha256": {
+          "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+        },
+        "status": "read",
+        "words": [
+          {
+            "box_px": [
+              0,
+              0,
+              320,
+              30
+            ],
+            "confidence": 0.153,
+            "line": [
+              1,
+              1,
+              1
+            ],
+            "text": "ee"
+          },
+          {
+            "box_px": [
+              50,
+              76,
+              118,
+              28
+            ],
+            "confidence": 0.965,
+            "line": [
+              2,
+              1,
+              1
+            ],
+            "text": "FRESH"
+          },
+          {
+            "box_px": [
+              187,
+              76,
+              84,
+              28
+            ],
+            "confidence": 0.958,
+            "line": [
+              2,
+              1,
+              1
+            ],
+            "text": "LIME"
+          },
+          {
+            "box_px": [
+              0,
+              150,
+              320,
+              30
+            ],
+            "confidence": 0.177,
+            "line": [
+              3,
+              1,
+              1
+            ],
+            "text": "ne"
+          }
+        ]
+      },
+      "expected_text": "FRESH LIME",
+      "origin": {
+        "asset_id": "asset_3491119d61a2406b9dadf7d9426f61cd",
+        "asset_version": 1,
+        "observation": {
+          "analysis_size": [
+            640,
+            240
+          ],
+          "at": 0.0,
+          "coordinate_space": "analysis_frame_pixels",
+          "engine": "tesseract_lstm",
+          "engine_version": "tesseract 5.5.0",
+          "frame_sha256": "2c89246c6362f120ae61d3173b50afad02ac41f55873ed97ba824cac53110a0c",
+          "languages": [
+            "eng"
+          ],
+          "model_sha256": {
+            "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+          },
+          "status": "read",
+          "words": [
+            {
+              "box_px": [
+                101,
+                92,
+                235,
+                57
+              ],
+              "confidence": 0.967,
+              "line": [
+                1,
+                1,
+                1
+              ],
+              "text": "FRESH"
+            },
+            {
+              "box_px": [
+                375,
+                92,
+                166,
+                56
+              ],
+              "confidence": 0.969,
+              "line": [
+                1,
+                1,
+                1
+              ],
+              "text": "LIME"
+            }
+          ]
+        },
+        "source_in": 0.0,
+        "source_out": 1.6
+      },
+      "preflight": {
+        "analysis_size": [
+          320,
+          180
+        ],
+        "at": 0.0,
+        "coordinate_space": "analysis_frame_pixels",
+        "engine": "tesseract_lstm",
+        "engine_version": "tesseract 5.5.0",
+        "frame_sha256": "41e7dd31d5e17c733eb294551b870a459243df13f1f48751fb95e060458fd166",
+        "languages": [
+          "eng"
+        ],
+        "model_sha256": {
+          "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+        },
+        "status": "read",
+        "words": [
+          {
+            "box_px": [
+              0,
+              0,
+              320,
+              30
+            ],
+            "confidence": 0.157,
+            "line": [
+              1,
+              1,
+              1
+            ],
+            "text": "ee"
+          },
+          {
+            "box_px": [
+              50,
+              76,
+              118,
+              28
+            ],
+            "confidence": 0.962,
+            "line": [
+              2,
+              1,
+              1
+            ],
+            "text": "FRESH"
+          },
+          {
+            "box_px": [
+              187,
+              76,
+              84,
+              28
+            ],
+            "confidence": 0.967,
+            "line": [
+              2,
+              1,
+              1
+            ],
+            "text": "LIME"
+          },
+          {
+            "box_px": [
+              0,
+              150,
+              320,
+              30
+            ],
+            "confidence": 0.216,
+            "line": [
+              3,
+              1,
+              1
+            ],
+            "text": "ne"
+          }
+        ]
+      },
+      "status": "matched",
+      "timeline_id": "timeline_982d76245f5a47d79c94356d5c4f8a7f",
+      "timeline_version": 2
+    }
+  },
+  "authority": {
+    "same_tenant_wrong_project_inputs": {
+      "http": 200,
+      "task_stage": "blocked",
+      "code": "PROJECT_SCOPE_MISMATCH",
+      "no_artifact": true
+    },
+    "other_tenant_record_and_download": {
+      "http": 404,
+      "code": "NOT_FOUND"
+    },
+    "unregistered_bearer": {
+      "http": 401,
+      "code": "UNAUTHENTICATED"
+    },
+    "invalid_server_recognized_role": {
+      "http": 503,
+      "code": "AUTH_CONFIGURATION"
+    },
+    "persisted_owner_downgraded_to_viewer": {
+      "same_token_new_role": "viewer",
+      "read_both_tenant_projects": true,
+      "read_authorized_download": true,
+      "create_approve_render_status": [
+        403,
+        403,
+        403
+      ],
+      "previous_session_status": 401,
+      "scope": "Tenant owners and readers can see other projects in their own tenant. Project scoping prevents using assets as inputs to a different project; there is no per-project read ACL in this exercise."
+    }
+  },
+  "after_second_restart": {
+    "all_current_versions_equal": true,
+    "old_and_new_idempotent_replay_equal": true,
+    "both_original_inputs_and_legacy_and_new_downloads_exact": true,
+    "current_records": 41,
+    "current_revisions": 56,
+    "first_and_last_record_manifest_sha256": "f8b71efe91d533e5eeb67d31e816572f11dd56d5d87355e9e6adee1688b820e4"
+  },
+  "sqlite_integrity": [
+    [
+      "ok"
+    ]
+  ],
+  "ephemeral_secret_byte_check": {
+    "direct_key_or_cookie_match": false,
+    "runtime_database_media_and_logs_files_scanned": 13
+  },
+  "finished_at": "2026-11-24T10:27:19.675535+00:00",
+  "cold_upgrade_input_and_output_reproducibility": {
+    "script_sha256": "3e27fd61b57c12c506d06b1ebf5e32dfd694b8f5b06535f27c1dbc8602f219eb",
+    "script_instructions": "reproduce.md",
+    "upgrade_preflight": "The first harness invocation resolved its virtualenv Python symlink to the system interpreter without OpenTimelineIO and never started the old app. A fresh temporary database was used for the recorded successful run with the venv entry point preserved.",
+    "qualification": "Counts are actual versions generated by this two-clip, two-project fixture. Cross-project source use and cross-tenant reads were checked independently from tenant-wide viewing. The identical old/new MP4 bytes in this run follow from the same compiled edit and do not promise byte-identical rendering on different hosts."
+  }
+}
