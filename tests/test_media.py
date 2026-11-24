@@ -124,6 +124,103 @@ class MediaIntegrationTests(unittest.TestCase):
             refs=[media.ref(asset)],
         )
 
+    def test_rect_mask_after_rotation_and_cover_is_applied_once_to_decoded_pixels(self):
+        import subprocess
+
+        base = Path(self.tmp.name) / "bands.mp4"
+        rotated = base.with_name("portrait.mp4")
+        ff = ["ffmpeg", "-v", "error", "-nostdin", "-y"]
+        subprocess.run(
+            [
+                *ff,
+                "-f",
+                "lavfi",
+                "-i",
+                "color=red:s=160x80:r=25:d=1,drawbox=40:0:40:80:lime:fill,drawbox=80:0:40:80:blue:fill,drawbox=120:0:40:80:white:fill",
+                "-c:v",
+                "libx264",
+                "-threads",
+                "1",
+                str(base),
+            ],
+            check=True,
+        )
+        # FFmpeg 6+ accepts display_rotation. Older releases write the same
+        # display matrix with the stream metadata option during remux.
+        options = subprocess.check_output(["ffmpeg", "-h", "full"], stderr=subprocess.STDOUT)
+        rotation_args = (
+            ["-display_rotation:v:0", "90", "-i", str(base)]
+            if b"-display_rotation" in options
+            else ["-i", str(base), "-metadata:s:v:0", "rotate=90"]
+        )
+        subprocess.run([*ff, *rotation_args, "-c", "copy", str(rotated)], check=True)
+        version = media.import_saved_file(
+            self.store, self.actor, self.project_id, rotated.name, rotated
+        )["version"]
+        mask = {"space": "post_fit_clip", "rect": [0.125, 0.25, 0.625, 0.75]}
+        clip = {
+            "id": "rotated",
+            "asset_id": version["id"],
+            "track": 0,
+            "source_in": 0,
+            "source_out": 1,
+            "mask": mask,
+            "fit": "cover",
+        }
+
+        def render(c):
+            timeline = self.timeline(
+                version["id"],
+                clips=[c],
+                format={"width": 80, "height": 80, "fps": 25},
+                duration=1,
+                captions=[],
+            )
+            return media.render_timeline(
+                self.store,
+                self.actor,
+                {
+                    "project_id": self.project_id,
+                    "timeline_id": timeline["id"],
+                    "expected_revision": timeline["version"],
+                },
+            )
+
+        result = render(clip)
+        out = media.resolve_media(self.store, self.actor, result["artifact"]["id"])[2]
+        pixels = subprocess.check_output(
+            [
+                *ff,
+                "-i",
+                str(out),
+                "-frames:v",
+                "1",
+                "-pix_fmt",
+                "rgb24",
+                "-f",
+                "rawvideo",
+                "-threads",
+                "1",
+                "-",
+            ]
+        )
+
+        def rgb(x, y):
+            at = (y * 80 + x) * 3
+            return list(pixels[at : at + 3])
+
+        self.assertGreater(rgb(30, 26)[2], 225)
+        self.assertGreater(rgb(30, 54)[1], 225)
+        for x, y in [(5, 26), (68, 26), (30, 8), (30, 70)]:
+            self.assertLess(max(rgb(x, y)), 15)
+        self.assertEqual(result["manifest"]["data"]["clip_uses"][0]["mask"], mask)
+        for invalid in (
+            {"space": "source", "rect": mask["rect"]},
+            {"space": "post_fit_clip", "rect": [0.8, 0, 0.2, 1]},
+        ):
+            with self.assertRaisesRegex(DomainError, "遮罩|矩形"):
+                render({**clip, "mask": invalid})
+
     def test_import_probe_original_dedup_and_relative_path(self):
         result = self.import_fixture("batch/synthetic-test-pattern.mp4")
         self.assertFalse(result["duplicate"])

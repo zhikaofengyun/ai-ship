@@ -121,7 +121,8 @@ export function showTransition(element, c, clips, at, baseOpacity) {
   );
   let alpha = baseOpacity,
     gain = 1,
-    clipPath = "",
+    leftWipe = 0,
+    rightWipe = 0,
     filter = "";
   const progress = (t, d) => Math.max(0, Math.min(1, t / d));
   if (next) {
@@ -140,14 +141,16 @@ export function showTransition(element, c, clips, at, baseOpacity) {
     const p = progress(at - c.timeline_start, fx.duration);
     gain *= p;
     if (fx.kind === "dissolve") alpha *= p;
-    else if (fx.kind === "wipe_right")
-      clipPath = `inset(0 ${(1 - p) * 100}% 0 0)`;
-    else if (fx.kind === "wipe_left")
-      clipPath = `inset(0 0 0 ${(1 - p) * 100}%)`;
+    else if (fx.kind === "wipe_right") rightWipe = 1 - p;
+    else if (fx.kind === "wipe_left") leftWipe = 1 - p;
     else alpha *= Math.max(0, 2 * p - 1);
   }
   element.style.filter = filter;
-  element.style.clipPath = clipPath;
+  const [left, top, right, bottom] = c.mask?.rect || [0, 0, 1, 1];
+  element.style.clipPath =
+    c.mask || leftWipe || rightWipe
+      ? `inset(${top * 100}% ${Math.max(1 - right, rightWipe) * 100}% ${(1 - bottom) * 100}% ${Math.max(left, leftWipe) * 100}%)`
+      : "";
   element.style.opacity = alpha;
   element.style.zIndex = (Number(c.track || 0) + 1) * 2 + (entering ? 1 : 0);
   return gain;

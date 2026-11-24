@@ -191,7 +191,26 @@ def main():
             900,
         ),
     ]
+    for name, script in [
+        ("scoring-policy-release", "browser_score_policies.py"),
+        ("comment-feedback", "browser_comment_feedback.py"),
+    ]:
+        commands.append(
+            (name, [sys.executable, "scripts/" + script, "--output", str(output / name)], 300)
+        )
     if args.webkit:
+        commands.append(
+            (
+                "webkit-creative-and-source-manifest",
+                [
+                    sys.executable,
+                    "scripts/browser_creative.py",
+                    "--output",
+                    str(output / "creative"),
+                ],
+                300,
+            )
+        )
         commands.append(
             (
                 "webkit-single-screen-edit-session",
@@ -216,6 +235,8 @@ def main():
             ("workspace-layout", "browser_workspace_layout.py", "layout"),
             ("visual-transitions", "browser_clip_transitions.py", "joins"),
             ("opening-text", "browser_opening_text.py", "opening"),
+            ("storyboard-variants", "browser_storyboard_variants.py", "variants"),
+            ("voice-and-narration", "browser_voice_studio.py", "voice"),
         ):
             commands.append(
                 (
@@ -229,6 +250,25 @@ def main():
                         str(args.round),
                         "--output",
                         str(output / (folder + "-" + engine)),
+                    ],
+                    480,
+                )
+            )
+        for suffix, script in [
+            ("source-index-and-soundtrack", "browser_sound_index.py"),
+            ("asset-lifecycle-and-families", "browser_asset_lifecycle.py"),
+        ]:
+            name = engine + "-" + suffix
+            commands.append(
+                (
+                    name,
+                    [
+                        sys.executable,
+                        "scripts/" + script,
+                        "--engine",
+                        engine,
+                        "--output",
+                        str(output / name),
                     ],
                     480,
                 )

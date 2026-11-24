@@ -137,7 +137,7 @@ def record(
     if (
         project
         and item.get("project_id") != project
-        and not (kind == "Project" and item["id"] == project)
+        and not (item["kind"] == "Project" and item["id"] == project)
     ):
         raise DomainError("PROJECT_MISMATCH", "记录不属于当前项目。", 409)
     return item
@@ -413,6 +413,8 @@ def search_assets(
     hits = []
     for item in versions:
         d = item["data"]
+        if d.get("storage_tier") in {"local_cold", "quarantine"}:
+            continue
         if d.get("status") in {"revoked", "archived", "rejected", "unavailable"}:
             continue
         asset_id = d.get("asset_id")
@@ -431,6 +433,12 @@ def search_assets(
                 )
             ):
                 continue
+        from .media import check_current_media_rights
+
+        try:
+            check_current_media_rights(store, actor, item)
+        except DomainError:
+            continue
         duration = media_duration(d)
         if duration is None and asset:
             duration = media_duration(asset["data"])
@@ -457,6 +465,7 @@ def search_assets(
                 "reason": "关键词与真实标签/元数据匹配" if q else "符合结构化筛选",
             }
         )
+    hits.sort(key=lambda h: h["version"]["data"].get("storage_tier") == "low_priority")
     return ok(
         {
             "items": hits,
@@ -484,6 +493,13 @@ def reserve_usage(body: ReservationInput, request: Request, actor: Actor = Depen
     shot = record(actor, body.shot_id, "Shot", project=body.project_id)
     owner = record(actor, body.owner_ref, project=body.project_id)
     with get_store().transaction():
+        for key, kind in (("asset_version_id", "AssetVersion"), ("asset_id", "Asset")):
+            if shot["data"].get(key):
+                source = record(actor, shot["data"][key], kind, project=body.project_id)
+                if source["data"].get("storage_tier") in {"local_cold", "quarantine"} and (
+                    kind == "AssetVersion" or not shot["data"].get("asset_version_id")
+                ):
+                    raise DomainError("ASSET_OFFLINE", "不可预留已冷藏或隔离的素材。", 409)
         existing = get_store().list(
             actor.tenant_id, kind="Usage", project_id=body.project_id, limit=500
         )
@@ -556,7 +572,7 @@ class ScoreInput(Body):
     project_id: str
     asset_version_id: str
     dimensions: dict[str, float | None]
-    weights: dict[str, float]
+    weights: dict[str, float] | None = None
     evidence_refs: list[str] = Field(default_factory=list)
     context: dict = Field(default_factory=dict)
 
@@ -564,21 +580,15 @@ class ScoreInput(Body):
 @router.post("/assets/score")
 def score_asset(body: ScoreInput, request: Request, actor: Actor = Depends(current_actor)):
     require_write(actor)
+    from .score_policies import checked_weights, production_weights, weighted_score
+
     item = record(actor, body.asset_version_id, "AssetVersion", project=body.project_id)
-    allowed = {"quality", "relevance", "fatigue", "confidence", "tag_completeness", "performance"}
-    if not body.weights or set(body.dimensions) - allowed or set(body.weights) - allowed:
-        raise DomainError(
-            "INVALID_DIMENSION",
-            "评分维度需显式来自质量、相关性、疲劳、置信、标签完整度或已观测效果。",
-        )
-    weights = {k: number(v, k, 0, 1e6) for k, v in body.weights.items()}
-    total = sum(weights.values())
-    if total <= 0:
-        raise DomainError("INVALID_WEIGHT", "权重之和必须大于零。")
-    values = {k: number(v, k, 0, 1) for k, v in body.dimensions.items() if v is not None}
-    observed = sum(weights.get(k, 0) for k in values)
-    result = sum(v * weights.get(k, 0) for k, v in values.items()) / observed if observed else None
-    refs = [ref(item)] + [
+    if body.weights is None:
+        weights, policy_refs = production_weights(actor, body.project_id)
+    else:
+        weights, policy_refs = checked_weights(body.weights), []
+    result, coverage = weighted_score(body.dimensions, weights)
+    refs = [ref(item), *policy_refs] + [
         ref(record(actor, rid, project=body.project_id)) for rid in body.evidence_refs
     ]
     score = save(
@@ -589,7 +599,8 @@ def score_asset(body: ScoreInput, request: Request, actor: Actor = Depends(curre
             "asset_version_ref": item["id"],
             "dimension_scores": body.dimensions,
             "observed_score": result,
-            "coverage": observed / total,
+            "coverage": coverage,
+            "score_policy": policy_refs[0] if policy_refs else None,
             "weight_version": digest(weights),
             "weights": weights,
             "context_dimensions": body.context,
@@ -597,7 +608,7 @@ def score_asset(body: ScoreInput, request: Request, actor: Actor = Depends(curre
             "input_snapshot_refs": body.evidence_refs,
             "uncertainty": "缺失维度未填零；分数为已观测维度加权均值，不是因果归因。",
             "evaluated_at": now(),
-            "eligibility": "scored" if observed else "insufficient_evidence",
+            "eligibility": "scored" if result is not None else "insufficient_evidence",
         },
         refs,
     )
@@ -993,6 +1004,29 @@ def publication_preflight(actor: Actor, publication: dict) -> dict:
             problem = current_dependency_problem(current)
             if problem:
                 problems.append(problem)
+            revision = current["data"].get("content_change_version", 0)
+            if item["kind"] == "Source" and (
+                type(revision) is not int or revision > item["version"]
+            ):
+                problems.append(
+                    {
+                        "code": "SOURCE_CONTENT_CHANGED",
+                        "message": "产物引用了修订前的来源，需复核并绑定新版本。",
+                        "record_id": item["id"],
+                    }
+                )
+            if (
+                item["kind"] == "Source"
+                and current["data"].get("origin_availability") == "removed_at_origin"
+            ):
+                checks.append(
+                    {
+                        "check": "origin_removed",
+                        "record_id": item["id"],
+                        "action": "review_archived_source",
+                        "origin_change_alone_revokes_rights": False,
+                    }
+                )
         owner = record(actor, item["id"]) if item["kind"] in {"Source", "Grant"} else item
         for link in owner.get("refs", []):
             queue.append(record(actor, link["id"], version=link.get("version")))
@@ -1111,7 +1145,8 @@ def manual_receipt(
                 "account_id": account["id"],
                 "platform_post_id": body.platform_post_id,
                 "publication_id": pub["id"],
-                "artifact_id": pub["data"]["artifact_id"],
+                "submitted_artifact_id": pub["data"]["artifact_id"],
+                "final_media_status": "unknown",
                 "post_url": body.post_url,
                 "last_observed_at": body.observed_at,
                 "visibility": body.visibility,
@@ -1151,6 +1186,7 @@ class MetricRow(Body):
     paid_or_organic: Literal["paid", "organic", "mixed", "unknown"] = "unknown"
     denominator: float | None = Field(default=None, ge=0)
     data_mature_after: str | None = None
+    counting_mode: Literal["cumulative", "interval"] | None = None
 
 
 class MetricImport(Body):
@@ -1161,12 +1197,16 @@ class MetricImport(Body):
 @router.post("/metrics/import")
 def import_metrics(body: MetricImport, request: Request, actor: Actor = Depends(current_actor)):
     require_write(actor)
+    return ok(store_metric_rows(body, actor), request)
+
+
+def store_metric_rows(body, actor, archive=None):
     records, omitted = [], []
     with get_store().transaction():
         fingerprints = set()
         for index, row in enumerate(body.rows):
             account = record(actor, row.account_id, "Account", project=body.project_id)
-            refs = [ref(account)]
+            refs = [ref(account), *([ref(archive)] if archive else [])]
             if row.post_record_id:
                 post = record(actor, row.post_record_id, "Post", project=body.project_id)
                 if post["data"].get("account_id") != account["id"]:
@@ -1192,7 +1232,7 @@ def import_metrics(body: MetricImport, request: Request, actor: Actor = Depends(
             if row.data_mature_after:
                 timestamp(row.data_mature_after)
             snapshot = {
-                **row.model_dump(),
+                **row.model_dump(exclude={"counting_mode"} if row.counting_mode is None else set()),
                 "window_start": start.isoformat(),
                 "window_end": end.isoformat(),
                 "observed_at": seen.isoformat(),
@@ -1223,12 +1263,15 @@ def import_metrics(body: MetricImport, request: Request, actor: Actor = Depends(
                 "attribution_rule": "source_reported_not_causal",
                 "timezone": "UTC",
             }
+            if archive:
+                data["archive_row"] = index + 1
+                data["archive_ref"] = ref(archive)
             records.append(
                 save(
                     actor, "Metric", body.project_id, data, refs, "导入保留来源和口径的真实指标快照"
                 )
             )
-    return ok({"records": records, "duplicates": omitted, "count": len(records)}, request)
+    return {"records": records, "duplicates": omitted, "count": len(records)}
 
 
 @router.get("/analytics")
@@ -1361,6 +1404,10 @@ def evaluate_experiment(
     actor: Actor = Depends(current_actor),
 ):
     require_write(actor)
+    from .score_policies import PREFIX as SCORE_RELEASE_PREFIX
+
+    if experiment_id.startswith(SCORE_RELEASE_PREFIX):
+        raise DomainError("FROZEN_EXPERIMENT", "评分策略回归使用固定的逐例结果。", 409)
     exp = record(actor, experiment_id, "Experiment")
     if exp["version"] != body.expected_revision:
         raise DomainError("REVISION_CONFLICT", "实验定义已更新。", 409)

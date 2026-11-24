@@ -17,6 +17,68 @@ import tempfile
 import zipfile
 
 
+def validate_blob_locations(database, root, *, recovery_budget=None):
+    """Check cold and online objects. Only a restore may reconstruct an absent online replica."""
+    cold = {}
+    online = []
+    rows = database.execute("""SELECT r.tenant_id,r.id,v.data_json,v.refs_json
+            FROM records r JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id
+            AND v.version=r.latest_version WHERE r.kind='BlobLocation'""")
+    for tenant, blob_id, encoded, refs_json in rows:
+        blob = json.loads(encoded)
+        is_cold = (
+            blob.get("storage_tier") == "local_cold"
+            and blob.get("availability") == "restore_required"
+        )
+        if not is_cold and blob.get("availability") != "available":
+            continue
+        key = blob.get("object_key")
+        if (
+            not isinstance(key, str)
+            or not key.startswith("objects/")
+            or ".." in PurePosixPath(key).parts
+        ):
+            raise ValueError("媒体对象位置无效。")
+        path = (root / key).resolve()
+        if not path.is_relative_to(root / "objects"):
+            raise ValueError("媒体对象位置超出备份范围。")
+        checksum = blob.get("checksum") or blob.get("content_hash")
+        if not is_cold:
+            online.append((tenant, blob_id, key, checksum, path))
+            continue
+        prefix = hashlib.sha256(tenant.encode()).hexdigest()[:24]
+        if (
+            not isinstance(checksum, str)
+            or key != f"objects/{prefix}/cold/{checksum[:2]}/{checksum}"
+            or not path.is_file()
+        ):
+            raise ValueError("本地冷藏副本缺失或位置无效。")
+        with path.open("rb") as handle:
+            if hashlib.file_digest(handle, "sha256").hexdigest() != checksum:
+                raise ValueError("本地冷藏副本与数据库摘要不一致。")
+        for ref in json.loads(refs_json):
+            if ref.get("kind") == "BlobLocation":
+                cold[(tenant, ref["id"], checksum)] = path
+
+    for tenant, blob_id, key, checksum, path in online:
+        if not path.is_file():
+            source = cold.get((tenant, blob_id, checksum))
+            prefix = hashlib.sha256(tenant.encode()).hexdigest()[:24]
+            if source is None or key != f"objects/{prefix}/{checksum[:2]}/{checksum}":
+                raise ValueError("可用媒体对象缺失，且没有经核实的同租户冷藏副本。")
+            if recovery_budget is None:
+                continue
+            size = source.stat().st_size
+            if size > recovery_budget:
+                raise ValueError("恢复在线副本后的总大小超过明确上限。")
+            recovery_budget -= size
+            path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, path)
+        with path.open("rb") as handle:
+            if hashlib.file_digest(handle, "sha256").hexdigest() != checksum:
+                raise ValueError("媒体对象与数据库登记的摘要不一致。")
+
+
 def restore(archive_path: Path, destination: Path, max_bytes: int = 100_000_000_000) -> dict:
     destination = destination.resolve()
     if destination.exists():
@@ -77,24 +139,11 @@ def restore(archive_path: Path, destination: Path, max_bytes: int = 100_000_000_
                     raise ValueError("恢复数据库完整性校验失败。")
                 if database.execute("PRAGMA foreign_key_check").fetchone() is not None:
                     raise ValueError("恢复数据库外键校验失败。")
-                for row in database.execute(
-                    "SELECT v.data_json FROM records r JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version WHERE r.kind='BlobLocation'"
-                ):
-                    blob = json.loads(row[0])
-                    if blob.get("availability") != "available":
-                        continue
-                    key = blob.get("object_key", "")
-                    candidate = (temporary / key).resolve()
-                    if (
-                        not key.startswith("objects/")
-                        or not candidate.is_relative_to(temporary)
-                        or not candidate.is_file()
-                    ):
-                        raise ValueError("可用媒体对象缺失，恢复不能报告成功。")
-                    with candidate.open("rb") as handle:
-                        actual = hashlib.file_digest(handle, "sha256").hexdigest()
-                    if actual != (blob.get("checksum") or blob.get("content_hash")):
-                        raise ValueError("媒体对象与数据库字节 hash 不一致。")
+                validate_blob_locations(
+                    database,
+                    temporary,
+                    recovery_budget=max_bytes - sum(m.file_size for m in members),
+                )
         # A competing restore may have created destination; never replace it.
         if destination.exists():
             raise ValueError("恢复过程中目标目录已出现，请选择新目录。")

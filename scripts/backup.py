@@ -10,6 +10,11 @@ import sqlite3
 import tempfile
 import zipfile
 
+if __package__:
+    from .restore import validate_blob_locations
+else:
+    from restore import validate_blob_locations
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -38,6 +43,7 @@ def main():
             result = target.execute("PRAGMA integrity_check").fetchone()[0]
             if result != "ok":
                 raise RuntimeError("SQLite integrity check failed")
+            validate_blob_locations(target, root)
         files = [(snapshot, "ai-ship.sqlite3")]
         objects = root / "objects"
         if objects.exists():

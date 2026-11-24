@@ -10,6 +10,7 @@
 | L01-R1 | 真实视频差异切镜头候选 | Shot 集合 | 语义和主体标签未自动证明 |
 | L07-R1 | 实际解码并提取原声音轨 | Audio | 无音轨时明确失败，不能造静音当原声 |
 | V01-R3 | 人工脚本写入与引用校验 | Script | 不把录入文字当作已验证商品事实 |
+| V03-R2 | 使用本项目已审核的 Flite 内置音色合成固定版本的英文脚本 | Audio、ToolCall，实际 WAV 字节、采样数与时长 | 音色用途须经审批，词级打点和发音审阅单独进行 |
 | E01-R1 | 内部 Timeline 数据入库 | Timeline | 未支持的效果必须由渲染器拒绝 |
 | E08-R1 | 用户确认精确 hash 后锁版 | Timeline 新版本 | 技术冻结不代替内容/版权审批 |
 | Y03-R1 | 真实 FFmpeg 合成和技术质检 | RenderJob、Artifact、RenderManifest | publish_ready 仍为 false，语义/事实质检另行处理 |

@@ -1,3 +1,5 @@
+import { openSourceChanges } from "./source-changes.js";
+import { creativeActions } from "./creative-actions.js";
 import { openRhythm } from "./rhythm.js";
 import { uploadFile } from "./upload.js";
 import { area, esc, field, formData, modal, select, uid } from "./ui.js";
@@ -380,6 +382,8 @@ function storyboard(ctx) {
 }
 
 export function selectionForFeature(id) {
+  if (id === "A06") return { label: "核对来源变化", open: openSourceChanges };
+  if (creativeActions[id]) return creativeActions[id];
   if (id === "B02") return { label: "试听与打点", open: openRhythm };
   if (id === "T06") return { label: "选择并批准简报", open: review };
   if (id === "N02") return { label: "挑选分镜素材", open: storyboard };

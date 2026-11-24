@@ -1,3 +1,9 @@
+import { openNarration } from "./narration.js";
+import { exploration } from "./asset-lifecycle.js";
+import { openVoiceStudio } from "./voice-studio.js";
+import { openSoundtrack } from "./soundtrack.js";
+import { createVariantPanel } from "./variant-panel.js";
+import { openAssetSearch } from "./asset-search.js";
 import {
   $,
   $$,
@@ -105,6 +111,7 @@ function scopedSources(ctx) {
   return mediaLibrary(ctx.state.records).filter(
     (r) =>
       (r.kind === "Asset" || r.kind === "AssetVersion") &&
+      !["quarantine", "local_cold"].includes(r.data.storage_tier) &&
       mediaType(r) === "video" &&
       mediaDuration(r) > 0,
   );
@@ -169,6 +176,7 @@ export async function mountProduction(root, ctx) {
     if (!active()) return;
     if (!sources().some((s) => s.id === id))
       throw new Error("生成的文件暂时无法用于当前来源选择。");
+    delete draft.explorationPlan;
     draft.assetIds = [...new Set([...existing, id])];
     draft.lastGenerated = id;
     persist();
@@ -178,6 +186,11 @@ export async function mountProduction(root, ctx) {
         ? "镜头已加入素材，新建制作任务时可以选用。"
         : "镜头已加入本次制作素材。",
     );
+  });
+  const variants = createVariantPanel(ctx, async (value) => {
+    if (!active()) return;
+    await applySession(value);
+    if (active()) draw();
   });
   const pinnedSources = new Map();
   const sourceById = (id) =>
@@ -333,7 +346,7 @@ export async function mountProduction(root, ctx) {
   function sourcesMarkup() {
     const assets = sources(),
       checked = selected();
-    return `<section class="director-sources"><header><h2>制作素材 <small>${checked.length} / ${assets.length}</small></h2>${btn("导入视频", "upload", "upload", "button small ghost")}</header>
+    return `<section class="director-sources"><header><h2>制作素材 <small>${checked.length} / ${assets.length}</small></h2><div>${btn("探索配额", "explore-assets", "film", "button small ghost")}${btn("检索素材", "search-production-assets", "search", "button small ghost")}${btn("导入视频", "upload", "upload", "button small ghost")}</div></header>
       <input type="file" multiple accept="video/*,.mkv,.mov,.mp4,.webm" data-production-files hidden>
       ${assets.length ? `<div class="director-sources-list">${assets.map((a) => `<div class="director-source"><label><input type="checkbox" data-source="${esc(a.id)}" ${checked.includes(a.id) ? "checked" : ""}><span>${esc(mediaName(a))}</span></label><small>${time(mediaDuration(a))}</small><button type="button" class="icon-button" aria-label="预览 ${esc(mediaName(a))}" data-action="preview-source" data-id="${esc(a.id)}">${icon("play")}</button></div>`).join("")}</div>` : `<button type="button" class="director-drop" data-action="upload">${icon("upload")}拖入视频或选择文件</button>`}
     </section>`;
@@ -471,10 +484,11 @@ export async function mountProduction(root, ctx) {
     root.innerHTML = `<div class="page director-page" ${changed ? "data-scene-enter" : ""}><div class="director-titlebar"><div><h1>制作台</h1></div><div>${btn("项目设置", "project-settings", "sliders", "button ghost")}${!detail?.timeline ? link("手动剪辑", "editor", "manual") : ""}${detail ? btn("新建任务", "new-task", "plus", "button secondary") : ""}</div></div>
     ${list.length ? `<details class="director-task-picker"><summary>${icon("history")} 制作记录 · ${list.length}</summary><div class="director-history">${select("制作记录", "history", [["", "选择制作记录"], ...list], detail?.session.id || "")}</div></details>` : ""}
     <div class="director-work"><div class="director-primary">${detail ? reviewMarkup() : composeMarkup()}<p data-production-status role="status" class="director-live" ${busy || issue ? "" : "hidden"}>${esc(busy || issue)}</p></div>
-    <aside class="director-evidence"><div data-director-monitor></div>${detail ? `<div class="director-run-meta"><h3>任务依据</h3>${detail.session.data.goal && detail.session.data.goal !== detail.plan?.data.title ? `<p>${esc(detail.session.data.goal)}</p>` : ""}<small>${esc(modes[detail.session.data.mode] || "")}</small>${showEvidence(detail.session.data)}</div>` : ""}<div data-generation-panel></div></aside></div></div>`;
+    <aside class="director-evidence"><div data-director-monitor></div>${detail ? `<div class="director-run-meta"><h3>任务依据</h3>${detail.session.data.goal && detail.session.data.goal !== detail.plan?.data.title ? `<p>${esc(detail.session.data.goal)}</p>` : ""}<small>${esc(modes[detail.session.data.mode] || "")}</small>${showEvidence(detail.session.data)}</div>` : ""}<div data-variants></div><div data-generation-panel></div><details class="director-format director-audio-tools"><summary>声音与叙事</summary><div class="director-actions">${btn("生成或导入口播", "narration", "audio", "button small secondary")}${btn("口播与画面对齐", "voice-studio", "sliders", "button small secondary")}${btn("配乐与混音", "soundtrack", "sliders", "button small secondary")}</div></details></aside></div></div>`;
     releasePane();
     releasePane = installProductionResize($(".director-work", root));
     renderPreview();
+    variants.mount($("[data-variants]", root), detail);
     generated.mount(
       $("[data-generation-panel]", root),
       location.hash === "#production/generation",
@@ -544,6 +558,9 @@ export async function mountProduction(root, ctx) {
       goal: String(data.goal).trim(),
       mode: data.mode,
       asset_ids: ids,
+      ...(draft.explorationPlan
+        ? { exploration_plan: draft.explorationPlan }
+        : {}),
       target_seconds: Number(data.target_seconds),
       width: Number(data.width),
       height: Number(data.height),
@@ -646,6 +663,7 @@ export async function mountProduction(root, ctx) {
         }
       }
       await ctx.reloadData();
+      delete draft.explorationPlan;
       draft.assetIds = [...new Set(ids)];
       persist();
       if (errors.length) throw new Error(errors.join(" / "));
@@ -731,6 +749,7 @@ export async function mountProduction(root, ctx) {
       form.oninput = (e) => {
         const t = e.target;
         if (t.dataset.source) {
+          delete draft.explorationPlan;
           draft.assetIds = $$("[data-source]:checked", form).map(
             (c) => c.dataset.source,
           );
@@ -780,6 +799,38 @@ export async function mountProduction(root, ctx) {
           highlighted = "";
           draw();
         },
+        narration: () => openNarration(ctx),
+        "voice-studio": () => openVoiceStudio(ctx),
+        soundtrack: () => openSoundtrack(ctx),
+        "explore-assets": () =>
+          exploration(ctx, (candidates, plan) => {
+            const available = new Set(sources().map((r) => r.id));
+            const chosen = candidates.map((c) =>
+              available.has(c.asset.id) ? c.asset.id : c.asset_id,
+            );
+            if (chosen.some((id) => !available.has(id)))
+              throw new Error("素材已经变化，请重新核对。");
+            draft.assetIds = [...new Set(chosen)];
+            draft.explorationPlan = { id: plan.id, version: plan.version };
+            persist();
+            draw();
+            ctx.toast("已采用此方案的候选素材。");
+          }),
+        "search-production-assets": () =>
+          openAssetSearch(ctx, async (hit) => {
+            if (!active()) return;
+            const ids = new Set(sources().map((r) => r.id));
+            const chosen = ids.has(hit.version_id)
+              ? hit.version_id
+              : hit.asset_id;
+            if (!ids.has(chosen))
+              throw new Error("此版本已经不可用，请重新检索。");
+            delete draft.explorationPlan;
+            draft.assetIds = [...new Set([...selected(), chosen])];
+            persist();
+            draw();
+            ctx.toast("已加入本次制作素材。");
+          }),
         "replace-shot": () => replaceShot(),
         "replace-opening": (b) => {
           const option =

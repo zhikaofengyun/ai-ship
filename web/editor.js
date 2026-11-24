@@ -691,6 +691,15 @@ export async function mountEditor(container, ctx) {
       btn("向后排列", "move-next", "redo", "button small secondary"),
       btn("替换素材", "replace-source", "layers", "button small secondary"),
     ];
+    if (!audio)
+      actions.push(
+        btn(
+          c.mask ? "编辑矩形遮罩" : "添加矩形遮罩",
+          "clip-mask",
+          "layers",
+          "button small secondary",
+        ),
+      );
     if (
       !audio &&
       (c.transition_in ||
@@ -2041,6 +2050,47 @@ export async function mountEditor(container, ctx) {
         dirty();
         drawInspector();
         drawTimeline();
+      },
+      "clip-mask": () => {
+        const c = current();
+        if (!c || !e.data.clips.includes(c)) return;
+        if (c.locked) throw new Error("片段已锁定。");
+        guard();
+        const rect = c.mask?.rect || [0, 0, 1, 1];
+        const fields = ["左边界", "上边界", "右边界", "下边界"]
+          .map((label, i) =>
+            field(
+              label + "（%）",
+              "edge" + i,
+              Number((100 * rect[i]).toFixed(5)),
+              "number",
+              'min="0" max="100" step="any" required',
+            ),
+          )
+          .join("");
+        const dialog = modal(
+          "矩形遮罩",
+          '<form data-form class="form-grid"><p>边界相对片段完成旋转与适配后的画面。</p>' +
+            fields +
+            '<div class="form-actions"><button type="button" class="button secondary" data-clear-mask>清除遮罩</button><button type="submit" class="button primary">应用遮罩</button></div></form>',
+          (form) => {
+            const values = formData(form);
+            const bounds = rect.map((_, i) => Number(values["edge" + i]) / 100);
+            if (bounds[0] >= bounds[2] || bounds[1] >= bounds[3])
+              throw Error("右边界须在左边界右侧，下边界须在上边界下方。");
+            mutate(() => {
+              c.mask = { space: "post_fit_clip", rect: bounds };
+            });
+            draw();
+          },
+        );
+        dialog.querySelector("[data-clear-mask]").onclick = () => {
+          mutate(() => {
+            delete c.mask;
+          });
+          dialog.close();
+          draw();
+        };
       },
       keyframe: keyframeForm,
       "remove-keyframe": (b) => {

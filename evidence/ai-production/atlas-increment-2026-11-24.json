@@ -1,0 +1,80 @@
+{
+  "scope": "Targeted original Atlas quality gates, local synthetic fixtures. Per-gate assessment in docs/atlas-increment-2026-11-24.md.",
+  "source_sha256": "65a0e6e7f19b0e087be4ff0adcd1166c7073211caa5988f739df05b47971dee4",
+  "utc_started": "2026-11-24T15:50:54.288065+00:00",
+  "python": "3.12.14",
+  "cases": [
+    {
+      "unittest_id": "tests.test_media.MediaIntegrationTests.test_rect_mask_after_rotation_and_cover_is_applied_once_to_decoded_pixels",
+      "seconds": 2.235,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_creative.CreativeTests.test_reposted_sources_conflicts_expiry_and_hypothesis_gate",
+      "seconds": 0.319,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_creative.CreativeTests.test_director_proposals_comparison_and_approval_share_pinned_facts",
+      "seconds": 0.055,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_source_changes.SourceChangeTests.test_scoped_manifest_separates_origin_removal_rights_and_historical_posts",
+      "seconds": 0.115,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_source_changes.SourceChangeTests.test_revision_review_dedup_late_conflict_and_per_entry_failure",
+      "seconds": 0.044,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_voice_studio.VoiceStudioTests.test_rhythm_preserves_speech_and_lock_and_uses_a_real_marked_audio_clock",
+      "seconds": 2.337,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_narration.NarrationTests.test_pcm_dedup_tempo_current_voice_rights_and_unknown_language",
+      "seconds": 0.778,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_narration.NarrationTests.test_corrected_price_reading_preserves_currency_numbers_and_uses_actual_tts",
+      "seconds": 0.264,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_asset_families.AssetFamilyTests.test_decoded_frames_near_review_and_retirement_recompute_family_pressure",
+      "seconds": 3.302,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_score_policies.ScorePolicyTests.test_freeze_activate_consume_replay_and_rollback",
+      "seconds": 0.109,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_asset_lifecycle.AssetLifecycleTests.test_cold_restore_preserves_refs_alias_and_index_and_rechecks_bytes_rights",
+      "seconds": 0.278,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_comment_feedback.CommentFeedbackTests.test_independent_body_and_classification_revisions",
+      "seconds": 0.056,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_post_reviews.PostReviewTests.test_late_backfill_pins_new_observation_and_keeps_old_report",
+      "seconds": 0.051,
+      "passed": true
+    },
+    {
+      "unittest_id": "tests.test_soundtrack.SoundtrackTests.test_licensed_stock_and_scope_expiry_no_music_and_platform_handoff",
+      "seconds": 0.942,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "utc_finished": "2026-11-24T15:51:05.172442+00:00"
+}

@@ -122,6 +122,18 @@ def save_markers(body: ManualRhythm, request: Request, actor: Actor = Depends(cu
             if music
             else save(actor, "Music", body.project_id, data, [ref(audio)])
         )
+        save(
+            actor,
+            "Audit",
+            body.project_id,
+            {
+                "name": "音轨人工打点",
+                "action": "music.manual_markers",
+                "music_hash": changed["hash"],
+                "music_id": changed["id"],
+            },
+            [ref(changed), ref(audio)],
+        )
         return {"music": changed}
 
     return ok(on_request("music-markers", body, actor, apply), request)

@@ -1,3 +1,12 @@
+import { postReview } from "./post-reviews.js";
+import { compare, families } from "./asset-families.js";
+import { openNarration, openReading } from "./narration.js";
+import { feedback } from "./comment-feedback.js";
+import { cooldown, exploration, tiers } from "./asset-lifecycle.js";
+import { scorePolicyActions } from "./score-policies.js";
+import { openAssetSearch } from "./asset-search.js";
+import { openVoiceStudio } from "./voice-studio.js";
+import { openSoundtrack } from "./soundtrack.js";
 import {
   esc,
   field,
@@ -300,9 +309,13 @@ function reserve(ctx) {
 }
 function score(ctx) {
   const pid = ctx.requireProject();
-  form(
+  const dialog = form(
     "评价素材",
     pick(ctx, "AssetVersion", "素材", "asset_version_id", "选择素材版本") +
+      select("评分权重", "weight_mode", [
+        ["policy", "使用项目活动策略"],
+        ["manual", "使用本次自定义权重"],
+      ]) +
       Object.entries(DIMENSIONS)
         .map(
           ([k, v]) =>
@@ -322,9 +335,12 @@ function score(ctx) {
           dimensions: Object.fromEntries(
             keys.map((k) => [k, v[k] === "" ? null : Number(v[k])]),
           ),
-          weights: Object.fromEntries(
-            keys.map((k) => [k, Number(v["weight_" + k])]),
-          ),
+          weights:
+            v.weight_mode === "manual"
+              ? Object.fromEntries(
+                  keys.map((k) => [k, Number(v["weight_" + k])]),
+                )
+              : null,
           evidence_refs: v.evidence ? [v.evidence] : [],
         });
       await done(
@@ -335,6 +351,16 @@ function score(ctx) {
       );
     },
   );
+  const mode = dialog.querySelector('[name="weight_mode"]');
+  function syncWeightInputs() {
+    for (const input of dialog.querySelectorAll('[name^="weight_"]')) {
+      if (input === mode) continue;
+      input.disabled = mode.value !== "manual";
+      input.closest("label").hidden = input.disabled;
+    }
+  }
+  mode.onchange = syncWeightInputs;
+  syncWeightInputs();
 }
 function align(ctx) {
   const pid = ctx.requireProject();
@@ -463,6 +489,9 @@ function replay(ctx) {
   );
 }
 const actions = {
+  ...scorePolicyActions,
+  M04: ["评论与洞察", feedback],
+  M09: ["比较帖子与登记改版假设", postReview],
   P02: ["导入商品 CSV", products],
   T01: ["记录热点来源", trends],
   L02: ["标注镜头主体", tags],
@@ -470,8 +499,32 @@ const actions = {
   L05: ["标注剪辑用途", tags],
   L06: ["标注镜头", tags],
   S01: ["检索素材", search],
+  S03: ["对照素材区间", compare],
+  S04: ["管理素材族", families],
+  S02: ["检索素材与镜头标注", openAssetSearch],
+  S05: ["构建或回退索引", openAssetSearch],
+  D05: ["核对素材索引", openAssetSearch],
+  V02: ["校正英文商品读法", openReading],
+  V03: ["生成或导入口播", openNarration],
+  V06: ["对齐口播与画面", openVoiceStudio],
+  V07: ["调整声画剪点", openVoiceStudio],
+  V08: ["复核失效区间", openVoiceStudio],
+  V09: ["核对声画证据", openVoiceStudio],
+  B03: ["核对配乐许可", (ctx) => openSoundtrack(ctx, "B03")],
+  B04: ["剪配音乐", (ctx) => openSoundtrack(ctx, "B04")],
+  B05: ["调整混音", (ctx) => openSoundtrack(ctx, "B05")],
+  B06: ["检查响度", (ctx) => openSoundtrack(ctx, "B06")],
+  N04: [
+    "比较制作方案",
+    () => {
+      location.hash = "#production/variants";
+    },
+  ],
   U02: ["预留或释放镜头", reserve],
   U03: ["评价素材", score],
+  U04: ["核对使用压力", cooldown],
+  U05: ["编排探索配额", exploration],
+  U06: ["归档与复苏", tiers],
   U07: ["评价素材", score],
   V04: ["人工标记词句时码", align],
   V05: ["编辑词句锚点", align],

@@ -48,7 +48,7 @@ CAPTION_KEYS = {
     "language",
     "timing_precision",
 }
-VISUAL = {"x", "y", "volume", "opacity", "fit", "keyframes", "locked"}
+VISUAL = {"mask", "width", "height", "x", "y", "volume", "opacity", "fit", "keyframes", "locked"}
 CLIP_KEYS = VISUAL | {
     "id",
     "asset_id",
@@ -435,6 +435,9 @@ def export_document(project_id, actor, item):
                     "opacity": 1,
                     "fit": "contain",
                     "keyframes": {},
+                    "mask": None,
+                    "width": None,
+                    "height": None,
                     "locked": False,
                 }.items()
             ):

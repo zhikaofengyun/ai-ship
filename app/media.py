@@ -39,6 +39,7 @@ from fastapi.responses import FileResponse, Response
 from starlette.concurrency import run_in_threadpool
 
 from app import transitions
+from .clip_mask import alpha_filter, normalize_mask
 from app.auth import current_actor, require_write
 from app.store import DomainError, get_store
 
@@ -415,7 +416,12 @@ def blob_path(blob: dict, tenant_id: str) -> Path:
 
 
 def check_current_media_rights(
-    store: Any, actor: Any, record: dict, purpose: str = "process"
+    store: Any,
+    actor: Any,
+    record: dict,
+    purpose: str = "process",
+    *,
+    require_processing_evidence: bool = False,
 ) -> None:
     """Check current restrictions along *actual pinned* inputs, without granting a license.
 
@@ -446,6 +452,7 @@ def check_current_media_rights(
         "provenance_sources": {"Source"},
     }
     checked_at = datetime.now(timezone.utc)
+    verified_sources = set()
 
     def boundary(value: Any, field: str, owner: dict) -> datetime | None:
         if value is None or value == "":
@@ -500,6 +507,17 @@ def check_current_media_rights(
                     403,
                     {"record_id": current["id"]},
                 )
+            if (
+                pinned["kind"] == "Grant"
+                and pinned["data"].get("grant_protocol") == "soundtrack_license_v1"
+                and pinned["version"] != current["version"]
+            ):
+                raise DomainError(
+                    "MUSIC_LICENSE_CHANGED",
+                    "所用音乐的许可版本已经改变，请重新核对用途后采用。",
+                    409,
+                    {"record_id": current["id"]},
+                )
             if current["kind"] in {"Source", "Grant"}:
                 validity = data.get("validity")
                 validity = validity if isinstance(validity, dict) else {}
@@ -542,6 +560,20 @@ def check_current_media_rights(
                         {"record_id": current["id"]},
                     )
 
+                if require_processing_evidence and current["kind"] == "Source":
+                    if (
+                        not isinstance(scope, dict)
+                        or scope.get("allowed") is not True
+                        or not scope.get("evidence")
+                    ):
+                        raise DomainError(
+                            "PROCESSING_SCOPE_UNVERIFIED",
+                            "来源缺少带依据的本地制作用途授权。",
+                            409,
+                            {"source_id": current["id"]},
+                        )
+                    verified_sources.add(current["id"])
+
         # Frozen creative dependencies stay frozen. Rights objects use their
         # current references so that a later attached grant cannot be bypassed.
         owner = current if current["kind"] in {"Source", "Grant"} else pinned
@@ -578,6 +610,9 @@ def check_current_media_rights(
                 pending.append((target, depth + 1))
                 queued.add(target_identity)
 
+    if require_processing_evidence and not verified_sources:
+        raise DomainError("PROCESSING_SCOPE_UNVERIFIED", "素材缺少可核实的来源及用途授权。", 409)
+
 
 def resolve_media(
     store: Any,
@@ -595,6 +630,8 @@ def resolve_media(
         raise DomainError("PROJECT_SCOPE_MISMATCH", "媒体属于不同项目，请显式复制或授权后使用", 403)
     if version_id and record["data"].get("asset_id") != media_id:
         raise DomainError("INVALID_MEDIA_REFERENCE", "素材版本不属于选定素材", 422)
+    if record["data"].get("storage_tier") in {"local_cold", "quarantine"}:
+        raise DomainError("ASSET_OFFLINE", "素材已冷藏或隔离，请先核权并恢复在线。", 409)
     check_current_media_rights(store, actor, record, purpose)
     blob_id = record["data"].get("blob_location_id")
     if not blob_id:
@@ -1381,7 +1418,6 @@ def normalize_clip(
             "gamma",
             "sharpness",
             "scale",
-            "mask",
         )
         if key in clip
     ]
@@ -1452,6 +1488,7 @@ def normalize_clip(
         "fit": clip.get("fit", "contain"),
         "audio_only": audio_only,
         "transition_in": transition,
+        "mask": normalize_mask(clip.get("mask"), audio_only),
         "keyframes": normalize_keyframes(clip.get("keyframes"), duration),
     }
 
@@ -1553,6 +1590,10 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
         raise DomainError("TIMELINE_NOT_LOCKED", "渲染前请冻结当前时间线版本", 409)
     # Opening literals bind the original accepted timeline and survive later editor revisions.
     first_revision = store.get(timeline["id"], actor.tenant_id, version=1)
+    if first_revision["data"].get("voice_alignment_plan"):
+        from .voice_studio import verify_timeline_alignment
+
+        verify_timeline_alignment(actor, first_revision, timeline)
     opening_text = first_revision["data"].get("opening_text")
     if opening_text is not None and (
         not isinstance(opening_text, str)
@@ -1714,13 +1755,16 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
                         else f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}"
                     )
                     opacity_filter = f"colorchannelmixer=aa={clip['opacity']:.8f}"
+                    alpha_expr = str(clip["opacity"])
                     if clip["keyframes"].get("opacity"):
                         alpha_expr = keyframe_expression(clip["keyframes"]["opacity"], "T")
                         opacity_filter = (
                             f"geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='alpha(X,Y)*({alpha_expr})'"
                         )
+                    if clip["mask"]:
+                        opacity_filter = alpha_filter(clip["mask"], alpha_expr)
                     filters.append(
-                        f"[{index}:v:0]trim=start={start:.9f}:end={end:.9f},setpts=(PTS-STARTPTS)/{clip['speed']:.9f},{fit_filter},setsar=1,fps={fps_expr},format=rgba,{opacity_filter}{transitions.video_filters(clip)},setpts=PTS+{position:.9f}/TB[v{index}]"
+                        f"[{index}:v:0]trim=start={start:.9f}:end={end:.9f},setpts=(PTS-STARTPTS)/{clip['speed']:.9f},format=rgba,{fit_filter},setsar=1,fps={fps_expr},format=rgba,{opacity_filter}{transitions.video_filters(clip)},setpts=PTS+{position:.9f}/TB[v{index}]"
                     )
                     next_label = f"stack{index}"
                     x_expr = (
@@ -1831,6 +1875,10 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
         segments = render_time_segments(all_clips, duration)
         with store.transaction():
             check_revision(store.get(timeline["id"], actor.tenant_id), timeline["version"])
+            if first_revision["data"].get("voice_alignment_plan"):
+                from .voice_studio import verify_timeline_alignment
+
+                verify_timeline_alignment(actor, first_revision, timeline)
             for clip in all_clips:
                 resolve_media(store, actor, clip["record"]["id"], project_id=project_id)
             blob = store.create(
@@ -1915,6 +1963,9 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
                                 "x",
                                 "y",
                                 "fit",
+                                "width",
+                                "height",
+                                "mask",
                                 "keyframes",
                             )
                         }
@@ -2474,6 +2525,7 @@ def capabilities() -> dict:
             "audio_gain",
             "loudness_normalization",
             "multi_track_overlay",
+            "post_fit_clip_rectangular_alpha_mask",
             "two_source_transitions_with_audio_crossfade",
             "linear_opacity_xy_keyframes",
             "audio_mix",
@@ -2490,7 +2542,7 @@ def capabilities() -> dict:
             "semantic_voice_alignment",
             "frame_interpolation",
             "nonlinear_or_other_property_keyframes",
-            "masks",
+            "tracked_and_freeform_masks",
             "automatic_fact_verification",
             "automatic_license_verification",
             "complex_transitions",

@@ -804,3 +804,32 @@
 .generation-reference .generation-still {
   max-height: 144px;
 }
+
+.director-index-hits {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+.director-index-hits li,
+.director-index-version {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.director-index-hits small {
+  display: block;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.director-audio-tools {
+  margin-top: 0.75rem;
+}
+.director-audio-tools .director-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

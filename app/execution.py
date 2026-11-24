@@ -52,6 +52,12 @@ HANDLERS = {
         "outputs": {"audio": "Audio"},
         "boundary": "实际解码音轨；无音轨明确阻塞",
     },
+    "V03-R2": {
+        "operation": "narration",
+        "feature_id": "V03",
+        "outputs": {"audio": "Audio", "call": "ToolCall"},
+        "boundary": "以项目内已审核音色和冻结英文脚本进行本地 Flite 合成；试听后另行打点",
+    },
     "V01-R3": {
         "operation": "script",
         "feature_id": "V01",
@@ -110,6 +116,28 @@ _RECIPE_PROPERTIES = {
 }
 _COMMON_ARGS = {"project_id": _REF_INPUT, "expected_revision": {"type": "integer", "minimum": 1}}
 OPERATION_SCHEMAS = {
+    "narration": {
+        "type": "object",
+        "required": ["script", "approval"],
+        "properties": {
+            **_COMMON_ARGS,
+            **{
+                k: {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "string"},
+                        "version": {"type": "integer", "minimum": 1},
+                        "kind": {"const": kind},
+                    },
+                    "required": ["id", "version"],
+                    "additionalProperties": False,
+                }
+                for k, kind in (("script", "Script"), ("approval", "Approval"))
+            },
+            "tempo": {"type": "number", "minimum": 0.5, "maximum": 2, "title": "语速倍率"},
+        },
+        "additionalProperties": False,
+    },
     "transform": {
         "type": "object",
         "required": ["asset_id", "recipe"],
@@ -223,6 +251,10 @@ OPERATION_SCHEMAS = {
     },
 }
 INPUT_SCHEMAS = {
+    "narration": {
+        "script": {"kinds": ["Script"], "value": "ref"},
+        "approval": {"kinds": ["Approval"], "value": "ref"},
+    },
     "transform": {"asset_id": {"kinds": ["Asset", "AssetVersion"], "value": "id"}},
     "extract_audio": {"asset_id": {"kinds": ["Asset", "AssetVersion", "Audio"], "value": "id"}},
     "detect_shots": {"asset_id": {"kinds": ["Asset", "AssetVersion"], "value": "id"}},
@@ -572,6 +604,17 @@ def _call_handler(store, actor, run, node, args, input_refs):
                 "此工作流路线产出 AssetVersion；独立音频变换请使用音频处理接口。",
             )
         result = media.transform_asset(store, actor, args["asset_id"], args)
+    elif op == "narration":
+        from .narration import produce
+        from .selection import ChosenVersion
+
+        def pinned(key):
+            return ChosenVersion(id=args[key]["id"], version=args[key]["version"])
+
+        with store.transaction():
+            result = produce(
+                actor, run["project_id"], pinned("script"), pinned("approval"), args.get("tempo", 1)
+            )
     elif op == "extract_audio":
         if not args.get("asset_id"):
             raise DomainError("INPUT_REQUIRED", "提音节点需要 asset_id 版本绑定。")

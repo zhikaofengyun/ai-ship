@@ -864,7 +864,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "带类型端口的静态 DAG 验证、画布配置、10 条路线的本地顺序执行。",
+            "operable_scope": "带类型端口的静态 DAG 验证、画布配置、11 条路线的本地顺序执行。",
             "limits": "动态规划、子流程/有界循环及其余路线的执行适配器缺失。",
             "direct_endpoints": [
               "POST /api/v1/workflows/validate"
@@ -1314,16 +1314,24 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "人工登记 URL、观察/到期时间与来源证据；拒绝倒置时间窗。",
-            "limits": "没有连接实时趋势源；没有多源独立性推断、自动撤回检测和创意重路由。",
+            "operable_scope": "记录原始发生与观察时间，按已注明的原出处、来源地址及编辑机构合并转载链。冲突、过期和证据不足分别处理，过期热点不能继续创作。",
+            "limits": "来源归属仍依赖人工读回与说明，未接自动采集或出版社的实时更新。",
             "direct_endpoints": [
+              "POST /api/v1/production/creative/verify-trend",
               "POST /api/v1/production/trends"
             ],
             "commands": [],
             "code": [
-              "app/production.py"
+              "app/creative.py",
+              "app/production.py",
+              "web/creative-actions.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_creative.py",
+                "symbol": "CreativeTests.test_reposted_sources_conflicts_expiry_and_hypothesis_gate",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_production.py",
                 "symbol": "ProductionIntegrationTests.test_trend_source_window_and_atomicity",
@@ -1464,22 +1472,36 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "固定项目、可选热点和商品版本，按主题词项匹配受众与目标，保留原始观察、假设与跨市场风险。常青路线独立可用。",
+            "limits": "热度未量化，尚缺语义模型与多来源独立核验。",
+            "direct_endpoints": [
+              "POST /api/v1/production/creative/match"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
+              "app/creative.py",
               "app/schemas.py",
-              "web/controls.js"
+              "web/controls.js",
+              "web/creative-actions.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_creative.py",
+                "symbol": "CreativeTests.test_reposted_sources_conflicts_expiry_and_hypothesis_gate",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_creative.py",
+                "symbol": "CreativeTests.test_scoped_match_versions_and_evergreen_fallback",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/browser_creative.py",
+                "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -1606,22 +1628,31 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "人工导演提交二至六个结构候选，比较钩子、叙事、镜头族和声音差异，原子保存每条简报及脚本。",
+            "limits": "未实联多角色独立生成、成功案例检索和内容语义差异模型。",
+            "direct_endpoints": [
+              "POST /api/v1/production/creative/directions"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
+              "app/creative.py",
               "app/schemas.py",
-              "web/controls.js"
+              "web/controls.js",
+              "web/creative-actions.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_creative.py",
+                "symbol": "CreativeTests.test_director_proposals_comparison_and_approval_share_pinned_facts",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/browser_creative.py",
+                "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -1759,22 +1790,31 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "以选定简报为参照，分项比较开头、叙事、镜头族、声音及用词，显示命中位置、阈值与比较覆盖。",
+            "limits": "仅对所选结构和文字取证，未自动提取历史成片指纹或判定平台原创性。",
+            "direct_endpoints": [
+              "POST /api/v1/production/creative/preflight"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
+              "app/creative.py",
               "app/schemas.py",
-              "web/controls.js"
+              "web/controls.js",
+              "web/creative-actions.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_creative.py",
+                "symbol": "CreativeTests.test_director_proposals_comparison_and_approval_share_pinned_facts",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/browser_creative.py",
+                "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -1928,6 +1968,11 @@
               "web/selection-actions.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_creative.py",
+                "symbol": "CreativeTests.test_director_proposals_comparison_and_approval_share_pinned_facts",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_selection.py",
                 "symbol": "SelectionTests.test_creative_choice_retains_alternatives_and_exact_approval",
@@ -2985,22 +3030,37 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "按项目来源清单区分未找到、原出处删除、内容改版、授权到期和撤权；逐项保存回执，冲突或迟到信号保留，识别仍引用旧版的排程并在发布前复核。",
+            "limits": "远端 Webhook、定期条件查询以及下载中的连接器中止和自动对账尚待联调。",
+            "direct_endpoints": [
+              "POST /api/v1/production/acquisition/changes"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
+              "app/production.py",
               "app/schemas.py",
-              "web/controls.js"
+              "app/source_changes.py",
+              "web/controls.js",
+              "web/source-changes.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_source_changes.py",
+                "symbol": "SourceChangeTests.test_scoped_manifest_separates_origin_removal_rights_and_historical_posts",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_source_changes.py",
+                "symbol": "SourceChangeTests.test_revision_review_dedup_late_conflict_and_per_entry_failure",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/browser_creative.py",
+                "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -7001,17 +7061,26 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "结构化条件加文本匹配，返回实际素材版本与人工标签。",
-            "limits": "没有专门全文索引、拼写/跨语言检索与大规模性能验收。",
+            "operable_scope": "实际项目版本及标注经全文索引或事实回退检索；支持过滤、短词、来源解释与当前用途检查。",
+            "limits": "拼写、跨语言扩展及生产规模检索延迟尚待验收。",
             "direct_endpoints": [
-              "GET /api/v1/production/search"
+              "GET /api/v1/production/search",
+              "POST /api/v1/production/asset-index/query"
             ],
             "commands": [],
             "code": [
+              "app/asset_index.py",
+              "app/index_schema.py",
               "app/media.py",
-              "app/production.py"
+              "app/production.py",
+              "web/asset-search.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_asset_index.py",
+                "symbol": "AssetIndexTests.test_shadow_switch_fallback_incremental_then_rollback",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_production.py",
                 "symbol": "RealMediaCrossDomainTests.test_real_probe_bounds_tags_search_and_audio_anchors",
@@ -7190,17 +7259,26 @@
           "delivered": {
             "status": "generic_framework_only",
             "label": "通用基础/配置",
-            "operable_scope": "明确返回 semantic_search=not_connected；可退回结构化/文本检索。",
-            "limits": "没有向量/混合召回或模型切换索引；不能算语义检索已落地。",
+            "operable_scope": "未接向量模型时查询明确返回字面召回及其降级原因，使用实际全文索引与最新来源事实。",
+            "limits": "语义向量、跨模态召回以及不同嵌入空间的混合排序待实现。",
             "direct_endpoints": [
-              "GET /api/v1/production/search"
+              "GET /api/v1/production/search",
+              "POST /api/v1/production/asset-index/query"
             ],
             "commands": [],
             "code": [
+              "app/asset_index.py",
+              "app/index_schema.py",
               "app/media.py",
-              "app/production.py"
+              "app/production.py",
+              "web/asset-search.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_asset_index.py",
+                "symbol": "AssetIndexTests.test_shadow_switch_fallback_incremental_then_rollback",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_production.py",
                 "symbol": "RealMediaCrossDomainTests.test_real_probe_bounds_tags_search_and_audio_anchors",
@@ -7348,17 +7426,30 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "真实文件 SHA-256 精确去重。",
-            "limits": "没有感知近重复、跨剪辑重复和可解释阈值评测。",
+            "operable_scope": "实测 SHA-256 字节身份、所选区间的画面亮度与颜色、短时音频差异。近似命中提交人工复核。",
+            "limits": "稀疏采样与有界候选对未覆盖全库视频近重复发现、完整剪辑重排或阈值泛化。",
             "direct_endpoints": [
-              "GET /api/v1/production/search"
+              "GET /api/v1/production/search",
+              "POST /api/v1/production/asset-families/compare"
             ],
             "commands": [],
             "code": [
+              "app/asset_families.py",
               "app/media.py",
-              "app/production.py"
+              "app/production.py",
+              "web/asset-families.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_asset_families.py",
+                "symbol": "AssetFamilyTests.test_decoded_frames_near_review_and_retirement_recompute_family_pressure",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_asset_families.py",
+                "symbol": "AssetFamilyTests.test_same_bytes_and_same_source_distinct_from_semantic_and_partial_ranges",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_media.py",
                 "symbol": "MediaIntegrationTests.test_import_probe_original_dedup_and_relative_path",
@@ -7514,22 +7605,31 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "可核对同源制作谱系，也可人工将素材版本归入语义族并退役关系；活跃素材族参与冷却计算。",
+            "limits": "没有接入可训练的语义聚类模型、自动层级划分或大规模分群评测。",
+            "direct_endpoints": [
+              "POST /api/v1/production/asset-families/group"
+            ],
             "commands": [],
             "code": [
+              "app/asset_families.py",
               "app/catalog.py",
               "app/schemas.py",
+              "web/asset-families.js",
               "web/controls.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_asset_families.py",
+                "symbol": "AssetFamilyTests.test_decoded_frames_near_review_and_retirement_recompute_family_pressure",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_asset_families.py",
+                "symbol": "AssetFamilyTests.test_same_bytes_and_same_source_distinct_from_semantic_and_partial_ranges",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -7677,22 +7777,33 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "实际生成项目全文索引快照，支持影子及增量构建、基于修订号切换、回退和构建失败隔离。",
+            "limits": "未验证生产规模下的动态多向量空间迁移、异地索引回填与并行性能。",
+            "direct_endpoints": [
+              "POST /api/v1/production/asset-index/build",
+              "POST /api/v1/production/asset-index/switch"
+            ],
             "commands": [],
             "code": [
+              "app/asset_index.py",
               "app/catalog.py",
+              "app/index_schema.py",
               "app/schemas.py",
+              "web/asset-search.js",
               "web/controls.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_asset_index.py",
+                "symbol": "AssetIndexTests.test_shadow_switch_fallback_incremental_then_rollback",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_asset_index.py",
+                "symbol": "AssetIndexTests.test_switch_race_stale_source_and_atomic_failure_keep_previous",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -8550,22 +8661,27 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "按作用范围、使用历史、账号与实际指标判断冷却或排除；记录依据和数据覆盖。",
+            "limits": "跨平台同人受众重叠与个体曝光缺少真实观测。",
+            "direct_endpoints": [
+              "POST /api/v1/production/assets/cooldown",
+              "POST /api/v1/production/assets/post-mapping"
+            ],
             "commands": [],
             "code": [
+              "app/asset_lifecycle.py",
               "app/catalog.py",
               "app/schemas.py",
+              "web/asset-lifecycle.js",
               "web/controls.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_asset_lifecycle.py",
+                "symbol": "AssetLifecycleTests.test_family_pressure_distinguishes_reservations_previews_and_accounts",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -8693,22 +8809,29 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "对候选执行当前用途检查，按配置、质量阈值和探索比例生成可追溯的有界选择。",
+            "limits": "缺少长期生产流量的策略探索、增益验证及完整自动沉淀机制。",
+            "direct_endpoints": [
+              "POST /api/v1/production/assets/exploration",
+              "POST /api/v1/production/assets/processing-evidence"
+            ],
             "commands": [],
             "code": [
+              "app/asset_lifecycle.py",
+              "app/auto_edits.py",
               "app/catalog.py",
               "app/schemas.py",
-              "web/controls.js"
+              "web/asset-lifecycle.js",
+              "web/controls.js",
+              "web/project-production.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_asset_lifecycle.py",
+                "symbol": "AssetLifecycleTests.test_exploration_preserves_floor_and_scoped_time_limited_exceptions",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -8836,22 +8959,26 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "将项目素材版本降级或转入带校验的本地冷存，恢复时复核当前许可及字节摘要。",
+            "limits": "跨对象存储、远端删除与灾难恢复的多落点核销待验。",
+            "direct_endpoints": [
+              "POST /api/v1/production/assets/tier"
+            ],
             "commands": [],
             "code": [
+              "app/asset_lifecycle.py",
               "app/catalog.py",
               "app/schemas.py",
+              "web/asset-lifecycle.js",
               "web/controls.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_asset_lifecycle.py",
+                "symbol": "AssetLifecycleTests.test_cold_restore_preserves_refs_alias_and_index_and_rechecks_bytes_rights",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -9344,22 +9471,26 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "固定原稿及商品价格片段，为英文本地配音保存币种及数字一致的读法修订，可继续合成并保留旧稿。",
+            "limits": "跨语言通用翻译、口音词典和全面的语义漂移检查待验。",
+            "direct_endpoints": [
+              "POST /api/v1/production/narration/readings"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
-              "web/controls.js"
+              "app/script_readings.py",
+              "web/controls.js",
+              "web/narration.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_narration.py",
+                "symbol": "NarrationTests.test_corrected_price_reading_preserves_currency_numbers_and_uses_actual_tts",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -9399,7 +9530,7 @@
               "label": "本地TTS",
               "suggested_when": "许可和资源满足",
               "directly_selectable_in_source": true,
-              "registered_local_workflow_handler": false,
+              "registered_local_workflow_handler": true,
               "source_pointer": "/features/51/routes/1",
               "source_fields_missing": []
             },
@@ -9537,18 +9668,28 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "可导入真实音频并从素材提取音轨。",
-            "limits": "没有接通 TTS、声音克隆授权/模型参数实测或口音风格质量验收。",
+            "operable_scope": "导入或提取实音频，也可由已审核的本机 Flite 声音与冻结英文脚本生成 PCM WAV，工作流可直接接收 Audio 与 ToolCall。",
+            "limits": "多语言、第三方服务、声音克隆授权、口音风格和内容审听仍需单独验收。",
             "direct_endpoints": [
               "POST /api/v1/media/import",
-              "POST /api/v1/media/{asset_id}/extract-audio"
+              "POST /api/v1/media/{asset_id}/extract-audio",
+              "POST /api/v1/production/narration/source-reviews",
+              "POST /api/v1/production/narration/synthesize"
             ],
             "commands": [],
             "code": [
               "app/commands.py",
-              "app/production.py"
+              "app/execution.py",
+              "app/narration.py",
+              "app/production.py",
+              "web/narration.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_narration.py",
+                "symbol": "NarrationTests.test_dag_freezes_script_and_review_and_produces_playable_audio",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_media.py",
                 "symbol": "MediaIntegrationTests.test_real_waveform_and_audio_extract",
@@ -10059,22 +10200,29 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "根据人工核对的语义锚与实帧证据构建候选与缺口，验证来源、时长和商品约束，采用后形成真实剪辑与字幕。",
+            "limits": "未接自动多模态识别与强制对齐，不能推断任意视频的商品或口播语义。",
+            "direct_endpoints": [
+              "POST /api/v1/production/voice-studio/adopt",
+              "POST /api/v1/production/voice-studio/maps",
+              "POST /api/v1/production/voice-studio/observations",
+              "POST /api/v1/production/voice-studio/plans"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
-              "web/controls.js"
+              "app/voice_studio.py",
+              "web/controls.js",
+              "web/voice-studio.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_voice_studio.py",
+                "symbol": "VoiceStudioTests.test_actual_audio_clock_counterexample_clip_audio_caption_render_and_idempotency",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -10212,22 +10360,27 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "在有证据的语音空隙、镜头可延伸范围及人工锁内，用采样时钟按节奏标记、手动位置或语义间隙选择切点。",
+            "limits": "未实现自动词级识别和跨音频风格的主观节奏验收。",
+            "direct_endpoints": [
+              "POST /api/v1/production/voice-studio/rhythm"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
-              "web/controls.js"
+              "app/voice_rhythm.py",
+              "app/voice_studio.py",
+              "web/controls.js",
+              "web/voice-studio.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_voice_studio.py",
+                "symbol": "VoiceStudioTests.test_rhythm_preserves_speech_and_lock_and_uses_a_real_marked_audio_clock",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -10380,20 +10533,28 @@
             }
           ],
           "delivered": {
-            "status": "generic_framework_only",
-            "label": "通用基础/配置",
-            "operable_scope": "通用字段/半开区间依赖影响查询、版本引用可复用。",
-            "limits": "未实现声音变化分类→实际音频范围重对齐→字幕/混音重验的完整链路。",
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "固定声音与脚本版本；变化导致旧绑定重新核查。可局部重规划、改写或生成补材任务，保留旧版。",
+            "limits": "未完整覆盖所有显示样式变更、跨语言重配及全链字幕混音重算。",
             "direct_endpoints": [
               "POST /api/v1/dependencies/impact",
-              "POST /api/v1/parameters/resolve"
+              "POST /api/v1/parameters/resolve",
+              "POST /api/v1/production/voice-studio/repair"
             ],
             "commands": [],
             "code": [
               "app/commands.py",
-              "app/production.py"
+              "app/production.py",
+              "app/voice_studio.py",
+              "web/voice-studio.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_voice_studio.py",
+                "symbol": "VoiceStudioTests.test_equal_duration_audio_changes_require_new_attestation_and_changed_clip_blocks_render",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_core.py",
                 "symbol": "CoreStoreTests.test_dependency_invalidation_uses_fields_and_half_open_ranges",
@@ -10641,22 +10802,29 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "保存语义、画面、声音时码和商品证据；区分未计时、人工核验、反证及冲突，固定绑定实际版本。",
+            "limits": "多模型自动证据裁决、跨语种词级审听及全部自动识别尚缺。",
+            "direct_endpoints": [
+              "POST /api/v1/production/voice-studio/adopt",
+              "POST /api/v1/production/voice-studio/maps",
+              "POST /api/v1/production/voice-studio/observations",
+              "POST /api/v1/production/voice-studio/plans"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
-              "web/controls.js"
+              "app/voice_studio.py",
+              "web/controls.js",
+              "web/voice-studio.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_voice_studio.py",
+                "symbol": "VoiceStudioTests.test_actual_audio_clock_counterexample_clip_audio_caption_render_and_idempotency",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -11171,22 +11339,26 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "对指定原音频、市场、用途和到期时间做人工许可核验，保存授权版本。无音乐或平台附曲交接可独立选择。",
+            "limits": "第三方平台真实附曲可用性、远端版权确认和商业账号实联待验。",
+            "direct_endpoints": [
+              "POST /api/v1/production/soundtrack/rights"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
-              "web/controls.js"
+              "app/soundtrack.py",
+              "web/controls.js",
+              "web/soundtrack.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_soundtrack.py",
+                "symbol": "SoundtrackTests.test_licensed_stock_and_scope_expiry_no_music_and_platform_handoff",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -11337,22 +11509,28 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "实际编排已授权音乐片段、剪拼生成新的 WAV，入库可复用并保留授权和来源版本。",
+            "limits": "提示词生成全新音乐、生成模型许可与旋律相似性评审待验。",
+            "direct_endpoints": [
+              "POST /api/v1/production/soundtrack/adopt",
+              "POST /api/v1/production/soundtrack/mixes",
+              "POST /api/v1/production/soundtrack/remove-music"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
-              "web/controls.js"
+              "app/soundtrack.py",
+              "web/controls.js",
+              "web/soundtrack.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_soundtrack.py",
+                "symbol": "SoundtrackTests.test_stock_arrange_adopt_without_duplication_deliver_measure_and_revoke",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -11550,16 +11728,31 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "真实音轨混合、增益/延时、峰值限制及可选 loudnorm；全片技术解码。",
-            "limits": "没有自动 ducking/语义卡点、听感评测、跨段尾音分析和完整缺陷检测。",
+            "operable_scope": "实做多轨入出点、增益、错位、淡入淡出、对白触发音乐压低及响度检查，可写入剪辑并导出。",
+            "limits": "跨规格响度策略、跨段尾音及内容听感仍需专门评测。",
             "direct_endpoints": [
-              "POST /api/v1/media/render"
+              "POST /api/v1/media/render",
+              "POST /api/v1/production/soundtrack/adopt",
+              "POST /api/v1/production/soundtrack/mixes",
+              "POST /api/v1/production/soundtrack/remove-music"
             ],
             "commands": [],
             "code": [
-              "app/media.py"
+              "app/media.py",
+              "app/soundtrack.py",
+              "web/soundtrack.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_soundtrack.py",
+                "symbol": "SoundtrackTests.test_stock_arrange_adopt_without_duplication_deliver_measure_and_revoke",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_soundtrack.py",
+                "symbol": "SoundtrackTests.test_ducking_changes_only_music_under_dialogue_and_periods_are_preserved",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_media.py",
                 "symbol": "MediaIntegrationTests.test_actual_multitrack_render_manifest_package_and_qc_boundary",
@@ -11698,16 +11891,25 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "真实音轨混合、增益/延时、峰值限制及可选 loudnorm；全片技术解码。",
-            "limits": "没有自动 ducking/语义卡点、听感评测、跨段尾音分析和完整缺陷检测。",
+            "operable_scope": "成片音频实测和人工听审绑定精确文件与版本，混音采用、替换和移除可追溯。",
+            "limits": "唇音语义同步、动作主轴与全部缺陷的自动识别尚待验收。",
             "direct_endpoints": [
-              "POST /api/v1/media/render"
+              "POST /api/v1/media/render",
+              "POST /api/v1/production/soundtrack/inspect-output",
+              "POST /api/v1/production/soundtrack/listen-review"
             ],
             "commands": [],
             "code": [
-              "app/media.py"
+              "app/media.py",
+              "app/soundtrack.py",
+              "web/soundtrack.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_soundtrack.py",
+                "symbol": "SoundtrackTests.test_stock_arrange_adopt_without_duplication_deliver_measure_and_revoke",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_media.py",
                 "symbol": "MediaIntegrationTests.test_actual_multitrack_render_manifest_package_and_qc_boundary",
@@ -12489,22 +12691,33 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "生成和比较真实分镜变体、审查素材族与使用历史，遵守人工锁、配额及商品约束，选定版本可继续渲染。",
+            "limits": "跨平台疲劳观测、长期全库近重复阈值和商业作品综合创意验收尚缺。",
+            "direct_endpoints": [
+              "POST /api/v1/production/variants/{run_id}",
+              "POST /api/v1/production/variants/{run_id}/{family_id}/select"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
-              "web/controls.js"
+              "app/variant_fingerprints.py",
+              "app/variants.py",
+              "web/controls.js",
+              "web/variant-panel.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_variants.py",
+                "symbol": "StoryboardVariantTests.test_actual_picture_text_audio_structure_family_choose_render_and_decode",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_variants.py",
+                "symbol": "StoryboardVariantTests.test_locked_slot_manual_rewrite_and_repeat_history",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -14082,8 +14295,8 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "有限关键帧、图层构图外，五种相邻镜头转场具有实时预览、FFmpeg 双源渲染、音量交叉淡化和来源贡献。",
-            "limits": "任意蒙版/跟踪/非线性曲线、外部插件和六层继承控制的完整视觉效果仍未验收。",
+            "operable_scope": "有限关键帧、图层与五种相邻镜头转场；旋转并适配画幅后可施加归一化矩形遮罩，实际解码像素可核。",
+            "limits": "任意轮廓、运动跟踪、非线性曲线和六层继承的综合验收待补。",
             "direct_endpoints": [
               "POST /api/v1/media/render",
               "POST /api/v1/projects/{project_id}/timeline-exchange/export",
@@ -14092,6 +14305,7 @@
             ],
             "commands": [],
             "code": [
+              "app/clip_mask.py",
               "app/commands.py",
               "app/media.py",
               "app/timeline_exchange.py",
@@ -14100,6 +14314,11 @@
               "web/editor.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_media.py",
+                "symbol": "MediaIntegrationTests.test_rect_mask_after_rotation_and_cover_is_applied_once_to_decoded_pixels",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_media.py",
                 "symbol": "MediaIntegrationTests.test_keyframe_render_changes_actual_frame_pixels",
@@ -20212,22 +20431,34 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "经授权人工导入帖子评论摘录，独立管理正文与分类修订，按可用权限读取、汇总并在删除时清除正文。",
+            "limits": "平台 API 连续采集、官方导出格式适配、多语自动分类及代表性验证待验。",
+            "direct_endpoints": [
+              "GET /api/v1/production/comment-feedback/{project_id}/summary",
+              "GET /api/v1/production/comment-feedback/{project_id}/{comment_id}/body",
+              "POST /api/v1/production/comment-feedback/classify",
+              "POST /api/v1/production/comment-feedback/observe"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
+              "app/comment_feedback.py",
               "app/schemas.py",
+              "web/comment-feedback.js",
               "web/controls.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_comment_feedback.py",
+                "symbol": "CommentFeedbackTests.test_independent_body_and_classification_revisions",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_comment_feedback.py",
+                "symbol": "CommentFeedbackTests.test_deletion_purges_excerpts_and_excludes_judgments",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -21194,22 +21425,32 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "校验并留存 CSV 来源与行级指标修订，以成熟且同口径的数据比较同账号的两个帖子；保存反证、下一次实验与停止规则，迟到数据不会覆盖旧复盘。",
+            "limits": "暂无成片与平台最终媒体的逐段映射、异构模型复盘、生产连接器或逐镜因果归因。",
+            "direct_endpoints": [
+              "POST /api/v1/production/post-reviews/archive",
+              "POST /api/v1/production/post-reviews/compare"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
+              "app/post_reviews.py",
               "app/schemas.py",
-              "web/controls.js"
+              "web/controls.js",
+              "web/post-reviews.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_post_reviews.py",
+                "symbol": "PostReviewTests.test_late_backfill_pins_new_observation_and_keeps_old_report",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_post_reviews.py",
+                "symbol": "PostReviewTests.test_missing_latest_ambiguous_time_and_incomparable_rejected",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -21551,17 +21792,25 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "冻结实验单位/指标/窗口、确定性分组、结果按单位描述比较。",
-            "limits": "没有完整统计序贯护栏、平台投放执行、污染检查和策略适用性晋升验收。",
+            "operable_scope": "冻结实验分组与观察窗口，用项目已有评分策略形成带版本引用的候选权重。",
+            "limits": "全平台试验分配、污染检查与各类模型候选的比较尚缺。",
             "direct_endpoints": [
               "POST /api/v1/production/experiments",
-              "POST /api/v1/production/experiments/{experiment_id}/evaluate"
+              "POST /api/v1/production/experiments/{experiment_id}/evaluate",
+              "POST /api/v1/production/score-policies/propose"
             ],
             "commands": [],
             "code": [
-              "app/production.py"
+              "app/production.py",
+              "app/score_policies.py",
+              "web/score-policies.js"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_score_policies.py",
+                "symbol": "ScorePolicyTests.test_freeze_activate_consume_replay_and_rollback",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_production.py",
                 "symbol": "ProductionIntegrationTests.test_experiment_unit_data_and_honest_effect_boundary",
@@ -21734,21 +21983,36 @@
             }
           ],
           "delivered": {
-            "status": "generic_framework_only",
-            "label": "通用基础/配置",
-            "operable_scope": "仓库测试与故障注入定义、EvaluationSuite 可登记。",
-            "limits": "尚无产品内完整评测套件编排、候选比较、坏样本保留和业务回归准入。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "冻结实际素材评分对和人工偏好，以相同样本计算新旧策略并保存失败用例，缺项、重复与未通过证据限制晋升。",
+            "limits": "当前评测只覆盖项目素材软评分，模型、发布与完整时序策略套件待验。",
+            "direct_endpoints": [
+              "POST /api/v1/production/score-policies/evaluate"
+            ],
             "commands": [
               "CreateEvaluationSuite"
             ],
             "code": [
               "app/api.py",
+              "app/score_policies.py",
               "tests/test_core.py",
               "tests/test_media.py",
-              "tests/test_production.py"
+              "tests/test_production.py",
+              "web/score-policies.js"
             ],
-            "test_definitions": [],
+            "test_definitions": [
+              {
+                "file": "tests/test_score_policies.py",
+                "symbol": "ScorePolicyTests.test_freeze_activate_consume_replay_and_rollback",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_score_policies.py",
+                "symbol": "ScorePolicyTests.test_incomplete_duplicate_or_failed_case_blocks_approval",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              }
+            ],
             "full_business_acceptance": false
           }
         },
@@ -22254,22 +22518,34 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "用历史评分证据比较项目素材评分权重候选，精确批准后原子切换；后续评分消费生效策略。",
+            "limits": "实流量小范围验证、跨模型或工作流晋升及统计推断尚缺。",
+            "direct_endpoints": [
+              "POST /api/v1/production/score-policies/activate",
+              "POST /api/v1/production/score-policies/approve",
+              "POST /api/v1/production/score-policies/evaluate",
+              "POST /api/v1/production/score-policies/propose"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
-              "web/controls.js"
+              "app/score_policies.py",
+              "web/controls.js",
+              "web/score-policies.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_score_policies.py",
+                "symbol": "ScorePolicyTests.test_freeze_activate_consume_replay_and_rollback",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_score_policies.py",
+                "symbol": "ScorePolicyTests.test_incomplete_duplicate_or_failed_case_blocks_approval",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -22415,22 +22691,31 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "人工可回退或停驻，后续评分先核查已采纳的证据。证据无效时只切换到可复核的旧策略，同时保存决策。",
+            "limits": "尚无生产流量劣化监测、外部模型退役实联及跨服务级联回滚。",
+            "direct_endpoints": [
+              "POST /api/v1/production/score-policies/rollback"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
-              "web/controls.js"
+              "app/score_policies.py",
+              "web/controls.js",
+              "web/score-policies.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_score_policies.py",
+                "symbol": "ScorePolicyTests.test_changed_sample_automatically_rolls_back_before_next_score",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_score_policies.py",
+                "symbol": "ScorePolicyTests.test_freeze_activate_consume_replay_and_rollback",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -25048,7 +25333,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "64 实体合同、请求验证、类型 DAG 和 10 路线实际 operation schema。",
+            "operable_scope": "64 实体合同、请求验证、类型 DAG 和 11 路线实际 operation schema。",
             "limits": "原文大量领域字段仍开放；结构合法不证明商品事实/数量/业务意义正确。",
             "direct_endpoints": [],
             "commands": [],
@@ -27848,20 +28133,36 @@
             }
           ],
           "delivered": {
-            "status": "generic_framework_only",
-            "label": "通用基础/配置",
-            "operable_scope": "当前 SQLite 查询/引用索引和通用消费水位。",
-            "limits": "没有向量/全文派生索引的重建切换、完整乱序消费者和迁移水位验证。",
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "对源版本和投影摘要做一致性核对，版本滞后时回读事实；索引切换时重核版本及行数。",
+            "limits": "分布式乱序事件、跨消费者水位与多存储一致性尚需验证。",
             "direct_endpoints": [
               "GET /api/v1/events",
-              "GET /api/v1/events/stream"
+              "GET /api/v1/events/stream",
+              "POST /api/v1/production/asset-index/build",
+              "POST /api/v1/production/asset-index/switch"
             ],
             "commands": [],
             "code": [
               "app/api.py",
-              "app/store.py"
+              "app/asset_index.py",
+              "app/index_schema.py",
+              "app/store.py",
+              "web/asset-search.js"
             ],
-            "test_definitions": [],
+            "test_definitions": [
+              {
+                "file": "tests/test_asset_index.py",
+                "symbol": "AssetIndexTests.test_shadow_switch_fallback_incremental_then_rollback",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_asset_index.py",
+                "symbol": "AssetIndexTests.test_switch_race_stale_source_and_atomic_failure_keep_previous",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              }
+            ],
             "full_business_acceptance": false
           }
         },

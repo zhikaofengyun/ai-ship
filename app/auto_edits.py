@@ -13,6 +13,8 @@ from pydantic import Field, StrictInt, ValidationError, model_validator
 from . import providers
 from .opening_check import opening_requirement, check_proposal
 from .api import ok
+from .asset_lifecycle import verify_exploration_selection
+from .selection import ChosenVersion
 from .auth import Actor, current_actor, require_approval, require_write, actor_still_authorized
 from .errors import DomainError
 from .media import check_revision, resolve_media, render_timeline, MAX_PIXELS
@@ -63,6 +65,7 @@ class AutoEdit(Body):
         max_length=120,
         description="用户明确指定的首镜原片文字，须由所选原片第一帧及实际输出读取。未指定时允许自由创作。",
     )
+    exploration_plan: ChosenVersion | None = None
     asset_ids: list[str] = Field(min_length=1, max_length=16)
     mode: Literal["local_vision", "model", "team"]
     model_profile_id: str | None = None
@@ -619,7 +622,9 @@ def start(body: AutoEdit, request: Request, actor: Actor = Depends(current_actor
     project = record(actor, body.project_id, "Project")
     rid = "edit_" + digest([actor.tenant_id, body.project_id, body.idempotency_key])[:36]
     intent = digest(
-        body.model_dump(exclude={"opening_text"} if body.opening_text is None else set())
+        body.model_dump(
+            exclude={k for k in ("opening_text", "exploration_plan") if getattr(body, k) is None}
+        )
     )
     with store.transaction():
         try:
@@ -627,6 +632,9 @@ def start(body: AutoEdit, request: Request, actor: Actor = Depends(current_actor
         except DomainError as exc:
             if exc.code != "NOT_FOUND":
                 raise
+            pool = verify_exploration_selection(
+                actor, body.project_id, body.exploration_plan, body.asset_ids
+            )
             run = store.create(
                 "Run",
                 {
@@ -638,6 +646,14 @@ def start(body: AutoEdit, request: Request, actor: Actor = Depends(current_actor
                     **({"opening_text": body.opening_text} if body.opening_text else {}),
                     "mode": body.mode,
                     "target_seconds": body.target_seconds,
+                    **(
+                        {
+                            "exploration_plan": body.exploration_plan.model_dump(),
+                            "pool_media_ids": body.asset_ids,
+                        }
+                        if pool
+                        else {}
+                    ),
                     "request_hash": intent,
                     "issue": None,
                     "format": {"width": body.width, "height": body.height, "fps": body.fps},
@@ -645,7 +661,7 @@ def start(body: AutoEdit, request: Request, actor: Actor = Depends(current_actor
                 tenant_id=actor.tenant_id,
                 project_id=body.project_id,
                 actor_id=actor.actor_id,
-                refs=[ref(project)],
+                refs=[ref(project), *([ref(pool)] if pool else [])],
                 record_id=rid,
             )
         if run["data"]["request_hash"] != intent:
@@ -747,6 +763,9 @@ def approve_edit(
     store = get_store()
     with store.transaction():
         run = load_session(actor, run_id)
+        from .variants import verify_variant_dependencies
+
+        verify_variant_dependencies(actor, run)
         data = run["data"]
         if data.get("approved_from") == body.expected_revision and data.get("timeline_ref"):
             return ok(detail(actor, run), request)
@@ -756,6 +775,9 @@ def approve_edit(
         project = run["project_id"]
         plan = record(actor, data["plan_ref"]["id"], "Plan", project=project)
         check_revision(plan, data["plan_ref"]["version"])
+        verify_exploration_selection(
+            actor, project, data.get("exploration_plan"), data.get("pool_media_ids", [])
+        )
         verify_sources(actor, project, data["evidence"])
         approved = save(
             actor,
@@ -864,6 +886,9 @@ def render_edit(
     store = get_store()
     with store.transaction():
         run = load_session(actor, run_id)
+        from .variants import verify_variant_dependencies
+
+        verify_variant_dependencies(actor, run)
         data = run["data"]
         if data.get("render_request") == body.model_dump():
             if data["stage"] == "rendered":
@@ -881,6 +906,12 @@ def render_edit(
                 actor, data["timeline_ref"]["id"], "Timeline", project=run["project_id"]
             )
             check_revision(timeline, body.timeline_revision)
+            verify_exploration_selection(
+                actor,
+                run["project_id"],
+                run["data"].get("exploration_plan"),
+                run["data"].get("pool_media_ids", []),
+            )
             if not timeline["data"].get("clips"):
                 raise DomainError("EMPTY_TIMELINE", "没有可渲染的镜头。")
             if not timeline["data"].get("locked"):

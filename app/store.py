@@ -111,7 +111,9 @@ class Store:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._local = threading.local()
         conn = self._connect()
-        conn.executescript(DDL)
+        from .index_schema import SEARCH_SCHEMA
+
+        conn.executescript(DDL + SEARCH_SCHEMA)
         conn.close()
 
     def _connect(self):
@@ -194,6 +196,21 @@ class Store:
         ):
             raise DomainError("STALE_FENCE", "工作流工作进程租约已失效，拒绝提交产物事实。", 409)
         return scope
+
+    @contextmanager
+    def read_snapshot(self):
+        active = getattr(self._local, "conn", None)
+        if active is not None:
+            yield active
+            return
+        with self.connection() as conn:
+            conn.execute("BEGIN")
+            self._local.conn = conn
+            try:
+                yield conn
+            finally:
+                self._local.conn = None
+                conn.rollback()
 
     @contextmanager
     def connection(self):

@@ -102,6 +102,9 @@ SYSTEM_TYPES = {
 }
 
 
+SOURCE_SYNC_FIELDS = {"sync_watermarks", "origin_availability", "content_change_version"}
+
+
 def admit_manual_record(kind, data, actor):
     if kind in SYSTEM_TYPES:
         raise DomainError(
@@ -128,6 +131,17 @@ def admit_manual_record(kind, data, actor):
         )
     ):
         raise DomainError("PROBE_REQUIRED", "能力可用状态必须有真实探测证据。")
+    if kind == "Trend" and (
+        "source_review" in data
+        or data.get("verification")
+        in (
+            "corroborated_as_reviewed",
+            "conflicting",
+            "insufficient_independent_sources",
+            "expired",
+        )
+    ):
+        raise DomainError("TREND_REVIEW_REQUIRED", "热点交叉核验结论须由核验入口写入。", 403)
     if kind == "TaskContract" and data.get("status") == "satisfied":
         raise DomainError("ACCEPTANCE_REQUIRED", "任务完成必须由执行器验收产物。")
     if kind == "Publication" and data.get("status") not in (None, "draft", "草稿"):
@@ -250,6 +264,8 @@ def records(
 
 @router.post("/records", status_code=201)
 def create_record(body: RecordCreate, request: Request, actor: Actor = Depends(current_actor)):
+    if body.kind == "Source" and SOURCE_SYNC_FIELDS.intersection(body.data):
+        raise DomainError("SOURCE_SYNC_REQUIRED", "来源同步状态由已核实的变更清单产生。", 403)
     admit_manual_record(body.kind, body.data, actor)
     return ok(
         get_store().create(
@@ -287,8 +303,23 @@ def patch_record(
 ):
     store = get_store()
     old = store.get(record_id, actor.tenant_id)
+    from .score_policies import PREFIX as SCORE_RELEASE_PREFIX
+
+    from .comment_feedback import PREFIX as COMMENT_PREFIX
+
+    if record_id.startswith((SCORE_RELEASE_PREFIX, COMMENT_PREFIX)):
+        raise DomainError("DEDICATED_ENDPOINT_REQUIRED", "该记录仅由其专用流程写入。", 403)
     admit_manual_record(old["kind"], body.data, actor)
     data = dict(body.data)
+    if old["kind"] == "Source":
+        managed = set(SOURCE_SYNC_FIELDS)
+        if "rights" in (old["data"].get("sync_watermarks") or {}):
+            managed.update(("expires_at", "revoked_at", "status"))
+        for key in managed:
+            if key in data and data[key] != old["data"].get(key):
+                raise DomainError("SOURCE_SYNC_REQUIRED", "已核实的来源变化须经专用流程复核。", 403)
+            if key in old["data"]:
+                data[key] = old["data"][key]
     if old["kind"] == "Timeline" and data != old["data"]:
         data["status"] = "draft"
         data["locked"] = False

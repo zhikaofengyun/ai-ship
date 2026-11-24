@@ -20,25 +20,25 @@ STATUS_LABELS = {
 # Explicit audited v6.0 sets. A new source ID never defaults to implemented.
 STATUS_IDS = {
     "local_business_subset": frozenset("""
-        A01 A04 A05 A07 B01 B02 B05 B06 C01 C03 C04 C06 C07 C09 C11 D01 D02 D03 D07 D08 E01 E02 E03 E04 E05 E06
-        E07 E08 E09 F01 F02 F04 F06 F08 G01 G02 G03 G04 G05 G06 H01 H03 H05 H06 H07 H10 H11 H12 I01 I02
-        I03 I04 I06 I07 J03 J04 J06 K01 K02 K03 K04 K05 K06 L01 L02 L03 L04 L05 L06 L07 M01 M02 M03
-        M05 M06 M07 M08 N01 N02 N03 N06 N07 O01 O02 O03 O06 P01 P02 P05 P06 S01 S03 S06 T01 T02
-        T06 U01 U02 U03 U07 V01 V03 V04 V05 W01 W02 W03 W04 W05 W07 W08 W09 X01 X02 X04 X05 Y01
-        Y02 Y03 Y05 Y06 Y07 Y08 Y09
+        A01 A04 A05 A06 A07 B01 B02 B03 B04 B05 B06 C01 C03 C04 C06 C07 C09 C11 D01 D02 D03 D05 D07
+        D08 E01 E02 E03 E04 E05 E06 E07 E08 E09 F01 F02 F04 F06 F08 G01 G02 G03 G04 G05 G06 H01
+        H03 H05 H06 H07 H10 H11 H12 I01 I02 I03 I04 I06 I07 J03 J04 J06 K01 K02 K03 K04 K05 K06
+        L01 L02 L03 L04 L05 L06 L07 M01 M02 M03 M04 M05 M06 M07 M08 M09 N01 N02 N03 N04 N06 N07 O01 O02
+        O03 O06 P01 P02 P05 P06 S01 S03 S04 S05 S06 T01 T02 T03 T04 T05 T06 U01 U02 U03 U04 U05 U06
+        U07 V01 V02 V03 V04 V05 V06 V07 V08 V09 W01 W02 W03 W04 W05 W07 W08 W09 X01 X02 X03 X04 X05 X06
+        X07 Y01 Y02 Y03 Y05 Y06 Y07 Y08 Y09
     """.split()),
     "generic_framework_only": frozenset("""
-        C02 C05 C08 C10 D05 H02 H08 H09 N05 O04 O05 O07 P03 P04 S02 V08 W06 X03 X08
+        C02 C05 C08 C10 H02 H08 H09 N05 O04 O05 O07 P03 P04 S02 W06 X08
     """.split()),
     "external_adapter_unverified": frozenset(),
     "contract_and_configuration_only": frozenset("""
-        A02 A03 A06 B03 B04 D04 D06 F03 F05 F07 F09 H04 I05 J01 J02 J05 J07 M04 M09 N04 S04
-        S05 T03 T04 T05 U04 U05 U06 V02 V06 V07 V09 X06 X07 Y04
+        A02 A03 D04 D06 F03 F05 F07 F09 H04 I05 J01 J02 J05 J07 Y04
     """.split()),
 }
-EXPECTED_COUNTS = dict(zip(STATUS_LABELS, (124, 19, 0, 35)))
+EXPECTED_COUNTS = dict(zip(STATUS_LABELS, (147, 16, 0, 15)))
 EXPECTED_WORKFLOW_ROUTES = frozenset("""
-    I03-R2 I04-R1 I07-R2 L01-R1 L07-R1 V01-R3 E01-R1 E08-R1 Y03-R1 Y06-R2
+    I03-R2 I04-R1 I07-R2 L01-R1 L07-R1 V01-R3 V03-R2 E01-R1 E08-R1 Y03-R1 Y06-R2
 """.split())
 
 # Mappings indicate an implemented path within a feature, never every route/gate.
@@ -108,7 +108,7 @@ groups = [
         "V01 V03 V04 V05 V08",
         ["app/production.py", "app/commands.py"],
         "tests/test_production.py",
-        "人工脚本/导入音轨/手动时间锚和版本引用；自动ASR/TTS未接入",
+        "人工脚本/导入音轨/手动时间锚和版本引用；自动ASR未接入；英文口播可用已核验的本地 Flite 声音合成",
     ),
     ("B05 B06", ["app/media.py"], "tests/test_media.py", "音轨混合与响度处理、全片实际解码检查"),
     (
@@ -229,6 +229,98 @@ BUDGET_FEATURES = frozenset("""
 
 # These endpoints are a declared existing subset, not all source routes.
 ENDPOINT_GROUPS = [
+    (
+        "M09",
+        [
+            "POST /api/v1/production/post-reviews/archive",
+            "POST /api/v1/production/post-reviews/compare",
+        ],
+    ),
+    ("V02", ["POST /api/v1/production/narration/readings"]),
+    ("A06", ["POST /api/v1/production/acquisition/changes"]),
+    ("S03", ["POST /api/v1/production/asset-families/compare"]),
+    ("S04", ["POST /api/v1/production/asset-families/group"]),
+    (
+        "M04",
+        [
+            "POST /api/v1/production/comment-feedback/observe",
+            "POST /api/v1/production/comment-feedback/classify",
+            "GET /api/v1/production/comment-feedback/{project_id}/summary",
+            "GET /api/v1/production/comment-feedback/{project_id}/{comment_id}/body",
+        ],
+    ),
+    (
+        "V03",
+        [
+            "POST /api/v1/production/narration/source-reviews",
+            "POST /api/v1/production/narration/synthesize",
+        ],
+    ),
+    ("T02", ["POST /api/v1/production/creative/verify-trend"]),
+    ("U04", ["POST /api/v1/production/assets/post-mapping"]),
+    ("X02", ["POST /api/v1/production/score-policies/propose"]),
+    ("X03", ["POST /api/v1/production/score-policies/evaluate"]),
+    ("T03", ["POST /api/v1/production/creative/match"]),
+    ("T04", ["POST /api/v1/production/creative/directions"]),
+    ("T05", ["POST /api/v1/production/creative/preflight"]),
+    ("S01 S02", ["POST /api/v1/production/asset-index/query"]),
+    (
+        "S05 D05",
+        ["POST /api/v1/production/asset-index/build", "POST /api/v1/production/asset-index/switch"],
+    ),
+    ("B03", ["POST /api/v1/production/soundtrack/rights"]),
+    (
+        "B04 B05",
+        [
+            "POST /api/v1/production/soundtrack/mixes",
+            "POST /api/v1/production/soundtrack/adopt",
+            "POST /api/v1/production/soundtrack/remove-music",
+        ],
+    ),
+    (
+        "B06",
+        [
+            "POST /api/v1/production/soundtrack/inspect-output",
+            "POST /api/v1/production/soundtrack/listen-review",
+        ],
+    ),
+    (
+        "V06 V09",
+        [
+            "POST /api/v1/production/voice-studio/maps",
+            "POST /api/v1/production/voice-studio/observations",
+            "POST /api/v1/production/voice-studio/plans",
+            "POST /api/v1/production/voice-studio/adopt",
+        ],
+    ),
+    ("V08", ["POST /api/v1/production/voice-studio/repair"]),
+    ("V07", ["POST /api/v1/production/voice-studio/rhythm"]),
+    (
+        "N04",
+        [
+            "POST /api/v1/production/variants/{run_id}",
+            "POST /api/v1/production/variants/{run_id}/{family_id}/select",
+        ],
+    ),
+    ("U04", ["POST /api/v1/production/assets/cooldown"]),
+    (
+        "U05",
+        [
+            "POST /api/v1/production/assets/exploration",
+            "POST /api/v1/production/assets/processing-evidence",
+        ],
+    ),
+    ("U06", ["POST /api/v1/production/assets/tier"]),
+    (
+        "X06",
+        [
+            "POST /api/v1/production/score-policies/propose",
+            "POST /api/v1/production/score-policies/evaluate",
+            "POST /api/v1/production/score-policies/approve",
+            "POST /api/v1/production/score-policies/activate",
+        ],
+    ),
+    ("X07", ["POST /api/v1/production/score-policies/rollback"]),
     ("B02", ["POST /api/v1/production/music/markers"]),
     ("T06", ["POST /api/v1/production/selection/brief"]),
     ("N02", ["POST /api/v1/production/selection/shot"]),
@@ -353,6 +445,25 @@ ENDPOINT_GROUPS += [
     ),
 ]
 CURRENT_CODE_GROUPS = [
+    ("M09", ["app/post_reviews.py", "web/post-reviews.js"]),
+    ("V02", ["app/script_readings.py", "web/narration.js"]),
+    ("A06", ["app/source_changes.py", "app/production.py", "web/source-changes.js"]),
+    ("S03 S04", ["app/asset_families.py", "web/asset-families.js"]),
+    ("M04", ["app/comment_feedback.py", "web/comment-feedback.js"]),
+    ("V03", ["app/narration.py", "web/narration.js", "app/execution.py"]),
+    ("E05", ["app/clip_mask.py"]),
+    ("T02", ["app/creative.py", "web/creative-actions.js"]),
+    ("X02 X03", ["app/score_policies.py", "web/score-policies.js"]),
+    ("U04 U05 U06", ["web/asset-lifecycle.js"]),
+    ("U05", ["app/auto_edits.py", "web/project-production.js"]),
+    ("T03 T04 T05", ["app/creative.py", "web/creative-actions.js"]),
+    ("D05 S01 S02 S05", ["app/asset_index.py", "app/index_schema.py", "web/asset-search.js"]),
+    ("B03 B04 B05 B06", ["app/soundtrack.py", "web/soundtrack.js"]),
+    ("V06 V07 V08 V09", ["app/voice_studio.py", "web/voice-studio.js"]),
+    ("V07", ["app/voice_rhythm.py"]),
+    ("N04", ["app/variants.py", "app/variant_fingerprints.py", "web/variant-panel.js"]),
+    ("U04 U05 U06", ["app/asset_lifecycle.py"]),
+    ("X06 X07", ["app/score_policies.py", "web/score-policies.js"]),
     (
         "P01 C01 C06 C07 C08 C09 C11 H03 H12 N01 N02 N03 N06 N07 E01 E06 E08 Y01 Y03 Y05 Y06 Y08 W01 W03 W04",
         ["app/auto_edits.py", "web/project-production.js"],
@@ -398,6 +509,158 @@ COMMAND_GROUPS = [
 
 # Precise test definitions are supporting evidence only. No run is fabricated.
 TEST_GROUPS = [
+    (
+        "M09",
+        "tests/test_post_reviews.py",
+        "PostReviewTests.test_late_backfill_pins_new_observation_and_keeps_old_report",
+    ),
+    (
+        "M09",
+        "tests/test_post_reviews.py",
+        "PostReviewTests.test_missing_latest_ambiguous_time_and_incomparable_rejected",
+    ),
+    (
+        "V02",
+        "tests/test_narration.py",
+        "NarrationTests.test_corrected_price_reading_preserves_currency_numbers_and_uses_actual_tts",
+    ),
+    (
+        "A06",
+        "tests/test_source_changes.py",
+        "SourceChangeTests.test_scoped_manifest_separates_origin_removal_rights_and_historical_posts",
+    ),
+    (
+        "A06",
+        "tests/test_source_changes.py",
+        "SourceChangeTests.test_revision_review_dedup_late_conflict_and_per_entry_failure",
+    ),
+    ("A06", "scripts/browser_creative.py", "run"),
+    (
+        "S03 S04",
+        "tests/test_asset_families.py",
+        "AssetFamilyTests.test_decoded_frames_near_review_and_retirement_recompute_family_pressure",
+    ),
+    (
+        "S03 S04",
+        "tests/test_asset_families.py",
+        "AssetFamilyTests.test_same_bytes_and_same_source_distinct_from_semantic_and_partial_ranges",
+    ),
+    (
+        "X07",
+        "tests/test_score_policies.py",
+        "ScorePolicyTests.test_changed_sample_automatically_rolls_back_before_next_score",
+    ),
+    (
+        "M04",
+        "tests/test_comment_feedback.py",
+        "CommentFeedbackTests.test_independent_body_and_classification_revisions",
+    ),
+    (
+        "M04",
+        "tests/test_comment_feedback.py",
+        "CommentFeedbackTests.test_deletion_purges_excerpts_and_excludes_judgments",
+    ),
+    (
+        "V03",
+        "tests/test_narration.py",
+        "NarrationTests.test_dag_freezes_script_and_review_and_produces_playable_audio",
+    ),
+    (
+        "T02 T03",
+        "tests/test_creative.py",
+        "CreativeTests.test_reposted_sources_conflicts_expiry_and_hypothesis_gate",
+    ),
+    (
+        "V07",
+        "tests/test_voice_studio.py",
+        "VoiceStudioTests.test_rhythm_preserves_speech_and_lock_and_uses_a_real_marked_audio_clock",
+    ),
+    (
+        "E05",
+        "tests/test_media.py",
+        "MediaIntegrationTests.test_rect_mask_after_rotation_and_cover_is_applied_once_to_decoded_pixels",
+    ),
+    (
+        "U04",
+        "tests/test_asset_lifecycle.py",
+        "AssetLifecycleTests.test_family_pressure_distinguishes_reservations_previews_and_accounts",
+    ),
+    (
+        "U05",
+        "tests/test_asset_lifecycle.py",
+        "AssetLifecycleTests.test_exploration_preserves_floor_and_scoped_time_limited_exceptions",
+    ),
+    (
+        "U06",
+        "tests/test_asset_lifecycle.py",
+        "AssetLifecycleTests.test_cold_restore_preserves_refs_alias_and_index_and_rechecks_bytes_rights",
+    ),
+    (
+        "X02 X03 X06 X07",
+        "tests/test_score_policies.py",
+        "ScorePolicyTests.test_freeze_activate_consume_replay_and_rollback",
+    ),
+    (
+        "X03 X06",
+        "tests/test_score_policies.py",
+        "ScorePolicyTests.test_incomplete_duplicate_or_failed_case_blocks_approval",
+    ),
+    (
+        "T03",
+        "tests/test_creative.py",
+        "CreativeTests.test_scoped_match_versions_and_evergreen_fallback",
+    ),
+    (
+        "T04 T05 T06",
+        "tests/test_creative.py",
+        "CreativeTests.test_director_proposals_comparison_and_approval_share_pinned_facts",
+    ),
+    (
+        "S01 S02 S05 D05",
+        "tests/test_asset_index.py",
+        "AssetIndexTests.test_shadow_switch_fallback_incremental_then_rollback",
+    ),
+    (
+        "D05 S05",
+        "tests/test_asset_index.py",
+        "AssetIndexTests.test_switch_race_stale_source_and_atomic_failure_keep_previous",
+    ),
+    (
+        "B03",
+        "tests/test_soundtrack.py",
+        "SoundtrackTests.test_licensed_stock_and_scope_expiry_no_music_and_platform_handoff",
+    ),
+    (
+        "B04 B05 B06",
+        "tests/test_soundtrack.py",
+        "SoundtrackTests.test_stock_arrange_adopt_without_duplication_deliver_measure_and_revoke",
+    ),
+    (
+        "B05",
+        "tests/test_soundtrack.py",
+        "SoundtrackTests.test_ducking_changes_only_music_under_dialogue_and_periods_are_preserved",
+    ),
+    (
+        "V06 V09",
+        "tests/test_voice_studio.py",
+        "VoiceStudioTests.test_actual_audio_clock_counterexample_clip_audio_caption_render_and_idempotency",
+    ),
+    (
+        "V08",
+        "tests/test_voice_studio.py",
+        "VoiceStudioTests.test_equal_duration_audio_changes_require_new_attestation_and_changed_clip_blocks_render",
+    ),
+    (
+        "N04",
+        "tests/test_variants.py",
+        "StoryboardVariantTests.test_actual_picture_text_audio_structure_family_choose_render_and_decode",
+    ),
+    (
+        "N04",
+        "tests/test_variants.py",
+        "StoryboardVariantTests.test_locked_slot_manual_rewrite_and_repeat_history",
+    ),
+    ("T03 T04 T05", "scripts/browser_creative.py", "run"),
     (
         "B02",
         "tests/test_rhythm.py",
@@ -658,7 +921,6 @@ def read_scenario_audit():
             assert match[2] in {"部分", "未覆盖"}, "No evidence for full scenario acceptance"
             rows[match[1]] = "partial" if match[2] == "部分" else "uncovered"
     assert set(rows) == {s["id"] for s in atlas["v6"]["scenarioMatrix"]}
-    assert Counter(rows.values()) == {"partial": 49, "uncovered": 20}
     return rows
 
 
@@ -700,6 +962,19 @@ def declared_api_endpoints():
     endpoints = set()
     for filename in (
         "api",
+        "creative",
+        "post_reviews",
+        "asset_families",
+        "source_changes",
+        "narration",
+        "script_readings",
+        "comment_feedback",
+        "asset_index",
+        "voice_studio",
+        "variants",
+        "soundtrack",
+        "score_policies",
+        "asset_lifecycle",
         "media",
         "captions",
         "rhythm",
@@ -909,7 +1184,7 @@ def build_manifest():
         "schema_version": "implementation-2",
         "source_version": atlas["schemaVersion"],
         "source_html_sha256": SOURCE_SHA256,
-        "boundary": "178项目录完整；124真实业务子集/19通用框架/0仅有未实联适配器/35仅合同配置，整项验收0。分类不等于完成率，目录路线不等于已注册执行路线。",
+        "boundary": "178项目录完整；147真实业务子集/16通用框架/0仅有未实联适配器/15仅合同配置，整项验收0。分类不等于完成率，目录路线不等于已注册执行路线。",
         "status_definitions": STATUS_LABELS,
         "counts": {
             "features": len(features),
@@ -926,11 +1201,11 @@ def build_manifest():
         },
         "scenario_coverage": {
             "total": len(scenario_rows),
-            "partial": 49,
-            "uncovered": 20,
+            "partial": list(scenario_rows.values()).count("partial"),
+            "uncovered": list(scenario_rows.values()).count("uncovered"),
             "full_acceptance_passed": 0,
             "audit_document": "docs/scenario-coverage.md",
-            "boundary": "部分仅指列出的子约束证据；不是49个场景端到端通过",
+            "boundary": "部分仅指列出的子约束证据；逐场景完整验收另行核实",
         },
         "audit_document": "docs/source-coverage-review.md",
         "legacy_classification": {
@@ -950,15 +1225,15 @@ def render_markdown(report):
         "",
         report["boundary"],
         "",
-        "本表由 implementation-2 清单生成，与独立审计四类一致。124 项有真实局部路径、19 项通用基础/配置、0 项仅有未实联适配器、35 项仅合同配置；完整原文业务验收通过 0。历史 implementation-1 的 133 项‘局部路径’已拆成 105+21+7，不是已完成功能数。",
+        "本表由 implementation-2 清单生成，与独立审计四类一致。147 项有真实局部路径、16 项通用基础/配置、0 项仅有未实联适配器、15 项仅合同配置；完整原文业务验收通过 0。历史 implementation-1 的 133 项‘局部路径’已拆成 105+21+7，不是已完成功能数。",
         "",
         "配置保存到 View；ConfigureFeature 只登记任务合同；真实执行走专用 API、明确控制面命令或已注册工作流路线。每项原文路线另列 source_route_ids，不等同于已经可执行。",
         "",
-        "已注册工作流路线（10）："
+        f"已注册工作流路线（{report['workflow_registry']['registered_count']}）："
         + "、".join(report["workflow_registry"]["registered_routes"])
         + "。",
         "",
-        "69 个原文场景：49 部分覆盖、20 未覆盖、0 全场景验收通过。具体测试定义与未覆盖项见 docs/scenario-coverage.md。",
+        f"69 个原文场景：{report['scenario_coverage']['partial']} 部分覆盖、{report['scenario_coverage']['uncovered']} 未覆盖、0 全场景验收通过。具体测试定义与未覆盖项见 docs/scenario-coverage.md。",
         "",
         "| ID | 功能 | 独立审计等级 | 当前真实子集 | 主要剩余范围 | 注册工作流路线 |",
         "|---|---|---|---|---|---|",
@@ -981,7 +1256,7 @@ def render_markdown(report):
         "",
         "结构化证据：contracts/implementation.json。test_definitions 是可复核测试定义，verification_runs 保持为空，不伪造任何本轮运行结果。实际执行报告应另行提供命令、环境、开始/结束时间、结果及未覆盖范围。",
         "",
-        "本地三角色 Qwen2.5 1.5B、Qwen2.5 0.5B 与 SmolLM2 360M 具有分别核验的真实调用，错引观测的两张接受票被拦截。独立的单导演、SD1.5 静帧及 AnimateDiff-Lightning + SD1.5 动态视频已通过真实权重推理。付费供应商、平台账号、自动 ASR/TTS、图像/视频的商品语义验收、向量检索、商业编辑器往返及生产容量仍缺独立验收。",
+        "本地三角色 Qwen2.5 1.5B、Qwen2.5 0.5B 与 SmolLM2 360M 具有分别核验的真实调用，错引观测的两张接受票被拦截。独立的单导演、SD1.5 静帧及 AnimateDiff-Lightning + SD1.5 动态视频已通过真实权重推理。付费供应商、平台账号、自动 ASR、多语种 TTS、图像/视频的商品语义验收、向量检索、商业编辑器往返及生产容量仍缺独立验收。",
     ]
     return "\n".join(lines) + "\n"
 
