@@ -6,7 +6,7 @@
 
 [逐功能交付核对](docs/feature-workflows.md)列出 178 项功能的输入、输出、执行器和剩余条件。[逐条质量门槛和失败路径](docs/quality-gate-evidence.md)保留原文 1,104 项质量门槛及 574 项失败路径，以及能对应到的实际证据。[本版五轮回归](docs/ai-production-regression.md)逐轮记录实测范围与未验项目。[视觉复核](docs/ai-production-visual-review.md)记录桌面、手机宽度、生成结果和实际导出画面的观察。
 
-![AI 制作台审阅实拍。左侧为模型的镜头方案和可操作的采用入口，右侧为当前镜头、播放控制和来源证据](evidence/ai-production/demonstration/director-review.png)
+![AI 制作台审阅实拍。左侧为模型的镜头方案和可操作的采用入口，右侧为当前镜头、播放控制和来源证据](verification/production-review.svg)
 
 [27.5 秒实操录屏](evidence/ai-production/demonstration/production-session.mp4) · [纠正镜头顺序后的成片](evidence/ai-production/demonstration/director-export.mp4) · [手机审阅](evidence/ai-production/demonstration/director-mobile.png) · [真实图片及视频推理样本](evidence/ai-production/live-generation/README.md) · [三模型错引证据及接管](evidence/ai-production/ensemble/README.md)。
 
