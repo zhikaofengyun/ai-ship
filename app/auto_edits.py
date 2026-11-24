@@ -11,6 +11,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Request
 from pydantic import Field, StrictInt, ValidationError, model_validator
 from . import providers
+from .opening_check import opening_requirement, check_proposal
 from .api import ok
 from .auth import Actor, current_actor, require_approval, require_write, actor_still_authorized
 from .errors import DomainError
@@ -56,6 +57,12 @@ def ensure_lease(actor, rid, token):
 class AutoEdit(Body):
     project_id: str
     goal: str = Field(min_length=1, max_length=3000)
+    opening_text: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=120,
+        description="用户明确指定的首镜原片文字，须由所选原片第一帧及实际输出读取。未指定时允许自由创作。",
+    )
     asset_ids: list[str] = Field(min_length=1, max_length=16)
     mode: Literal["local_vision", "model", "team"]
     model_profile_id: str | None = None
@@ -70,6 +77,7 @@ class AutoEdit(Body):
 
     @model_validator(mode="after")
     def combinations(self):
+        self.opening_text = opening_requirement(self.goal, self.opening_text)
         if not self.goal.strip() or len(self.asset_ids) != len(set(self.asset_ids)):
             raise ValueError("制作目标不能为空，素材选择须去重。")
         if self.mode != "local_vision" and not self.model_profile_id:
@@ -348,8 +356,13 @@ def evidence_problem(verdict, facts, sources):
     return None
 
 
+def local_cut(body, sources):
+    goal = body.goal if not body.opening_text else body.goal + "\n" + body.opening_text
+    return local_proposal(goal, sources, body.target_seconds)
+
+
 def menu_plans(body, sources):
-    base = local_proposal(body.goal, sources, body.target_seconds)
+    base = local_cut(body, sources)
     by_id = {s["asset_id"]: s for s in sources}
     variants = []
     for key, label, fraction, reverse in (
@@ -410,7 +423,7 @@ def build(body, actor, run, sources, profiles, calls):
     verdicts = []
     selection_record = None
     if body.mode == "local_vision":
-        raw = local_proposal(body.goal, sources, body.target_seconds)
+        raw = local_cut(body, sources)
     else:
         inventory = []
         for s in sources:
@@ -425,6 +438,7 @@ def build(body, actor, run, sources, profiles, calls):
             )
         payload = {
             "goal": body.goal,
+            **({"opening_text": body.opening_text} if body.opening_text else {}),
             "target_seconds": body.target_seconds,
             "sources": inventory,
             "format": {"width": body.width, "height": body.height, "fps": body.fps},
@@ -435,6 +449,7 @@ def build(body, actor, run, sources, profiles, calls):
             choices = {key: plan for key, _, plan, _ in variants}
             brief = {
                 "goal": body.goal,
+                **({"opening_text": body.opening_text} if body.opening_text else {}),
                 "target_seconds": body.target_seconds,
                 "sources": [
                     {
@@ -574,11 +589,14 @@ def build(body, actor, run, sources, profiles, calls):
                 "code": "TEAM_EVIDENCE_REQUIRED",
                 "message": "模型复核与原片观测未匹配，方案保留供局部修改。",
             }
+    opening = check_proposal(actor, body.project_id, body.opening_text, sources, plan["shots"])
     return {
         **plan,
         "reviews": verdicts,
+        **({"team_review_blocker": gate} if gate and opening.get("review_blocker") else {}),
         **({"review_blocker": gate} if gate else {}),
         **({"model_selection": selection_record} if selection_record else {}),
+        **opening,
     }
 
 
@@ -600,7 +618,9 @@ def start(body: AutoEdit, request: Request, actor: Actor = Depends(current_actor
     store = get_store()
     project = record(actor, body.project_id, "Project")
     rid = "edit_" + digest([actor.tenant_id, body.project_id, body.idempotency_key])[:36]
-    intent = digest(body.model_dump())
+    intent = digest(
+        body.model_dump(exclude={"opening_text"} if body.opening_text is None else set())
+    )
     with store.transaction():
         try:
             run = load_session(actor, rid)
@@ -615,6 +635,7 @@ def start(body: AutoEdit, request: Request, actor: Actor = Depends(current_actor
                     "stage": "planning",
                     "status": "planning",
                     "goal": body.goal,
+                    **({"opening_text": body.opening_text} if body.opening_text else {}),
                     "mode": body.mode,
                     "target_seconds": body.target_seconds,
                     "request_hash": intent,
@@ -773,6 +794,7 @@ def approve_edit(
             project,
             {
                 "name": plan["data"]["title"],
+                **({"opening_text": data["opening_text"]} if data.get("opening_text") else {}),
                 "format": data["format"],
                 "status": "draft",
                 "clips": clips,
@@ -924,6 +946,7 @@ def render_edit(
 
 
 class ReplaceShot(AcceptEdit):
+    expected_asset_version: StrictInt | None = Field(default=None, ge=1)
     shot_index: StrictInt = Field(ge=0, le=63)
     asset_id: str = Field(min_length=1)
     source_in: float = Field(ge=0)
@@ -937,7 +960,10 @@ def replace_shot(
 ):
     require_live(actor)
     parent = load_session(actor, run_id)
-    child_id = "edit_" + digest([parent["id"], body.model_dump()])[:36]
+    intent = body.model_dump(
+        exclude={"expected_asset_version"} if body.expected_asset_version is None else set()
+    )
+    child_id = "edit_" + digest([parent["id"], intent])[:36]
     store = get_store()
     try:
         existing = load_session(actor, child_id)
@@ -950,7 +976,13 @@ def replace_shot(
     data = parent["data"]
     repairable = (
         data.get("issue")
-        and data["issue"]["code"] in {"TEAM_EVIDENCE_REQUIRED", "TEAM_REVISION_REQUIRED"}
+        and data["issue"]["code"]
+        in {
+            "TEAM_EVIDENCE_REQUIRED",
+            "TEAM_REVISION_REQUIRED",
+            "OPENING_TEXT_CONFLICT",
+            "OPENING_TEXT_UNVERIFIED",
+        }
         and data.get("plan_ref")
     )
     if data["stage"] not in {"review", "draft", "rendered"} and not repairable:
@@ -962,6 +994,9 @@ def replace_shot(
     if body.shot_index >= len(shots):
         raise DomainError("NO_SUCH_SHOT", "选择的镜头不在当前提案中。")
     new_source = inspect(actor, project, [body.asset_id])[0]
+    if body.expected_asset_version is not None:
+        if new_source["asset_version"] != body.expected_asset_version:
+            raise DomainError("REVISION_CONFLICT", "所选候选素材的版本已变化，请重新核验。", 409)
     previous = shots[body.shot_index]
     raw = []
     for i, shot in enumerate(shots):
@@ -994,6 +1029,8 @@ def replace_shot(
         evidence,
         data["target_seconds"],
     )
+    opening = check_proposal(actor, project, data.get("opening_text"), evidence, plan_data["shots"])
+    blocker = opening.get("review_blocker")
     with store.transaction():
         require_live(actor)
         verify_sources(actor, project, evidence)
@@ -1011,8 +1048,9 @@ def replace_shot(
             project,
             {
                 **plan_data,
+                **opening,
                 "name": plan_data["title"],
-                "status": "proposed",
+                "status": "needs_revision" if blocker else "proposed",
                 "format": data["format"],
                 "planning_mode": "manual_segment_revision",
                 "base_review_issue": data.get("issue"),
@@ -1032,14 +1070,15 @@ def replace_shot(
                 "name": data["name"],
                 "goal": data["goal"],
                 "run_type": KIND,
-                "stage": "review",
-                "status": "review",
+                "stage": "blocked" if blocker else "review",
+                "status": "blocked" if blocker else "review",
+                **({"opening_text": data["opening_text"]} if data.get("opening_text") else {}),
                 "mode": data["mode"],
                 "revision_kind": "manual_segment_revision",
                 "target_seconds": data["target_seconds"],
                 "format": data["format"],
                 "evidence": evidence,
-                "issue": None,
+                "issue": blocker,
                 "base_session_ref": ref(parent),
                 "plan_ref": ref(plan),
             },
