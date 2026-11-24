@@ -1,0 +1,52 @@
+{
+  "observed_main": "cc8b6f2aeee9cd47ec57fe122c34c3077d806ab7",
+  "observed_at": "2026-11-24T11:31:28.426788+00:00",
+  "reports": [
+    {
+      "round": 1,
+      "published_report": true,
+      "report": "evidence/ai-production/round-1/round-report.json",
+      "report_sha256": "c4ceef73f4a5795fa5e3d3306f7e1f1e8cef28d0ddefa2ba2cc61f90962278d7",
+      "files_in_report": 169,
+      "png": 81,
+      "video": 16
+    },
+    {
+      "round": 2,
+      "published_report": true,
+      "report": "evidence/ai-production/round-2/round-report.json",
+      "report_sha256": "befc2e2bf51475ca0cb247b9c94f120a24b10343c846d623330632f72c7b7151",
+      "files_in_report": 169,
+      "png": 81,
+      "video": 16
+    },
+    {
+      "round": 3,
+      "published_report": true,
+      "report": "evidence/ai-production/round-3/round-report.json",
+      "report_sha256": "2d4265afe316a4cbcb09e4a3c6b3e12527db815dffcbc079ebeff1276194df19",
+      "files_in_report": 169,
+      "png": 81,
+      "video": 16
+    },
+    {
+      "round": 4,
+      "published_report": true,
+      "report": "evidence/ai-production/round-4/round-report.json",
+      "report_sha256": "1411c5dd0f979dfb979dab2c5acdc2ca8dff1fb710fed9941e3c003b499b7b62",
+      "files_in_report": 169,
+      "png": 81,
+      "video": 16
+    },
+    {
+      "round": 5,
+      "published_report": true,
+      "report": "evidence/ai-production/round-5/round-report.json",
+      "report_sha256": "1ac05657fed4a59a616e83bc5c38025d4058989d5a62d60240ca1d5c7d572cf2",
+      "files_in_report": 169,
+      "png": 81,
+      "video": 16
+    }
+  ],
+  "published_qa_patches": {}
+}
