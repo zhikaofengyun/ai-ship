@@ -1,0 +1,14 @@
+[project]
+name = "ai-ship"
+version = "0.1.0"
+description = "Evidence-driven video production workspace implementing AI Video Agent Atlas 6.0"
+requires-python = ">=3.12"
+readme = "README.md"
+dependencies = [
+  "fastapi==0.141.1", "uvicorn==0.52.1", "pydantic==2.13.4",
+  "httpx==0.28.1", "jsonschema==4.26.0"
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
