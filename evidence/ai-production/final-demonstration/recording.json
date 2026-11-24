@@ -1,0 +1,425 @@
+{
+  "completed": true,
+  "source_git_tree": "afaa47ec9fdeede665373dfcf52f227db0688f82",
+  "page_errors": [],
+  "events": [
+    {
+      "seconds": 1.965,
+      "screen": "Created project in browser"
+    },
+    {
+      "seconds": 4.255,
+      "screen": "Dragged sidebar and preview divider",
+      "sidebar": [
+        198,
+        252
+      ],
+      "production": [
+        504,
+        438
+      ]
+    },
+    {
+      "seconds": 5.456,
+      "screen": "Bound authenticated local director through profile form"
+    },
+    {
+      "seconds": 7.758,
+      "screen": "Imported both clips and set explicit literal BLUE CUP"
+    },
+    {
+      "seconds": 10.811,
+      "screen": "Played source and used 200%, fill, fit",
+      "source_clock": [
+        0,
+        0.690345
+      ]
+    },
+    {
+      "seconds": 10.967,
+      "screen": "Started production, recording continues across actual inference"
+    },
+    {
+      "seconds": 19.476,
+      "screen": "Original director proposal and independent observation",
+      "selection": {
+        "candidate_count": 2,
+        "choice": "C",
+        "reason": "选择反序收束的选项，可以快速展示蓝色陶瓷杯的实拍画面，同时保持画面的流畅和清晰。"
+      },
+      "status": "conflict",
+      "words": [
+        "_",
+        "*",
+        "—",
+        ")",
+        "i,t",
+        "a",
+        "STUDIO",
+        "=",
+        "(fe",
+        ">",
+        "*"
+      ]
+    },
+    {
+      "seconds": 22.054,
+      "screen": "Explicitly replaced the conflicting opening, keeping the prior proposal"
+    },
+    {
+      "seconds": 24.608,
+      "screen": "Played source interval in proposal",
+      "clock": [
+        0,
+        0.695049
+      ]
+    },
+    {
+      "seconds": 25.352,
+      "screen": "Adopted exact proposal into revisioned timeline",
+      "timeline": "timeline_214526def0934ae094c4f9e8455797e4"
+    },
+    {
+      "seconds": 26.255,
+      "screen": "Clicked render; recording continues during actual FFmpeg and opening verification"
+    },
+    {
+      "seconds": 32.159,
+      "screen": "Played actual exported artifact in place",
+      "clock": [
+        0.417835,
+        1.144451
+      ]
+    },
+    {
+      "seconds": 32.501,
+      "screen": "Downloaded browser artifact",
+      "suggested": "AI-ship-video.mp4",
+      "bytes": 59904
+    }
+  ],
+  "recording": "Uninterrupted Chromium Page.startScreencast. The driver wrote each received full-viewport JPEG immediately; the complete receipt sequence was sampled at 30 fps at original speed using measured times, preserving idle holds until the observed stop instant.",
+  "project_id": "project_773b618912e545d892692a615d18ec0c",
+  "model_sha256": "c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515",
+  "model": "qwen2.5-0.5b.gguf",
+  "model_calls": [
+    {
+      "outcome": "succeeded",
+      "actual_provider_model": "atlas-local-director",
+      "response": {
+        "content": "{\"choice\": \"C\", \"reason\": \"选择反序收束的选项，可以快速展示蓝色陶瓷杯的实拍画面，同时保持画面的流畅和清晰。\"}",
+        "finish_reason": "stop",
+        "json": {
+          "choice": "C",
+          "reason": "选择反序收束的选项，可以快速展示蓝色陶瓷杯的实拍画面，同时保持画面的流畅和清晰。"
+        },
+        "model": "atlas-local-director",
+        "model_identity_status": "provider_reported_matches_request",
+        "requested_model": "atlas-local-director"
+      },
+      "usage": {
+        "completion_tokens": 39,
+        "prompt_tokens": 504,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 543
+      },
+      "provider_request_id": "chatcmpl-XR99Ou0k3g05WfuT5OriYou09HiIrDZ6"
+    }
+  ],
+  "original_plan_id": "plan_bb6806605d64437b999cd7b2cb776490",
+  "approved_plan_id": "plan_db9297fa66344b9e93d94c9addf40423",
+  "original_run_id": "edit_a3c3a8d634c4a83fdb30dc93eec0d953dc78",
+  "approved_run_id": "edit_fd3a73037e0533ef790906dcd426ccf1e963",
+  "current_timeline": "timeline_214526def0934ae094c4f9e8455797e4",
+  "timeline_version": 2,
+  "artifact_id": "artifact_3a3eadef11c94ac69ec6e16b0b79b84c",
+  "artifact_qc": {
+    "encoded_first_frame": {
+      "analysis_size": [
+        960,
+        540
+      ],
+      "at": 0.0,
+      "coordinate_space": "analysis_frame_pixels",
+      "engine": "tesseract_lstm",
+      "engine_version": "tesseract 5.5.0",
+      "frame_sha256": "9a35ce443c6a446e423e92217b8c0bd6af1778a889ea02880dfbdf53ca9d4f68",
+      "languages": [
+        "eng"
+      ],
+      "model_sha256": {
+        "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+      },
+      "status": "read",
+      "words": [
+        {
+          "box_px": [
+            73,
+            249,
+            139,
+            43
+          ],
+          "confidence": 0.965,
+          "line": [
+            1,
+            1,
+            1
+          ],
+          "text": "BLUE"
+        },
+        {
+          "box_px": [
+            237,
+            248,
+            113,
+            44
+          ],
+          "confidence": 0.965,
+          "line": [
+            1,
+            1,
+            1
+          ],
+          "text": "CUP"
+        },
+        {
+          "box_px": [
+            675,
+            224,
+            218,
+            216
+          ],
+          "confidence": 0.0,
+          "line": [
+            2,
+            1,
+            1
+          ],
+          "text": "SI"
+        }
+      ]
+    },
+    "expected_text": "BLUE CUP",
+    "origin": {
+      "asset_id": "asset_fb1a0a5f2f514370b2ae4d2ad8661805",
+      "asset_version": 1,
+      "observation": {
+        "analysis_size": [
+          960,
+          540
+        ],
+        "at": 0.0,
+        "coordinate_space": "analysis_frame_pixels",
+        "engine": "tesseract_lstm",
+        "engine_version": "tesseract 5.5.0",
+        "frame_sha256": "9cc06580c6010a263f30e9733cc9159f6c6ec157ef0a8ee18cb15e3e5ec1f5b8",
+        "languages": [
+          "eng"
+        ],
+        "model_sha256": {
+          "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+        },
+        "status": "read",
+        "words": [
+          {
+            "box_px": [
+              73,
+              249,
+              139,
+              43
+            ],
+            "confidence": 0.966,
+            "line": [
+              1,
+              1,
+              1
+            ],
+            "text": "BLUE"
+          },
+          {
+            "box_px": [
+              237,
+              248,
+              113,
+              44
+            ],
+            "confidence": 0.966,
+            "line": [
+              1,
+              1,
+              1
+            ],
+            "text": "CUP"
+          },
+          {
+            "box_px": [
+              675,
+              224,
+              218,
+              216
+            ],
+            "confidence": 0.0,
+            "line": [
+              2,
+              1,
+              1
+            ],
+            "text": "SI"
+          }
+        ]
+      },
+      "source_in": 0.0,
+      "source_out": 3.2
+    },
+    "preflight": {
+      "analysis_size": [
+        960,
+        540
+      ],
+      "at": 0.0,
+      "coordinate_space": "analysis_frame_pixels",
+      "engine": "tesseract_lstm",
+      "engine_version": "tesseract 5.5.0",
+      "frame_sha256": "1db7e792597c26e5e8491fdaa2e8dc6e4b590d5ee2fd4571cdd9d0285a885604",
+      "languages": [
+        "eng"
+      ],
+      "model_sha256": {
+        "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+      },
+      "status": "read",
+      "words": [
+        {
+          "box_px": [
+            73,
+            249,
+            139,
+            43
+          ],
+          "confidence": 0.966,
+          "line": [
+            1,
+            1,
+            1
+          ],
+          "text": "BLUE"
+        },
+        {
+          "box_px": [
+            237,
+            248,
+            113,
+            44
+          ],
+          "confidence": 0.965,
+          "line": [
+            1,
+            1,
+            1
+          ],
+          "text": "CUP"
+        },
+        {
+          "box_px": [
+            676,
+            224,
+            217,
+            216
+          ],
+          "confidence": 0.0,
+          "line": [
+            2,
+            1,
+            1
+          ],
+          "text": "SI"
+        }
+      ]
+    },
+    "status": "matched",
+    "timeline_id": "timeline_214526def0934ae094c4f9e8455797e4",
+    "timeline_version": 2
+  },
+  "source_media": [
+    {
+      "file": "01 · Studio.mp4",
+      "original_generation": "evidence/ai-production/round-1/diffusion-model/reference-motion.webm",
+      "original_sha256": "4890cb61d1f1e11311378d8f2d3b18347066d8a3bd89df47037057804359ee1b",
+      "demo_input_sha256": "f8c3fcecbd185dcfe11cfdcf4a061a4b00999844f701a5beeec89dbdc7e20b4a",
+      "visible_title": "STUDIO",
+      "frame_ocr": "_ *\n\n—\n\n) i,t\n\na\n\nSTUDIO\n\n=\n\n(fe > *",
+      "input_kind": "3.2 seconds using repeated frames of a generated temporal sample"
+    },
+    {
+      "file": "02 · Blue cup.mp4",
+      "original_generation": "evidence/ai-production/round-1/diffusion-model/generated-still.png",
+      "original_sha256": "157541e14654d060fa4c6ca2a3df5f00d6fcfdccdf45eb623fd844cb889f0bb5",
+      "demo_input_sha256": "78dc4100591443354ac34e455c22a01697801fe233d2546e427fa8217149faef",
+      "visible_title": "BLUE CUP",
+      "frame_ocr": "BLUE CUP\n\nSI",
+      "input_kind": "explicit 3.2 second still hold"
+    }
+  ],
+  "browser": "156.0.8078.108",
+  "recording_wall_seconds": 33.4032,
+  "cdp_frames": 302,
+  "download_sha256": "6fddfe598a10ab309cc4e33342ba720914c0e64aba04e6bc54dbff808ddd8c9d",
+  "download_bytes": 59904,
+  "download_info": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 960,
+        "height": 540,
+        "r_frame_rate": "25/1"
+      },
+      {
+        "codec_name": "aac",
+        "r_frame_rate": "0/0"
+      }
+    ],
+    "format": {
+      "duration": "6.400000"
+    }
+  },
+  "independent_download_ocr": "BLUE CUP",
+  "independent_ocr_region_xywh": [
+    0,
+    0,
+    420,
+    540
+  ],
+  "continuous_video": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1440,
+        "height": 900,
+        "r_frame_rate": "30/1"
+      }
+    ],
+    "format": {
+      "duration": "33.433333"
+    }
+  },
+  "continuous_video_bytes": 1389763,
+  "continuous_video_sha256": "af0ed34a8a9e28115aebb7ceb0b5b74aa2b9b3b4fdeebcbd5b1bcf7f3f756e13",
+  "frame_timing": {
+    "capture_basis": "Sequential nanosecond host write times for receipt of each changed Chromium compositor frame; padded only the last static hold to the observed stop instant.",
+    "wall_from_first_to_last_received": 32.620915062,
+    "final_hold": 0.7822849379999965,
+    "max_observed_hold": 6.896008068999999,
+    "frame_receipts_file": "frame-receipts.json",
+    "frame_receipts_sha256": "cffe7cc66c7a5d2436fcfcdd61b2872cabaae4ce4b6f8c2756a415b103dd9a8a",
+    "cfr": 30,
+    "cfr_frame_count": 1003,
+    "source_images_sampled_at_cfr": 245,
+    "encoder_note": "Chromium independently supplied presentation timestamps that were not entirely monotonic. The uncut same take was muxed using its measured frame receipt intervals. Fixed 30 fps introduces at most a frame-period time quantization; consecutive compositor updates within one 1/30-second interval may coincide."
+  }
+}
