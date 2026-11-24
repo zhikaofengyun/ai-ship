@@ -1,0 +1,1250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Immutable fact version",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "tenant_id",
+    "project_id",
+    "version",
+    "data",
+    "refs",
+    "hash",
+    "created_at",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "Project",
+        "Product",
+        "Brief",
+        "Trend",
+        "Source",
+        "Asset",
+        "AssetVersion",
+        "Shot",
+        "Tag",
+        "Index",
+        "Cluster",
+        "AssetScore",
+        "Usage",
+        "Script",
+        "Audio",
+        "VoiceMap",
+        "Music",
+        "Mix",
+        "Plan",
+        "Timeline",
+        "RenderJob",
+        "Artifact",
+        "Account",
+        "Grant",
+        "Publication",
+        "PlatformEvent",
+        "Metric",
+        "Comment",
+        "Insight",
+        "Experiment",
+        "Policy",
+        "Workflow",
+        "Run",
+        "ToolCall",
+        "Approval",
+        "Memory",
+        "Event",
+        "Audit",
+        "Cost",
+        "Capability",
+        "View",
+        "Post",
+        "AgentRole",
+        "SkillVersion",
+        "TaskContract",
+        "RunGraph",
+        "DecisionRecord",
+        "ChangeSet",
+        "EvaluationSuite",
+        "PreferenceProfile",
+        "AlignmentBinding",
+        "RenderManifest",
+        "DeliveryPackage",
+        "ProductionTrace",
+        "ImportBatch",
+        "ImportEntry",
+        "TransformRecipe",
+        "TransformRun",
+        "BlobLocation",
+        "TimeMap",
+        "ModelProfile",
+        "AgentDeployment",
+        "Hypothesis",
+        "ReplayManifest"
+      ]
+    },
+    "tenant_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "data": {
+      "type": "object"
+    },
+    "refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "kind": {
+            "enum": [
+              "Project",
+              "Product",
+              "Brief",
+              "Trend",
+              "Source",
+              "Asset",
+              "AssetVersion",
+              "Shot",
+              "Tag",
+              "Index",
+              "Cluster",
+              "AssetScore",
+              "Usage",
+              "Script",
+              "Audio",
+              "VoiceMap",
+              "Music",
+              "Mix",
+              "Plan",
+              "Timeline",
+              "RenderJob",
+              "Artifact",
+              "Account",
+              "Grant",
+              "Publication",
+              "PlatformEvent",
+              "Metric",
+              "Comment",
+              "Insight",
+              "Experiment",
+              "Policy",
+              "Workflow",
+              "Run",
+              "ToolCall",
+              "Approval",
+              "Memory",
+              "Event",
+              "Audit",
+              "Cost",
+              "Capability",
+              "View",
+              "Post",
+              "AgentRole",
+              "SkillVersion",
+              "TaskContract",
+              "RunGraph",
+              "DecisionRecord",
+              "ChangeSet",
+              "EvaluationSuite",
+              "PreferenceProfile",
+              "AlignmentBinding",
+              "RenderManifest",
+              "DeliveryPackage",
+              "ProductionTrace",
+              "ImportBatch",
+              "ImportEntry",
+              "TransformRecipe",
+              "TransformRun",
+              "BlobLocation",
+              "TimeMap",
+              "ModelProfile",
+              "AgentDeployment",
+              "Hypothesis",
+              "ReplayManifest"
+            ]
+          },
+          "field": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "range": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Project"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Project.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Product"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Product.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Brief"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Brief.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Trend"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Trend.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Source"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Source.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Asset"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Asset.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "AssetVersion"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/AssetVersion.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Shot"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Shot.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Tag"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Tag.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Index"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Index.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Cluster"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Cluster.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "AssetScore"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/AssetScore.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Usage"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Usage.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Script"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Script.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Audio"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Audio.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "VoiceMap"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/VoiceMap.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Music"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Music.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Mix"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Mix.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Plan"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Plan.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Timeline"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Timeline.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "RenderJob"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/RenderJob.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Artifact"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Artifact.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Account"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Account.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Grant"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Grant.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Publication"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Publication.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "PlatformEvent"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/PlatformEvent.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Metric"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Metric.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Comment"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Comment.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Insight"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Insight.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Experiment"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Experiment.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Policy"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Policy.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Workflow"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Workflow.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Run"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Run.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "ToolCall"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/ToolCall.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Approval"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Approval.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Memory"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Memory.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Event"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Event.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Audit"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Audit.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Cost"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Cost.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Capability"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Capability.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "View"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/View.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Post"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Post.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "AgentRole"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/AgentRole.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "SkillVersion"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/SkillVersion.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "TaskContract"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/TaskContract.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "RunGraph"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/RunGraph.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "DecisionRecord"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/DecisionRecord.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "ChangeSet"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/ChangeSet.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "EvaluationSuite"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/EvaluationSuite.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "PreferenceProfile"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/PreferenceProfile.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "AlignmentBinding"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/AlignmentBinding.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "RenderManifest"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/RenderManifest.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "DeliveryPackage"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/DeliveryPackage.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "ProductionTrace"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/ProductionTrace.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "ImportBatch"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/ImportBatch.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "ImportEntry"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/ImportEntry.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "TransformRecipe"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/TransformRecipe.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "TransformRun"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/TransformRun.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "BlobLocation"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/BlobLocation.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "TimeMap"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/TimeMap.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "ModelProfile"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/ModelProfile.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "AgentDeployment"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/AgentDeployment.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "Hypothesis"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/Hypothesis.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "ReplayManifest"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "entities/ReplayManifest.schema.json"
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
