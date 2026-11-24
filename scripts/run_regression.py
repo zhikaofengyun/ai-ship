@@ -256,6 +256,9 @@ def main():
             )
         for suffix, script in [
             ("source-index-and-soundtrack", "browser_sound_index.py"),
+            ("account-quota", "browser_account_quota.py"),
+            ("render-recovery", "browser_render_recovery.py"),
+            ("commercial-handoff", "browser_commercial_handoff.py"),
             ("asset-lifecycle-and-families", "browser_asset_lifecycle.py"),
         ]:
             name = engine + "-" + suffix

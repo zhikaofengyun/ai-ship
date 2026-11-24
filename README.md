@@ -4,7 +4,9 @@
 
 本分支可直接检出运行。此前冻结版本的复现方法见[历史源码交付](RELEASE-SOURCE.md)。
 
-[逐功能交付核对](docs/feature-workflows.md)列出 178 项功能的输入、输出、执行器和剩余条件。[逐条质量门槛和失败路径](docs/quality-gate-evidence.md)保留原文 1,104 项质量门槛及 574 项失败路径，以及能对应到的实际证据。[本版五轮回归](docs/ai-production-regression.md)逐轮记录实测范围与未验项目。[视觉复核](docs/ai-production-visual-review.md)记录桌面、手机宽度、生成结果和实际导出画面的观察。
+[逐功能交付核对](docs/feature-workflows.md)列出 178 项功能的输入、输出、执行器和剩余条件。[逐条质量门槛和失败路径](docs/quality-gate-evidence.md)保留原文 1,104 项质量门槛及 574 项失败路径，以及能对应到的实际证据。[前一版制作台五轮回归](docs/ai-production-regression.md)逐轮记录实测范围与未验项目。[视觉复核](docs/ai-production-visual-review.md)记录桌面、手机宽度、生成结果和实际导出画面的观察。
+
+[本次开发的分批回归、实测模型及成片样本](evidence/atlas-production-2026-11-24/README.md)记录本次提交所覆盖的流程。
 
 ![AI 制作台审阅实拍。左侧为模型的镜头方案和可操作的采用入口，右侧为当前镜头、播放控制和来源证据](verification/production-review.svg)
 
@@ -67,7 +69,7 @@ python scripts/run.py
 
 [分区与功能操作核对表](docs/feature-workflows.md)及[机器可读核对表](contracts/feature-workflows.json)逐项列出操作步骤、路线、输入输出以及当前实际范围。
 
-逐项独立分类是 **147 项真实局部路径、16 项通用基础/配置、0 项仅有未实联适配器、15 项仅合同配置；整项原文业务验收通过 0 项**。这些数字不能换算为“开发完成率”。69 个场景目前为 50 个局部覆盖、19 个未覆盖，均未达到原文全场景验收。后续开发应逐项关闭审计表中的具体差距；[余项与验收次序](docs/acceptance-plan.md)按原文功能 ID 列出各批次及关闭条件。
+逐项独立分类是 **151 项真实局部路径、16 项通用基础/配置、0 项仅有未实联适配器、11 项仅合同配置；整项原文业务验收通过 0 项**。这些数字不能换算为“开发完成率”。69 个场景目前为 51 个局部覆盖、18 个未覆盖，均未达到原文全场景验收。后续开发应逐项关闭审计表中的具体差距；[余项与验收次序](docs/acceptance-plan.md)按原文功能 ID 列出各批次及关闭条件。
 
 ## 架构与接口
 

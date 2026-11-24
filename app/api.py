@@ -268,6 +268,8 @@ def create_record(body: RecordCreate, request: Request, actor: Actor = Depends(c
     if body.kind == "Source" and SOURCE_SYNC_FIELDS.intersection(body.data):
         raise DomainError("SOURCE_SYNC_REQUIRED", "来源同步状态由已核实的变更清单产生。", 403)
     manual_asset_data(body.kind, body.data)
+    if body.kind == "Publication" and "commerce_binding" in body.data:
+        raise DomainError("COMMERCIAL_BINDING_REQUIRED", "商品绑定结果须经专用核对流程生成。", 403)
     admit_manual_record(body.kind, body.data, actor)
     return ok(
         get_store().create(
@@ -303,6 +305,11 @@ def record_history(record_id: str, request: Request, actor: Actor = Depends(curr
 def patch_record(
     record_id: str, body: RecordUpdate, request: Request, actor: Actor = Depends(current_actor)
 ):
+    with get_store().transaction():
+        return _patch_record(record_id, body, request, actor)
+
+
+def _patch_record(record_id, body, request, actor):
     store = get_store()
     old = store.get(record_id, actor.tenant_id)
     from .score_policies import PREFIX as SCORE_RELEASE_PREFIX
@@ -311,8 +318,36 @@ def patch_record(
 
     if record_id.startswith((SCORE_RELEASE_PREFIX, COMMENT_PREFIX)):
         raise DomainError("DEDICATED_ENDPOINT_REQUIRED", "该记录仅由其专用流程写入。", 403)
+    if old["kind"] == "Publication":
+        from .account_quota import ensure_intent_editable
+
+        ensure_intent_editable(actor, old, body.data.get("account_id"))
     admit_manual_record(old["kind"], body.data, actor)
     data = dict(manual_asset_data(old["kind"], body.data, old))
+    if old["kind"]=="Publication" and ("commerce_binding" in data or "commerce_binding" in old["data"]):
+        if "commerce_binding" in data and data["commerce_binding"] != old["data"].get(
+            "commerce_binding"
+        ):
+            raise DomainError("COMMERCIAL_BINDING_REQUIRED", "商品绑定不可通过通用编辑变更。", 403)
+        if "commerce_binding" in old["data"]:
+            for key in (
+                "commerce_binding",
+                "artifact_id",
+                "artifact_version",
+                "artifact_hash",
+                "account_id",
+                "channel",
+                "metadata",
+                "metadata_hash",
+                "outcome",
+                "status",
+                "post_refs",
+            ):
+                if key in data and data[key] != old["data"].get(key):
+                    raise DomainError(
+                        "COMMERCIAL_BINDING_REQUIRED", "改变已绑定对象或商业信息前请重新核对。", 403
+                    )
+                data[key] = old["data"][key]
     if old["kind"] == "Source":
         managed = set(SOURCE_SYNC_FIELDS)
         if "rights" in (old["data"].get("sync_watermarks") or {}):

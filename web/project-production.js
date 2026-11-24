@@ -1,3 +1,4 @@
+import { commercialHandoff } from "./commercial-handoff.js";
 import { openNarration } from "./narration.js";
 import { exploration } from "./asset-lifecycle.js";
 import { openVoiceStudio } from "./voice-studio.js";
@@ -406,7 +407,7 @@ export async function mountProduction(root, ctx) {
           r.data.artifact_id === artifact.id &&
           r.data.artifact_version === artifact.version,
       );
-    return `<details class="director-decisions director-delivery"><summary>内容审阅与发布交接</summary><div class="director-actions">${btn("内容审阅", "review-content", "eye", "button small secondary")}${btn("权利审阅", "review-rights", "lock", "button small secondary")}${btn("建立发布意图", "publication", "send", "button small secondary")}</div>
+    return `<details class="director-decisions director-delivery"><summary>内容审阅与发布交接</summary><div class="director-actions">${btn("内容审阅", "review-content", "eye", "button small secondary")}${btn("权利审阅", "review-rights", "lock", "button small secondary")}${btn("建立发布意图", "publication", "send", "button small secondary")}${btn("商品交接", "commercial-handoff", "layers", "button small secondary")}</div>
       ${approvals
         .slice(0, 6)
         .map(
@@ -844,6 +845,7 @@ export async function mountProduction(root, ctx) {
         "review-rights": () =>
           ctx.approveArtifact(detail.artifact, "rights_check"),
         publication: () => ctx.publicationForm(detail.artifact),
+        "commercial-handoff": () => commercialHandoff(ctx,detail.artifact),
         preflight: (b) =>
           ctx.preflightPublication(
             ctx.records("Publication").find((r) => r.id === b.dataset.id),

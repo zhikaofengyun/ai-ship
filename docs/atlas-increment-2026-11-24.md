@@ -22,3 +22,16 @@
 | M04/Q02　分类能回到实际正文版本 | 尚无直接证据 | 本地路线直接核验 | 人工分类绑定摘录的具体正文版本，正文修订后旧分类不冒用为新版本分类。 | [CommentFeedbackTests.test_independent_body_and_classification_revisions](../tests/test_comment_feedback.py) |
 | M09/Q06　曲线与最终媒体一致才映射到镜头；只具整片聚合时禁止声称具体镜头直接导致销量 | 尚无直接证据 | 部分核验 | 两帖同口径聚合指标允许描述性比较，返回的片段归因标明不可用。迟到数据改变新报告但不改旧报告；有真实时间曲线时的最终媒体映射待验。 | [PostReviewTests.test_late_backfill_pins_new_observation_and_keeps_old_report](../tests/test_post_reviews.py) |
 | B03/Q01　实际音乐身份与许可证据一致 | 尚无直接证据 | 部分核验 | 合成库存音频绑定用途、市场和期限；范围不符被拒，平台声音引用不能冒充本地许可或混进成片。生产平台实际附曲仍未核实。 | [SoundtrackTests.test_licensed_stock_and_scope_expiry_no_music_and_platform_handoff](../tests/test_soundtrack.py) |
+
+## 制作恢复与人工发布交接
+
+| 原文门槛 | 核对的行为 | 具名用例 |
+| --- | --- | --- |
+| H04/Q01、Q02、Q04 | 固定当前运行的目标、节点产物、调用、人工锁与停止条件，人工请求暂停或取消的理由也保留在不可裁剪的部分。小到无法容纳这些字段的窗口触发事务回退；仅可省略可回取的资料明细。读取历史证据会指出当前商品版本的变化。 | [未知副作用与原始证据](../tests/test_context_pack.py)、[在工作流界面固定再从 H04 读回](../scripts/browser_workspace_actions.py) |
+| Y04/Q03、Q05 | 失败或被接管的原尝试保留记录。后继按冻结条件从头编码，旧进程恢复运行时无法提交第二份成片。单机 FFmpeg 的后继提交需通过完整解码。 | [在两个活动工作进程间接管并检查最终成片](../tests/test_render_recovery.py)、[进程中断后从网页接管](../scripts/browser_render_recovery.py) |
+| J05/Q01、Q02、Q04 | 并发竞争同一个本地席位只产生一笔有效预留。人工交接进入在途后持续占位至核对，记录的 429 观察阻断新交接；现有货币预算与本地次数独立。平台实际动态限额待实联。 | [队列竞争、到期、限流及收讫](../tests/test_account_quota.py) |
+| F03/Q01–Q04 | 账号待定时产出可校验 ZIP；已确定接收账号时核对创作者范围、市场和商品。包收讫、目标挂品、已观察到的商品各自有证据。线上资格与挂品参考人工凭据。 | [无账号、回执、商品差异及过期来源](../tests/test_commercial_handoff.py) |
+
+J05 与 F03 的联动另有[四个并发与时序用例](../tests/test_quota_commercial_integration.py)。正在占位或在途的意图不能通过改名或换商品绕过已冻结的版本。交接后商品失效仍可按原意图登记实际回执，记录新的观察使用当下有权使用的证据。
+
+每一行的范围限于对应的本地路线。全套执行记录及样本见[本次分批回归](../evidence/atlas-production-2026-11-24/README.md)。

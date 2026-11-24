@@ -5002,6 +5002,137 @@
         "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
       }
     },
+    "/api/v1/media/render-jobs/{job_id}/recover": {
+      "post": {
+        "tags": [
+          "render recovery"
+        ],
+        "summary": "Recover",
+        "operationId": "recover_api_v1_media_render_jobs__job_id__recover_post",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Recovery"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
     "/api/v1/media/captions/parse": {
       "post": {
         "tags": [
@@ -9754,6 +9885,1137 @@
         "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
       }
     },
+    "/api/v1/production/account-quota/settings": {
+      "post": {
+        "tags": [
+          "manual publication quota"
+        ],
+        "summary": "Configure",
+        "operationId": "configure_api_v1_production_account_quota_settings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Settings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
+    "/api/v1/production/account-quota/{project_id}/{account_id}": {
+      "get": {
+        "tags": [
+          "manual publication quota"
+        ],
+        "summary": "Status",
+        "operationId": "status_api_v1_production_account_quota__project_id___account_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Account Id"
+            }
+          },
+          {
+            "name": "publication_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Publication Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
+    "/api/v1/production/account-quota/act": {
+      "post": {
+        "tags": [
+          "manual publication quota"
+        ],
+        "summary": "Action",
+        "operationId": "action_api_v1_production_account_quota_act_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Action"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
+    "/api/v1/production/account-quota/provider-observation": {
+      "post": {
+        "tags": [
+          "manual publication quota"
+        ],
+        "summary": "Observe",
+        "operationId": "observe_api_v1_production_account_quota_provider_observation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProviderObservation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
+    "/api/v1/production/commerce/packages": {
+      "post": {
+        "tags": [
+          "商品交接"
+        ],
+        "summary": "Prepare",
+        "operationId": "prepare_api_v1_production_commerce_packages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Prepare"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
+    "/api/v1/production/commerce/packages/{package_id}/file": {
+      "get": {
+        "tags": [
+          "商品交接"
+        ],
+        "summary": "Download",
+        "operationId": "download_api_v1_production_commerce_packages__package_id__file_get",
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "真实媒体字节；不包装 JSON",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Range 分段媒体字节",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "416": {
+            "description": "请求范围超出文件"
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
+    "/api/v1/production/commerce/bindings": {
+      "post": {
+        "tags": [
+          "商品交接"
+        ],
+        "summary": "Bind",
+        "operationId": "bind_api_v1_production_commerce_bindings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Bind"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
+    "/api/v1/production/commerce/observations": {
+      "post": {
+        "tags": [
+          "商品交接"
+        ],
+        "summary": "Observe",
+        "operationId": "observe_api_v1_production_commerce_observations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Attachment"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
+    "/api/v1/production/commerce/receipts": {
+      "post": {
+        "tags": [
+          "商品交接"
+        ],
+        "summary": "Receive",
+        "operationId": "receive_api_v1_production_commerce_receipts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Collect"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
     "/api/v1/production/score-policies/{project_id}": {
       "get": {
         "tags": [
@@ -13294,6 +14556,247 @@
         "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
       }
     },
+    "/api/v1/execution/context-packs": {
+      "post": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Pin Context",
+        "operationId": "pin_context_api_v1_execution_context_packs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
+    "/api/v1/execution/{run_id}/context-pack": {
+      "get": {
+        "tags": [
+          "context"
+        ],
+        "summary": "Read Context",
+        "operationId": "read_context_api_v1_execution__run_id__context_pack_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
     "/api/v1/projects/{project_id}/timeline-exchange/export": {
       "post": {
         "tags": [
@@ -16376,6 +17879,68 @@
         ],
         "title": "AcceptEdit"
       },
+      "Action": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "publication": {
+            "$ref": "#/components/schemas/ChosenVersion"
+          },
+          "expected_ticket_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Ticket Version"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "reserve",
+              "handoff",
+              "release",
+              "defer"
+            ],
+            "title": "Action"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "not_before": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Not Before"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "request_id",
+          "publication",
+          "expected_ticket_version",
+          "action",
+          "reason"
+        ],
+        "title": "Action"
+      },
       "Activate": {
         "properties": {
           "project_id": {
@@ -16664,6 +18229,88 @@
         ],
         "title": "Archive"
       },
+      "Attachment": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "post": {
+            "$ref": "#/components/schemas/ChosenVersion"
+          },
+          "publication": {
+            "$ref": "#/components/schemas/ChosenVersion"
+          },
+          "evidence_source": {
+            "$ref": "#/components/schemas/ChosenVersion"
+          },
+          "observed_shop_product_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Observed Shop Product Ids"
+          },
+          "observed_disclosure_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Disclosure Text"
+          },
+          "observed_disclosure_kind": {
+            "type": "string",
+            "enum": [
+              "own_brand",
+              "paid_partnership",
+              "own_brand_and_paid_partnership",
+              "absent",
+              "unknown"
+            ],
+            "title": "Observed Disclosure Kind"
+          },
+          "evidence": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Evidence"
+          },
+          "observed_at": {
+            "type": "string",
+            "title": "Observed At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "request_id",
+          "post",
+          "publication",
+          "evidence_source",
+          "observed_shop_product_ids",
+          "observed_disclosure_kind",
+          "evidence",
+          "observed_at"
+        ],
+        "title": "Attachment"
+      },
       "AutoEdit": {
         "properties": {
           "project_id": {
@@ -16810,6 +18457,64 @@
           "idempotency_key"
         ],
         "title": "AutoEdit"
+      },
+      "Bind": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "package": {
+            "$ref": "#/components/schemas/ChosenVersion"
+          },
+          "publication": {
+            "$ref": "#/components/schemas/ChosenVersion"
+          },
+          "account": {
+            "$ref": "#/components/schemas/ChosenVersion"
+          },
+          "market": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Market"
+          },
+          "creator_source": {
+            "$ref": "#/components/schemas/ChosenVersion"
+          },
+          "eligibility_evidence": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Eligibility Evidence"
+          },
+          "eligibility_expires_at": {
+            "type": "string",
+            "title": "Eligibility Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "request_id",
+          "package",
+          "publication",
+          "account",
+          "market",
+          "creator_source",
+          "eligibility_evidence",
+          "eligibility_expires_at"
+        ],
+        "title": "Bind"
       },
       "Build": {
         "properties": {
@@ -17063,6 +18768,58 @@
           "expected_classification_version"
         ],
         "title": "Classification"
+      },
+      "Collect": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "package": {
+            "$ref": "#/components/schemas/ChosenVersion"
+          },
+          "recipient": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Recipient"
+          },
+          "checksum": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Checksum"
+          },
+          "evidence": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Evidence"
+          },
+          "collected_at": {
+            "type": "string",
+            "title": "Collected At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "request_id",
+          "package",
+          "recipient",
+          "checksum",
+          "evidence",
+          "collected_at"
+        ],
+        "title": "Collect"
       },
       "CommandEnvelope": {
         "properties": {
@@ -19305,6 +21062,55 @@
         ],
         "title": "Option"
       },
+      "PackInput": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "run": {
+            "$ref": "#/components/schemas/ChosenVersion"
+          },
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "byte_limit": {
+            "type": "integer",
+            "maximum": 131072.0,
+            "minimum": 512.0,
+            "title": "Byte Limit",
+            "default": 16384
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/ChosenVersion"
+            },
+            "type": "array",
+            "maxItems": 24,
+            "title": "Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "run",
+          "request_id",
+          "reason"
+        ],
+        "title": "PackInput"
+      },
       "ParseCaptions": {
         "properties": {
           "filename": {
@@ -19480,6 +21286,99 @@
           "brief"
         ],
         "title": "Preflight"
+      },
+      "Prepare": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "artifact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChosenVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_package": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChosenVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ChosenVersion"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Products"
+          },
+          "account": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChosenVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "market": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market"
+          },
+          "disclosure_kind": {
+            "type": "string",
+            "enum": [
+              "own_brand",
+              "paid_partnership",
+              "own_brand_and_paid_partnership"
+            ],
+            "title": "Disclosure Kind"
+          },
+          "disclosure_text": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Disclosure Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "request_id",
+          "products",
+          "disclosure_kind",
+          "disclosure_text"
+        ],
+        "title": "Prepare"
       },
       "ProcessingEvidence": {
         "properties": {
@@ -19677,6 +21576,71 @@
           "expected_pointer_version"
         ],
         "title": "Proposal"
+      },
+      "ProviderObservation": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "account_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Account Id"
+          },
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "rate_limited",
+              "reviewed"
+            ],
+            "title": "Outcome"
+          },
+          "retry_after_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 604800.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retry After Seconds"
+          },
+          "evidence": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "account_id",
+          "request_id",
+          "expected_revision",
+          "outcome",
+          "evidence"
+        ],
+        "title": "ProviderObservation"
       },
       "PublicationInput": {
         "properties": {
@@ -20077,6 +22041,47 @@
           "data"
         ],
         "title": "RecordUpdate"
+      },
+      "Recovery": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "interrupt_running": {
+            "type": "boolean",
+            "title": "Interrupt Running",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "request_id",
+          "expected_revision",
+          "reason"
+        ],
+        "title": "Recovery"
       },
       "ReleaseInput": {
         "properties": {
@@ -20983,6 +22988,70 @@
           "review_note"
         ],
         "title": "SelectVariant"
+      },
+      "Settings": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "account_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Account Id"
+          },
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "daily_slots": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 1.0,
+            "title": "Daily Slots"
+          },
+          "concurrent_slots": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Concurrent Slots"
+          },
+          "hold_seconds": {
+            "type": "integer",
+            "maximum": 86400.0,
+            "minimum": 10.0,
+            "title": "Hold Seconds"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "account_id",
+          "request_id",
+          "expected_revision",
+          "daily_slots",
+          "concurrent_slots",
+          "hold_seconds",
+          "reason"
+        ],
+        "title": "Settings"
       },
       "Signal": {
         "properties": {

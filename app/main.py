@@ -195,6 +195,7 @@ async def unexpected_error(request: Request, exc: Exception):
 app.include_router(core_router, prefix="/api/v1")
 for module_name in (
     "media",
+    "render_recovery",
     "captions",
     "selection",
     "asset_lifecycle",
@@ -204,12 +205,15 @@ for module_name in (
     "rhythm",
     "providers",
     "production",
+    "account_quota",
+    "commercial_handoff",
     "score_policies",
     "comment_feedback",
     "post_reviews",
     "auto_edits",
     "generation",
     "execution",
+    "context_pack",
     "timeline_exchange",
     "asset_index",
     "voice_studio",

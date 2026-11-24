@@ -304,6 +304,11 @@ def import_products(body: ProductImport, request: Request, actor: Actor = Depend
                     "price": str(price),
                     "currency": currency,
                     "quantity": quantity,
+                    **{
+                        k: row[k].strip()
+                        for k in ("market", "shop_product_id")
+                        if (row.get(k) or "").strip()
+                    },
                     "name": row.get("name") or sku,
                     "validity": {"valid_until": expiry.isoformat()},
                     "evidence": evidence or source["data"].get("provenance"),
@@ -941,7 +946,7 @@ def create_publication(
     return ok(publication, request)
 
 
-def publication_preflight(actor: Actor, publication: dict) -> dict:
+def publication_preflight(actor: Actor, publication: dict, *, check_quota=True) -> dict:
     data, problems, checks = publication["data"], [], []
     artifact = record(actor, data["artifact_id"], "Artifact", version=data.get("artifact_version"))
     account = record(actor, data["account_id"], "Account")
@@ -1062,6 +1067,35 @@ def publication_preflight(actor: Actor, publication: dict) -> dict:
                 "message": "本版本未开放自动外发；保留平台适配合同及人工交接/回执链路。",
             }
         )
+    if check_quota and data.get("channel") == "manual":
+        from .account_quota import view as quota_view
+
+        local = quota_view(actor, account, publication)
+        if local["policy"] or local["ticket"]:
+            checks.append(
+                {
+                    "check": "local_account_quota",
+                    "state": local["effective_state"],
+                    "passed": not local["block"],
+                    "platform_capacity": "unknown",
+                }
+            )
+            if local["block"]:
+                problems.append(
+                    {
+                        "code": local["block"],
+                        "message": "请核对当前账号的本地席位、限流和交接状态。",
+                    }
+                )
+    if data.get("commerce_binding"):
+        from .commercial_handoff import verify_binding
+
+        try:
+            verify_binding(actor, publication)
+            checks.append({"check": "commercial_facts_and_creator_scope", "passed": True})
+        except DomainError as exc:
+            problems.append({"code": exc.code, "message": exc.message})
+            checks.append({"check": "commercial_facts_and_creator_scope", "passed": False})
     return {
         "publication_id": publication["id"],
         "version": publication["version"],
@@ -1157,6 +1191,9 @@ def manual_receipt(
             },
             [ref(pub), ref(account), ref(event)],
         )
+        from .account_quota import settle_receipt
+
+        settle_receipt(actor, pub, post)
         updated = revise(
             actor,
             pub,

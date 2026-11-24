@@ -1,3 +1,4 @@
+import { chooseContextPack } from "./context-pack.js";
 import {
   $,
   $$,
@@ -127,8 +128,10 @@ async function inspectRun(ctx, pid, id, getName) {
     !["completed", "cancelled", "running"].includes(run.data.status);
   const panel = modal(
     getName(run),
-    `<div class="surface-title"><h3>执行步骤</h3><span>${esc(states[run.data.status] || statusLabel(run.data.status))}</span></div>${rows}<div class="dialog-actions">${unknown.map((n) => `<button type="button" class="button secondary" data-check-node="${esc(n.id)}">核对${esc(name(n))}</button>`).join("")}${resumable ? btn("从检查点继续", "resume", "play", "button primary") : ""}</div>`,
+    `<div class="surface-title"><h3>执行步骤</h3><span>${esc(states[run.data.status] || statusLabel(run.data.status))}</span></div>${rows}<div class="dialog-actions">${unknown.map((n) => `<button type="button" class="button secondary" data-check-node="${esc(n.id)}">核对${esc(name(n))}</button>`).join("")}${btn("固定恢复证据", "context-pack", "flow", "button secondary")}${resumable ? btn("从检查点继续", "resume", "play", "button primary") : ""}</div>`,
   );
+  $("[data-action=context-pack]", panel).onclick = () =>
+    chooseContextPack(ctx, run);
   $("[data-action=resume]", panel)?.addEventListener("click", async (event) => {
     const b = event.currentTarget;
     b.disabled = true;

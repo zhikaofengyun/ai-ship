@@ -120,8 +120,32 @@ def main():
         expect(page.locator("#dialog h3")).to_have_text("执行步骤")
         expect(page.locator("#dialog")).to_contain_text("待补齐条件")
         expect(page.locator("#dialog [data-action=resume]")).to_be_visible()
+        page.locator("#dialog [data-action=context-pack]").click()
+        expect(page.locator("#dialog h2")).to_have_text("固定任务证据")
+        form.locator("[name=reason]").fill("恢复前固定运行依据")
+        form.locator("button[type=submit]").click()
+        expect(page.locator("#dialog h2")).to_have_text("任务恢复证据")
+        expect(page.locator("#dialog")).to_contain_text("核对尚未完成的条件")
+        expect(page.locator("#dialog")).to_contain_text("恢复前固定运行依据")
+        page.screenshot(path=str(output / "context-pack.png"))
+        page.locator("#dialog [data-pack-source]").first.click()
+        expect(page.locator("#dialog [data-back]")).to_be_visible()
+        page.locator("#dialog [data-back]").click()
+        expect(page.locator("#dialog h2")).to_have_text("任务恢复证据")
         page.keyboard.press("Escape")
-        checks.append("recovery_opens_actual_checkpoint_without_changing_it")
+        page.goto(base + "/#module/harness/H04", wait_until="domcontentloaded")
+        page.locator("[data-action=feature-action]").click()
+        audits = client.get(
+            "/records", params={"kind": "Audit", "project_id": project["id"]}
+        ).json()["data"]
+        pinned = next(a for a in audits if a["data"].get("action") == "pin_context")
+        form.locator("[name=run]").select_option(
+            pinned["data"]["context_packet"]["source_run"]["id"]
+        )
+        form.locator("[data-read-pack]").click()
+        expect(page.locator("#dialog h2")).to_have_text("任务恢复证据")
+        page.keyboard.press("Escape")
+        checks.append("recover_blocked_workflow_pin_and_read_audited_context_from_feature")
 
         wav = io.BytesIO()
         with wave.open(wav, "wb") as w:

@@ -21,22 +21,22 @@ STATUS_LABELS = {
 STATUS_IDS = {
     "local_business_subset": frozenset("""
         A01 A04 A05 A06 A07 B01 B02 B03 B04 B05 B06 C01 C03 C04 C06 C07 C09 C11 D01 D02 D03 D05 D07
-        D08 E01 E02 E03 E04 E05 E06 E07 E08 E09 F01 F02 F04 F06 F08 G01 G02 G03 G04 G05 G06 H01
-        H03 H05 H06 H07 H10 H11 H12 I01 I02 I03 I04 I06 I07 J03 J04 J06 K01 K02 K03 K04 K05 K06
+        D08 E01 E02 E03 E04 E05 E06 E07 E08 E09 F01 F02 F03 F04 F06 F08 G01 G02 G03 G04 G05 G06 H01
+        H03 H04 H05 H06 H07 H10 H11 H12 I01 I02 I03 I04 I06 I07 J03 J04 J05 J06 K01 K02 K03 K04 K05 K06
         L01 L02 L03 L04 L05 L06 L07 M01 M02 M03 M04 M05 M06 M07 M08 M09 N01 N02 N03 N04 N06 N07 O01 O02
         O03 O06 P01 P02 P05 P06 S01 S03 S04 S05 S06 T01 T02 T03 T04 T05 T06 U01 U02 U03 U04 U05 U06
         U07 V01 V02 V03 V04 V05 V06 V07 V08 V09 W01 W02 W03 W04 W05 W07 W08 W09 X01 X02 X03 X04 X05 X06
-        X07 Y01 Y02 Y03 Y05 Y06 Y07 Y08 Y09
+        X07 Y01 Y02 Y03 Y04 Y05 Y06 Y07 Y08 Y09
     """.split()),
     "generic_framework_only": frozenset("""
         C02 C05 C08 C10 H02 H08 H09 N05 O04 O05 O07 P03 P04 S02 W06 X08
     """.split()),
     "external_adapter_unverified": frozenset(),
     "contract_and_configuration_only": frozenset("""
-        A02 A03 D04 D06 F03 F05 F07 F09 H04 I05 J01 J02 J05 J07 Y04
+        A02 A03 D04 D06 F05 F07 F09 I05 J01 J02 J07
     """.split()),
 }
-EXPECTED_COUNTS = dict(zip(STATUS_LABELS, (147, 16, 0, 15)))
+EXPECTED_COUNTS = dict(zip(STATUS_LABELS, (151, 16, 0, 11)))
 EXPECTED_WORKFLOW_ROUTES = frozenset("""
     I03-R2 I04-R1 I07-R2 L01-R1 L07-R1 V01-R3 V03-R2 E01-R1 E08-R1 Y03-R1 Y06-R2
 """.split())
@@ -229,6 +229,30 @@ BUDGET_FEATURES = frozenset("""
 
 # These endpoints are a declared existing subset, not all source routes.
 ENDPOINT_GROUPS = [
+    (
+        "F03",
+        [
+            "POST /api/v1/production/commerce/packages",
+            "GET /api/v1/production/commerce/packages/{package_id}/file",
+            "POST /api/v1/production/commerce/bindings",
+            "POST /api/v1/production/commerce/receipts",
+            "POST /api/v1/production/commerce/observations",
+        ],
+    ),
+    (
+        "J05",
+        [
+            "POST /api/v1/production/account-quota/settings",
+            "GET /api/v1/production/account-quota/{project_id}/{account_id}",
+            "POST /api/v1/production/account-quota/act",
+            "POST /api/v1/production/account-quota/provider-observation",
+        ],
+    ),
+    ("Y04", ["POST /api/v1/media/render-jobs/{job_id}/recover"]),
+    (
+        "H04",
+        ["POST /api/v1/execution/context-packs", "GET /api/v1/execution/{run_id}/context-pack"],
+    ),
     (
         "M09",
         [
@@ -445,6 +469,10 @@ ENDPOINT_GROUPS += [
     ),
 ]
 CURRENT_CODE_GROUPS = [
+    ("F03", ["app/commercial_handoff.py", "web/commercial-handoff.js"]),
+    ("J05", ["app/account_quota.py", "web/account-quota.js"]),
+    ("Y04", ["app/render_recovery.py", "web/render-recovery.js"]),
+    ("H04", ["app/context_pack.py", "web/context-pack.js"]),
     ("M09", ["app/post_reviews.py", "web/post-reviews.js"]),
     ("V02", ["app/script_readings.py", "web/narration.js"]),
     ("A06", ["app/source_changes.py", "app/production.py", "web/source-changes.js"]),
@@ -509,6 +537,31 @@ COMMAND_GROUPS = [
 
 # Precise test definitions are supporting evidence only. No run is fabricated.
 TEST_GROUPS = [
+    (
+        "F03 J05",
+        "tests/test_quota_commercial_integration.py",
+        "QuotaCommercialIntegration.test_binding_and_reservation_race_cannot_both_target_the_same_version",
+    ),
+    (
+        "F03",
+        "tests/test_commercial_handoff.py",
+        "CommercialHandoffTests.test_manual_binding_preflight_observed_products_and_disclosure_are_separate",
+    ),
+    (
+        "J05",
+        "tests/test_account_quota.py",
+        "AccountQuotaTests.test_fair_race_expiry_and_unknown_handoff_never_auto_releases",
+    ),
+    (
+        "Y04",
+        "tests/test_render_recovery.py",
+        "RenderRecoveryTests.test_running_predecessor_is_fenced_after_confirmed_handoff",
+    ),
+    (
+        "H04",
+        "tests/test_context_pack.py",
+        "RecoveryPackTests.test_evidence_sources_and_stops_survive_pressure_and_unknown_requires_review",
+    ),
     (
         "M09",
         "tests/test_post_reviews.py",
@@ -914,13 +967,23 @@ def read_audit_rows():
 
 def read_scenario_audit():
     rows = {}
+    directions = {}
     for line in (ROOT / "docs/scenario-coverage.md").read_text().splitlines():
+        heading = re.match(r"^\| (?:正向|反向|跨模块) ([NOX]) \| (\d+) \| (\d+) \| 0 \|$", line)
+        if heading:
+            directions[heading[1]] = (int(heading[2]), int(heading[3]))
         match = re.match(r"^\| (R1-\d\d-[NOX]) /.*?\|.*?\| \*\*(.*?)\*\*", line)
         if match:
             assert match[1] not in rows, f"Duplicate scenario: {match[1]}"
             assert match[2] in {"部分", "未覆盖"}, "No evidence for full scenario acceptance"
             rows[match[1]] = "partial" if match[2] == "部分" else "uncovered"
     assert set(rows) == {s["id"] for s in atlas["v6"]["scenarioMatrix"]}
+    for suffix in ("N", "O", "X"):
+        counts = Counter(value for key, value in rows.items() if key.endswith(suffix))
+        assert directions.get(suffix) == (
+            counts["partial"],
+            counts["uncovered"],
+        ), f"Scenario totals differ: {suffix}"
     return rows
 
 
@@ -962,6 +1025,10 @@ def declared_api_endpoints():
     endpoints = set()
     for filename in (
         "api",
+        "account_quota",
+        "commercial_handoff",
+        "context_pack",
+        "render_recovery",
         "creative",
         "post_reviews",
         "asset_families",
@@ -1184,7 +1251,7 @@ def build_manifest():
         "schema_version": "implementation-2",
         "source_version": atlas["schemaVersion"],
         "source_html_sha256": SOURCE_SHA256,
-        "boundary": "178项目录完整；147真实业务子集/16通用框架/0仅有未实联适配器/15仅合同配置，整项验收0。分类不等于完成率，目录路线不等于已注册执行路线。",
+        "boundary": "178项目录完整；151真实业务子集/16通用框架/0仅有未实联适配器/11仅合同配置，整项验收0。分类不等于完成率，目录路线不等于已注册执行路线。",
         "status_definitions": STATUS_LABELS,
         "counts": {
             "features": len(features),
@@ -1225,7 +1292,7 @@ def render_markdown(report):
         "",
         report["boundary"],
         "",
-        "本表由 implementation-2 清单生成，与独立审计四类一致。147 项有真实局部路径、16 项通用基础/配置、0 项仅有未实联适配器、15 项仅合同配置；完整原文业务验收通过 0。历史 implementation-1 的 133 项‘局部路径’已拆成 105+21+7，不是已完成功能数。",
+        "本表由 implementation-2 清单生成，与独立审计四类一致。151 项有真实局部路径、16 项通用基础/配置、0 项仅有未实联适配器、11 项仅合同配置；完整原文业务验收通过 0。历史 implementation-1 的 133 项‘局部路径’已拆成 105+21+7，不是已完成功能数。",
         "",
         "配置保存到 View；ConfigureFeature 只登记任务合同；真实执行走专用 API、明确控制面命令或已注册工作流路线。每项原文路线另列 source_route_ids，不等同于已经可执行。",
         "",

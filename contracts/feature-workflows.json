@@ -15842,22 +15842,26 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "独立本地 FFmpeg 任务失败或经确认接管后，按冻结时间线、来源与规格从头重渲染。接管写入后旧进程失去提交权，新产物通过全片解码后才可交付。",
+            "limits": "分段缓存重用、跨主机恢复、多渲染后端的等效性与长片压测仍待验。",
+            "direct_endpoints": [
+              "POST /api/v1/media/render-jobs/{job_id}/recover"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
+              "app/render_recovery.py",
               "app/schemas.py",
-              "web/controls.js"
+              "web/controls.js",
+              "web/render-recovery.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_render_recovery.py",
+                "symbol": "RenderRecoveryTests.test_running_predecessor_is_fenced_after_confirmed_handoff",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -17717,22 +17721,34 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "对人工交接按账号保留并发席位和滚动 24 小时配额，记录排队、到期、延期、已交接待核与结算。含依据的限流观察可以阻断新交接。",
+            "limits": "平台实时动态限额、自动写入、跨主机调度与提供商令牌桶均待接入。",
+            "direct_endpoints": [
+              "GET /api/v1/production/account-quota/{project_id}/{account_id}",
+              "POST /api/v1/production/account-quota/act",
+              "POST /api/v1/production/account-quota/provider-observation",
+              "POST /api/v1/production/account-quota/settings"
+            ],
             "commands": [],
             "code": [
+              "app/account_quota.py",
               "app/catalog.py",
               "app/schemas.py",
+              "web/account-quota.js",
               "web/controls.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_quota_commercial_integration.py",
+                "symbol": "QuotaCommercialIntegration.test_binding_and_reservation_race_cannot_both_target_the_same_version",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_account_quota.py",
+                "symbol": "AccountQuotaTests.test_fair_race_expiry_and_unknown_handoff_never_auto_releases",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -18548,22 +18564,35 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "生成带逐商品金额、币种、市场、来源版本与披露的实际交接包；经人工核验的创作者可以绑定意图，收包与实帖挂品观察分别留证。",
+            "limits": "店铺或平台真实商品资格接口、线上挂品、公开可见性与后续变更未端到端实联。",
+            "direct_endpoints": [
+              "GET /api/v1/production/commerce/packages/{package_id}/file",
+              "POST /api/v1/production/commerce/bindings",
+              "POST /api/v1/production/commerce/observations",
+              "POST /api/v1/production/commerce/packages",
+              "POST /api/v1/production/commerce/receipts"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
+              "app/commercial_handoff.py",
               "app/schemas.py",
+              "web/commercial-handoff.js",
               "web/controls.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_quota_commercial_integration.py",
+                "symbol": "QuotaCommercialIntegration.test_binding_and_reservation_race_cannot_both_target_the_same_version",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_commercial_handoff.py",
+                "symbol": "CommercialHandoffTests.test_manual_binding_preflight_observed_products_and_disclosure_are_separate",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -25853,22 +25882,27 @@
             }
           ],
           "delivered": {
-            "status": "contract_and_configuration_only",
-            "label": "仅合同配置",
-            "operable_scope": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-            "limits": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
-            "direct_endpoints": [],
+            "status": "local_business_subset",
+            "label": "真实局部路径",
+            "operable_scope": "任务进入本地工作流或保存合同后，人工固定原始版本、硬约束、停止条件、未解节点和工具调用。在给定 UTF-8 字节窗口保留原文引用；重新打开会标记已变化的来源。",
+            "limits": "自动分层检索、模型专用 token 计量、多阶段自动摘要与跨执行器恢复待验。",
+            "direct_endpoints": [
+              "GET /api/v1/execution/{run_id}/context-pack",
+              "POST /api/v1/execution/context-packs"
+            ],
             "commands": [],
             "code": [
               "app/catalog.py",
+              "app/context_pack.py",
               "app/schemas.py",
+              "web/context-pack.js",
               "web/controls.js"
             ],
             "test_definitions": [
               {
-                "file": "scripts/check_contracts.py",
-                "symbol": "check",
-                "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+                "file": "tests/test_context_pack.py",
+                "symbol": "RecoveryPackTests.test_evidence_sources_and_stops_survive_pressure_and_unknown_requires_review",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false

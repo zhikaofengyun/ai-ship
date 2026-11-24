@@ -68,6 +68,7 @@
 | POST | `/api/v1/media/{asset_id}/transform` | Transform Endpoint | `MediaTransformInput` |
 | GET | `/api/v1/media/{asset_id}/waveform` | Waveform Endpoint | `—` |
 | POST | `/api/v1/media/{asset_id}/extract-audio` | Extract Audio Endpoint | `AudioExtractInput` |
+| POST | `/api/v1/media/render-jobs/{job_id}/recover` | Recover | `Recovery` |
 | POST | `/api/v1/media/captions/parse` | Parse Captions | `ParseCaptions` |
 | POST | `/api/v1/media/captions/export` | Export Captions | `ExportCaptions` |
 | POST | `/api/v1/production/selection/brief` | Approve Brief | `ReviewBrief` |
@@ -107,6 +108,15 @@
 | POST | `/api/v1/production/experiments/{experiment_id}/evaluate` | Evaluate Experiment | `EvaluationInput` |
 | GET | `/api/v1/production/trace/{record_id}` | Lineage | `—` |
 | POST | `/api/v1/production/replay/prepare` | Prepare Replay | `ReplayInput` |
+| POST | `/api/v1/production/account-quota/settings` | Configure | `Settings` |
+| GET | `/api/v1/production/account-quota/{project_id}/{account_id}` | Status | `—` |
+| POST | `/api/v1/production/account-quota/act` | Action | `Action` |
+| POST | `/api/v1/production/account-quota/provider-observation` | Observe | `ProviderObservation` |
+| POST | `/api/v1/production/commerce/packages` | Prepare | `Prepare` |
+| GET | `/api/v1/production/commerce/packages/{package_id}/file` | Download | `—` |
+| POST | `/api/v1/production/commerce/bindings` | Bind | `Bind` |
+| POST | `/api/v1/production/commerce/observations` | Observe | `Attachment` |
+| POST | `/api/v1/production/commerce/receipts` | Receive | `Collect` |
 | GET | `/api/v1/production/score-policies/{project_id}` | Read Pointer | `—` |
 | POST | `/api/v1/production/score-policies/propose` | Propose | `Proposal` |
 | POST | `/api/v1/production/score-policies/evaluate` | Evaluate | `Evaluation` |
@@ -136,6 +146,8 @@
 | POST | `/api/v1/execution/{run_id}/resume` | Resume Endpoint | `ResumeInput` |
 | GET | `/api/v1/execution/{run_id}/recovery` | Recovery | `—` |
 | POST | `/api/v1/execution/{run_id}/reconcile` | Reconcile | `ReconcileInput` |
+| POST | `/api/v1/execution/context-packs` | Pin Context | `PackInput` |
+| GET | `/api/v1/execution/{run_id}/context-pack` | Read Context | `—` |
 | POST | `/api/v1/projects/{project_id}/timeline-exchange/export` | Export Timeline | `ExportInput` |
 | POST | `/api/v1/projects/{project_id}/timeline-exchange/inspect` | Inspect Timeline | `InspectInput` |
 | POST | `/api/v1/projects/{project_id}/timeline-exchange/import` | Import Timeline | `ImportInput` |
@@ -162,7 +174,7 @@
 | POST | `/api/v1/production/soundtrack/remove-music` | Remove Music | `RemoveMusic` |
 | POST | `/api/v1/production/soundtrack/listen-review` | Listen Review | `ListeningReview` |
 
-共 133 个 HTTP 操作。完整 path/query/header 条件、枚举、范围、错误与二进制声明在 OpenAPI 中。
+共 145 个 HTTP 操作。完整 path/query/header 条件、枚举、范围、错误与二进制声明在 OpenAPI 中。
 
 ## 工作流和组件扩展
 

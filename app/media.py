@@ -1584,7 +1584,20 @@ def render_time_segments(clips: list[dict], duration: float) -> list[dict]:
     return segments
 
 
-def render_timeline(store: Any, actor: Any, body: dict) -> dict:
+def render_receipt(job, artifact, manifest, time_map):
+    return {
+        "job": job,
+        "artifact": artifact,
+        "manifest": manifest,
+        "time_map": time_map,
+        "qc": manifest["data"]["qc"],
+        "preview_url": f"/api/v1/media/artifacts/{artifact['id']}/file",
+        "download_url": f"/api/v1/media/artifacts/{artifact['id']}/file?download=true",
+        "package_url": f"/api/v1/media/artifacts/{artifact['id']}/package",
+    }
+
+
+def render_timeline(store: Any, actor: Any, body: dict, *, recovery=None) -> dict:
     project_id = body.get("project_id")
     require_project(store, actor, project_id)
     timeline = store.get(body.get("timeline_id"), actor.tenant_id)
@@ -1707,25 +1720,55 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
             (c["record"]["id"], c["record"]["version"]): ref(c["record"]) for c in all_clips
         }.values(),
     ]
-    job = store.create(
-        "RenderJob",
-        {
-            "status": "running",
-            "timeline_id": timeline["id"],
-            "timeline_version": timeline["version"],
-            "profile": {"width": width, "height": height, "fps": fps},
-            "started_at": now(),
-            "expected_duration": duration,
-            "renderer": "ffmpeg_local",
-            "resource_limits": {
-                "threads": 2,
-                "timeout_seconds": MAX_RENDER_SECONDS,
-                "max_bytes": MAX_BYTES,
-            },
-        },
-        refs=refs,
-        **kwargs,
+    from .render_recovery import (
+        checkpoint,
+        runtime_identity,
+        claim,
+        media_pin,
+        verify_recovered_output,
+        completed_baseline,
     )
+
+    font = next(
+        (
+            path
+            for path in [
+                Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"),
+                Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+            ]
+            if path.is_file()
+        ),
+        None,
+    )
+    environment = runtime_identity(font if captions else None, tool_versions())
+    actual_profile = {
+        "width": width,
+        "height": height,
+        "fps": {"num": fps_fraction.numerator, "den": fps_fraction.denominator},
+    }
+    snapshot = checkpoint(timeline, all_clips, actual_profile, environment)
+    job_data = {
+        "status": "running",
+        "timeline_id": timeline["id"],
+        "timeline_version": timeline["version"],
+        "profile": {"width": width, "height": height, "fps": fps},
+        "started_at": now(),
+        "expected_duration": duration,
+        "renderer": "ffmpeg_local",
+        "resource_limits": {
+            "threads": 2,
+            "timeout_seconds": MAX_RENDER_SECONDS,
+            "max_bytes": MAX_BYTES,
+        },
+    }
+    job_data["checkpoint"] = snapshot
+    if recovery:
+        parent, recovery_request = recovery
+        job, replay = claim(store, actor, job_data, refs, kwargs, parent, recovery_request)
+        if replay:
+            return replay
+    else:
+        job = store.create("RenderJob", job_data, refs=refs, **kwargs)
     started = time.monotonic()
     try:
         with tempfile.TemporaryDirectory(prefix="ai-ship-render-") as temp:
@@ -1798,17 +1841,6 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
                         f"[{index}:a:0]atrim=start={start:.9f}:end={end:.9f},asetpts=PTS-STARTPTS,{audio_tempo(clip['speed'])},volume={clip['volume']:.9f},aresample=48000,aformat=channel_layouts=stereo{transitions.audio_filters(clip)},adelay={delay}|{delay}[{label}]"
                     )
                     audio_labels.append(label)
-            font = next(
-                (
-                    path
-                    for path in [
-                        Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"),
-                        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
-                    ]
-                    if path.is_file()
-                ),
-                None,
-            )
             if captions and font is None:
                 raise DomainError("FONT_UNAVAILABLE", "缺少字幕字体，不能输出不完整成片", 422)
             for index, caption in enumerate(normalized_captions):
@@ -1865,6 +1897,8 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
             qc = technical_qc(
                 output, {"width": width, "height": height, "fps": fps, "has_audio": True}, duration
             )
+            if recovery:
+                verify_recovered_output(store, actor, parent, output, qc, fps_fraction)
             if opening_text:
                 qc["opening_check"] = {
                     "expected_text": opening_text,
@@ -1884,13 +1918,42 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
                 raise DomainError("MEDIA_REVOKED", "渲染期间来源撤权，停止提交当前产物", 403)
         segments = render_time_segments(all_clips, duration)
         with store.transaction():
+            current_job = store.get(job["id"], actor.tenant_id)
+            if (
+                current_job["version"] != job["version"]
+                or current_job["data"]["status"] != "running"
+            ):
+                raise DomainError("RENDER_FENCED", "该尝试已移交，旧任务不能提交成片。", 409)
             check_revision(store.get(timeline["id"], actor.tenant_id), timeline["version"])
             if first_revision["data"].get("voice_alignment_plan"):
                 from .voice_studio import verify_timeline_alignment
 
                 verify_timeline_alignment(actor, first_revision, timeline)
-            for clip in all_clips:
-                resolve_media(store, actor, clip["record"]["id"], project_id=project_id)
+            from .auth import actor_still_authorized
+
+            if not actor_still_authorized(actor):
+                raise DomainError("FORBIDDEN", "渲染身份当前没有写入权限。", 403)
+            if (
+                recovery
+                and runtime_identity(font if captions else None, tool_versions()) != environment
+            ):
+                raise DomainError(
+                    "RENDER_ENVIRONMENT_CHANGED", "整片渲染期间字体或工具已变化。", 409
+                )
+            if recovery and "baseline_comparison" in qc:
+                baseline, _ = completed_baseline(store, actor, parent)
+                if ref(baseline) != qc["baseline_comparison"]["artifact"]:
+                    raise DomainError(
+                        "RENDER_BASELINE_CHANGED", "原成片在重跑期间产生了新版本。", 409
+                    )
+            for clip, frozen in zip(all_clips, snapshot["media"]):
+                current, location, path = resolve_media(
+                    store, actor, clip["record"]["id"], project_id=project_id
+                )
+                if media_pin(clip["id"], current, location, path) != frozen:
+                    raise DomainError(
+                        "RENDER_INPUT_CHANGED", "渲染期间素材版本、对象位置或内容已经改变。", 409
+                    )
             blob = store.create(
                 "BlobLocation",
                 {**blob_data, "purpose": "artifact", "mime_type": "video/mp4"},
@@ -2030,7 +2093,7 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
                 tenant_id=actor.tenant_id,
                 expected_revision=job["version"],
                 actor_id=actor.actor_id,
-                refs=[*refs, ref(artifact), ref(manifest)],
+                refs=[*job["refs"], ref(artifact), ref(manifest)],
                 reason="真实渲染与全片技术解码校验通过；内容审阅另行确认",
             )
             store.create(
@@ -2048,19 +2111,13 @@ def render_timeline(store: Any, actor: Any, body: dict) -> dict:
                 refs=[ref(job), ref(artifact)],
                 **kwargs,
             )
-        return {
-            "job": job,
-            "artifact": artifact,
-            "manifest": manifest,
-            "time_map": time_map,
-            "qc": qc,
-            "preview_url": f"/api/v1/media/artifacts/{artifact['id']}/file",
-            "download_url": f"/api/v1/media/artifacts/{artifact['id']}/file?download=true",
-            "package_url": f"/api/v1/media/artifacts/{artifact['id']}/package",
-        }
+        return render_receipt(job, artifact, manifest, time_map)
     except Exception as exc:
         current_job = store.get(job["id"], actor.tenant_id)
-        if current_job["data"].get("status") != "succeeded":
+        if (
+            current_job["data"].get("status") == "running"
+            and current_job["version"] == job["version"]
+        ):
             store.update(
                 current_job["id"],
                 {
@@ -2443,7 +2500,9 @@ def analyze_audio_endpoint(asset_id: str, request: Request, actor=Depends(curren
     return envelope(analyze_audio_onsets(get_store(), actor, asset_id), request)
 
 
-def create_package(store: Any, actor: Any, artifact_id: str) -> tuple[dict, Path]:
+def create_package(
+    store: Any, actor: Any, artifact_id: str, *, commerce=None, commerce_refs=()
+) -> tuple[dict, Path]:
     artifact, _, path = resolve_media(store, actor, artifact_id, purpose="export")
     if artifact["kind"] != "Artifact":
         raise DomainError("INVALID_ARTIFACT", "交付包需要真实成片", 422)
@@ -2473,8 +2532,53 @@ def create_package(store: Any, actor: Any, artifact_id: str) -> tuple[dict, Path
                 archive.writestr(name, json.dumps(record, ensure_ascii=False, indent=2))
             archive.writestr(
                 "README.txt",
-                "AI-ship 真实媒体交付包\n包含实际成片及冻结时间线、渲染清单、来源区间映射。\n原件未嵌入此包；回导需同租户可读取原素材引用。\n状态：技术校验通过，商品事实、许可、语义和审美仍需内容审阅。\n映射精度：容差内可比；不保证逐位一致重渲染。\n外部编辑软件专有工程格式尚未适配。\n",
+                (
+                    "本包用于人工商品交接。按 commercial-metadata.json 核对商品、数量、价格、披露和待办事项；尚无平台挂载或发布结论。\n"
+                    if commerce is not None
+                    else ""
+                )
+                + "AI-ship 真实媒体交付包\n包含实际成片及冻结时间线、渲染清单、来源区间映射。\n原件未嵌入此包；回导需同租户可读取原素材引用。\n状态：技术校验通过，商品事实、许可、语义和审美仍需内容审阅。\n映射精度：容差内可比；不保证逐位一致重渲染。\n外部编辑软件专有工程格式尚未适配。\n",
             )
+            if commerce is not None:
+                archive.writestr(
+                    "commercial-metadata.json", json.dumps(commerce, ensure_ascii=False, indent=2)
+                )
+        handoff = {}
+        if commerce is not None:
+            with zipfile.ZipFile(destination) as archive:
+                files = []
+                for member in archive.infolist():
+                    with archive.open(member) as handle:
+                        files.append(
+                            {
+                                "path": member.filename,
+                                "size_bytes": member.file_size,
+                                "sha256": hashlib.file_digest(handle, "sha256").hexdigest(),
+                            }
+                        )
+                if json.loads(archive.read("commercial-metadata.json")) != commerce or files[0][
+                    "sha256"
+                ] != hash_file(path):
+                    raise DomainError(
+                        "HANDOFF_VERIFICATION_FAILED", "交接包内容与冻结成片或商品快照不一致。", 409
+                    )
+            handoff = {
+                "purpose": "publish_handoff",
+                "feature_id": "F03",
+                "route_id": "F03-R3",
+                "handoff_state": "ready",
+                "files": files,
+                "product_refs": [p["product"] for p in commerce["products"]],
+                "commercial_metadata": commerce,
+                "target_account_ref": commerce["account"],
+                "parent_package_ref": commerce["parent_package"],
+                "pending_actions": commerce["pending_actions"],
+                "artifact_refs": [ref(artifact)],
+                "approved_usage": {
+                    "purpose": "manual_commercial_handoff_review",
+                    "public_release_authorized": False,
+                },
+            }
         blob_data = persist_blob(destination, actor.tenant_id)
     kwargs = actor_kwargs(actor, project_id)
     with store.transaction():
@@ -2500,11 +2604,13 @@ def create_package(store: Any, actor: Any, artifact_id: str) -> tuple[dict, Path
                     "render-manifest.json",
                     "time-map.json",
                     "README.txt",
+                    *(["commercial-metadata.json"] if commerce is not None else []),
                 ],
                 "omissions": ["原始素材字节", "外部编辑器专有工程格式", "内容审阅凭证"],
                 "roundtrip_mode": "ai_ship_timeline_json",
+                **handoff,
             },
-            refs=[ref(artifact), ref(manifest), ref(timeline), ref(blob)],
+            refs=[ref(artifact), ref(manifest), ref(timeline), ref(blob), *commerce_refs],
             **kwargs,
         )
     return package, blob_path(blob, actor.tenant_id)

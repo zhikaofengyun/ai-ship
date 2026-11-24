@@ -1,3 +1,4 @@
+import { commercialHandoff } from "./commercial-handoff.js";
 import { postReview } from "./post-reviews.js";
 import { compare, families } from "./asset-families.js";
 import { openNarration, openReading } from "./narration.js";
@@ -109,7 +110,7 @@ function products(ctx) {
     ) +
       `<div data-new-source>${required("来源名称或凭据说明", "provenance")}</div>` +
       field("商品 CSV", "file", "", "file", 'accept=".csv,text/csv" required') +
-      "<small>必需列为 SKU、price、currency、valid_until。有效期须含时区。</small>",
+      "<small>必需列为 SKU、price、currency、valid_until。商品交接还需 quantity 和事实依据，实际挂载需 market、shop_product_id。有效期须含时区。</small>",
     "导入商品",
     async (v, f) => {
       const file = f.elements.file.files[0];
@@ -489,6 +490,7 @@ function replay(ctx) {
   );
 }
 const actions = {
+  F03:["商品绑定与交接",commercialHandoff],
   ...scorePolicyActions,
   M04: ["评论与洞察", feedback],
   M09: ["比较帖子与登记改版假设", postReview],
