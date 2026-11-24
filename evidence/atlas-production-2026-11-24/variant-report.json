@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "round": "1",
+  "engine": "chromium",
+  "checks": [
+    "Uploaded three audiovisual sources; built a two-shot AI plan, held its opening and returned one admissible option out of three requested, with four measured differences.",
+    "Reloaded the persisted family and opened its selected child proposal on the same page with parent version and human decision intact.",
+    "Approved and rendered the child via existing controls, decoded both video segments and the audio stream, matched their expected on-screen words and re-read the unchanged parent."
+  ],
+  "screenshots": [
+    "candidate.png",
+    "actual-export.png"
+  ],
+  "page_errors": [],
+  "scope": "Local same-project storyboard selection, locked primary interval, measured source comparisons, independent readback of decoded order/streams. No audience or platform conclusions.",
+  "candidate": {
+    "name": "固定开场并选择不同的结尾 · 变体 1",
+    "plan": {
+      "id": "plan_522d7c5f57474b4d997ebffe73ab5664",
+      "kind": "Plan",
+      "version": 1
+    },
+    "score": 0.8788,
+    "shots": [
+      {
+        "asset_id": "asset_e6b2c7b411804899ac399df3a1e15ef7",
+        "name": "b.mp4",
+        "source_in": 0.0,
+        "source_out": 1.0
+      },
+      {
+        "asset_id": "asset_bad04bfa86df4b77a8bf79206364dd76",
+        "name": "c.mp4",
+        "source_in": 0.0,
+        "source_out": 1.0
+      }
+    ],
+    "vs_base": {
+      "picture": 0.5152,
+      "sound": 0.9999,
+      "structure": 1.0,
+      "text": 1.0
+    },
+    "vs_history": [],
+    "vs_siblings": []
+  },
+  "initial_plan": "plan_e6c0f645fde4489e93f3aef487bb7e5d",
+  "selected_run": "edit_5855dcf2c4231cbcd5b943fe3c7dc5c8ee10",
+  "output_sha256": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+  "decoded_words": [
+    "RIVER",
+    "MOUNTAIN ||"
+  ]
+}

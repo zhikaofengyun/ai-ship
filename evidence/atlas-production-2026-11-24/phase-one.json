@@ -1,0 +1,8316 @@
+{
+  "scope": "本地完整套件。每轮重新建库，同一指纹、五种用例顺序。单轮测试数与重复次数分别统计。",
+  "runtime": {
+    "python": "3.12.14",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "packages": {
+      "fastapi": "0.141.1",
+      "uvicorn": "0.52.1",
+      "pydantic": "2.13.4",
+      "httpx": "0.28.1",
+      "jsonschema": "4.26.0",
+      "black": "26.10.1",
+      "opentimelineio": "0.18.1",
+      "playwright": "1.62.0"
+    },
+    "ffmpeg": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "node": "v24.22.3"
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "started_at": "2026-11-24T15:57:27.047920+00:00",
+      "finished_at": "2026-11-24T16:02:38.870107+00:00",
+      "source_sha256": "f7e61d777a25a165fdf1d5545a6eb3337f8f17fbf173249f3893d9003258feaa",
+      "unchanged_during_round": true,
+      "passed": true,
+      "checks": [
+        {
+          "name": "source-contract-integrity",
+          "exit_code": 0,
+          "seconds": 3.615
+        },
+        {
+          "name": "all-backend-media-cross-domain-tests",
+          "exit_code": 0,
+          "seconds": 199.41
+        },
+        {
+          "name": "all-original-feature-workflow-crosswalk",
+          "exit_code": 0,
+          "seconds": 0.417
+        },
+        {
+          "name": "new-module-production-forms",
+          "exit_code": 0,
+          "seconds": 8.354
+        },
+        {
+          "name": "brief-shot-selection-and-editor-handoff",
+          "exit_code": 0,
+          "seconds": 11.082
+        },
+        {
+          "name": "single-screen-edit-session",
+          "exit_code": 0,
+          "seconds": 18.495
+        },
+        {
+          "name": "workspace-route-execution-and-revisions",
+          "exit_code": 0,
+          "seconds": 8.524
+        },
+        {
+          "name": "all-browser-module-syntax",
+          "exit_code": 0,
+          "seconds": 2.858
+        },
+        {
+          "name": "python-formatting",
+          "exit_code": 0,
+          "seconds": 0.165
+        },
+        {
+          "name": "browser-formatting",
+          "exit_code": 0,
+          "seconds": 2.401
+        },
+        {
+          "name": "openapi-snapshot-drift",
+          "exit_code": 0,
+          "seconds": 1.857
+        },
+        {
+          "name": "typed-controls-and-imported-dom-boundaries",
+          "exit_code": 0,
+          "seconds": 14.203
+        },
+        {
+          "name": "exhaustive-browser-and-real-media",
+          "exit_code": 0,
+          "seconds": 30.577
+        },
+        {
+          "name": "scoring-policy-release",
+          "exit_code": 0,
+          "seconds": 5.433
+        },
+        {
+          "name": "comment-feedback",
+          "exit_code": 0,
+          "seconds": 5.435
+        },
+        {
+          "name": "webkit-creative-and-source-manifest",
+          "exit_code": 0,
+          "seconds": 8.231
+        },
+        {
+          "name": "webkit-single-screen-edit-session",
+          "exit_code": 0,
+          "seconds": 24.434
+        },
+        {
+          "name": "chromium-ai-production",
+          "exit_code": 0,
+          "seconds": 28.497
+        },
+        {
+          "name": "chromium-workspace-layout",
+          "exit_code": 0,
+          "seconds": 11.986
+        },
+        {
+          "name": "chromium-visual-transitions",
+          "exit_code": 0,
+          "seconds": 8.974
+        },
+        {
+          "name": "chromium-opening-text",
+          "exit_code": 0,
+          "seconds": 17.741
+        },
+        {
+          "name": "chromium-storyboard-variants",
+          "exit_code": 0,
+          "seconds": 12.735
+        },
+        {
+          "name": "chromium-voice-and-narration",
+          "exit_code": 0,
+          "seconds": 17.384
+        },
+        {
+          "name": "chromium-source-index-and-soundtrack",
+          "exit_code": 0,
+          "seconds": 13.634
+        },
+        {
+          "name": "chromium-asset-lifecycle-and-families",
+          "exit_code": 0,
+          "seconds": 11.868
+        },
+        {
+          "name": "webkit-ai-production",
+          "exit_code": 0,
+          "seconds": 32.327
+        },
+        {
+          "name": "webkit-workspace-layout",
+          "exit_code": 0,
+          "seconds": 13.714
+        },
+        {
+          "name": "webkit-visual-transitions",
+          "exit_code": 0,
+          "seconds": 11.998
+        },
+        {
+          "name": "webkit-opening-text",
+          "exit_code": 0,
+          "seconds": 18.296
+        },
+        {
+          "name": "webkit-storyboard-variants",
+          "exit_code": 0,
+          "seconds": 14.542
+        },
+        {
+          "name": "webkit-voice-and-narration",
+          "exit_code": 0,
+          "seconds": 21.326
+        },
+        {
+          "name": "webkit-source-index-and-soundtrack",
+          "exit_code": 0,
+          "seconds": 16.289
+        },
+        {
+          "name": "webkit-asset-lifecycle-and-families",
+          "exit_code": 0,
+          "seconds": 15.238
+        }
+      ],
+      "unit": {
+        "tests_run": 227,
+        "unique_test_ids": true,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "order_seed": 1
+      },
+      "unit_report_sha256": "f09a62491bd82f05deef528fa9f3679ddefd38a82da0ec099ac49095fd3dfc8d",
+      "raw_round_report_sha256": "9be4fab5559872ae4391d0bce95b4cca86b75881e82760c514f8f82fb4bc7c12",
+      "browser_summary": {
+        "features": [
+          {
+            "id": "P01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A07",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "G01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I07",
+            "control_count": 11,
+            "passed": true
+          },
+          {
+            "id": "L01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V03",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "V04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B05",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "B06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E02",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "E03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E04",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "E05",
+            "control_count": 11,
+            "passed": true
+          },
+          {
+            "id": "E06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F02",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "F03",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "F04",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "F05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M02",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "M03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X06",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "X07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C10",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C11",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "H01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H10",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H11",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H12",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W09",
+            "control_count": 3,
+            "passed": true
+          }
+        ],
+        "routes": [
+          "P01-R1",
+          "P01-R2",
+          "P01-R3",
+          "P02-R1",
+          "P02-R2",
+          "P02-R3",
+          "P03-R1",
+          "P03-R2",
+          "P03-R3",
+          "P04-R1",
+          "P04-R2",
+          "P04-R3",
+          "P05-R1",
+          "P05-R2",
+          "P05-R3",
+          "P06-R1",
+          "P06-R2",
+          "P06-R3",
+          "T01-R1",
+          "T01-R2",
+          "T01-R3",
+          "T02-R1",
+          "T02-R2",
+          "T02-R3",
+          "T03-R1",
+          "T03-R2",
+          "T03-R3",
+          "T04-R1",
+          "T04-R2",
+          "T04-R3",
+          "T05-R1",
+          "T05-R2",
+          "T05-R3",
+          "T06-R1",
+          "T06-R2",
+          "T06-R3",
+          "A01-R1",
+          "A01-R2",
+          "A01-R3",
+          "A02-R1",
+          "A02-R2",
+          "A02-R3",
+          "A03-R1",
+          "A03-R2",
+          "A03-R3",
+          "A04-R1",
+          "A04-R2",
+          "A04-R3",
+          "A05-R1",
+          "A05-R2",
+          "A05-R3",
+          "A06-R1",
+          "A06-R2",
+          "A06-R3",
+          "A07-R1",
+          "A07-R2",
+          "A07-R3",
+          "G01-R1",
+          "G01-R2",
+          "G01-R3",
+          "G02-R1",
+          "G02-R2",
+          "G02-R3",
+          "G03-R1",
+          "G03-R2",
+          "G03-R3",
+          "G04-R1",
+          "G04-R2",
+          "G04-R3",
+          "G05-R1",
+          "G05-R2",
+          "G05-R3",
+          "G06-R1",
+          "G06-R2",
+          "G06-R3",
+          "I01-R1",
+          "I01-R2",
+          "I01-R3",
+          "I02-R1",
+          "I02-R2",
+          "I02-R3",
+          "I03-R1",
+          "I03-R2",
+          "I03-R3",
+          "I04-R1",
+          "I04-R2",
+          "I04-R3",
+          "I05-R1",
+          "I05-R2",
+          "I05-R3",
+          "I06-R1",
+          "I06-R2",
+          "I06-R3",
+          "I07-R1",
+          "I07-R2",
+          "I07-R3",
+          "L01-R1",
+          "L01-R2",
+          "L01-R3",
+          "L02-R1",
+          "L02-R2",
+          "L02-R3",
+          "L03-R1",
+          "L03-R2",
+          "L03-R3",
+          "L04-R1",
+          "L04-R2",
+          "L04-R3",
+          "L05-R1",
+          "L05-R2",
+          "L05-R3",
+          "L06-R1",
+          "L06-R2",
+          "L06-R3",
+          "L07-R1",
+          "L07-R2",
+          "L07-R3",
+          "S01-R1",
+          "S01-R2",
+          "S01-R3",
+          "S02-R1",
+          "S02-R2",
+          "S02-R3",
+          "S03-R1",
+          "S03-R2",
+          "S03-R3",
+          "S04-R1",
+          "S04-R2",
+          "S04-R3",
+          "S05-R1",
+          "S05-R2",
+          "S05-R3",
+          "S06-R1",
+          "S06-R2",
+          "S06-R3",
+          "U01-R1",
+          "U01-R2",
+          "U01-R3",
+          "U02-R1",
+          "U02-R2",
+          "U02-R3",
+          "U03-R1",
+          "U03-R2",
+          "U03-R3",
+          "U04-R1",
+          "U04-R2",
+          "U04-R3",
+          "U05-R1",
+          "U05-R2",
+          "U05-R3",
+          "U06-R1",
+          "U06-R2",
+          "U06-R3",
+          "U07-R1",
+          "U07-R2",
+          "U07-R3",
+          "V01-R1",
+          "V01-R2",
+          "V01-R3",
+          "V02-R1",
+          "V02-R2",
+          "V02-R3",
+          "V03-R1",
+          "V03-R2",
+          "V03-R3",
+          "V04-R1",
+          "V04-R2",
+          "V04-R3",
+          "V05-R1",
+          "V05-R2",
+          "V05-R3",
+          "V06-R1",
+          "V06-R2",
+          "V06-R3",
+          "V07-R1",
+          "V07-R2",
+          "V07-R3",
+          "V08-R1",
+          "V08-R2",
+          "V08-R3",
+          "V09-R1",
+          "V09-R2",
+          "V09-R3",
+          "B01-R1",
+          "B01-R2",
+          "B01-R3",
+          "B02-R1",
+          "B02-R2",
+          "B02-R3",
+          "B03-R1",
+          "B03-R2",
+          "B03-R3",
+          "B04-R1",
+          "B04-R2",
+          "B04-R3",
+          "B05-R1",
+          "B05-R2",
+          "B05-R3",
+          "B06-R1",
+          "B06-R2",
+          "B06-R3",
+          "N01-R1",
+          "N01-R2",
+          "N01-R3",
+          "N02-R1",
+          "N02-R2",
+          "N02-R3",
+          "N03-R1",
+          "N03-R2",
+          "N03-R3",
+          "N04-R1",
+          "N04-R2",
+          "N04-R3",
+          "N05-R1",
+          "N05-R2",
+          "N05-R3",
+          "N06-R1",
+          "N06-R2",
+          "N06-R3",
+          "N07-R1",
+          "N07-R2",
+          "N07-R3",
+          "E01-R1",
+          "E01-R2",
+          "E01-R3",
+          "E02-R1",
+          "E02-R2",
+          "E02-R3",
+          "E03-R1",
+          "E03-R2",
+          "E03-R3",
+          "E04-R1",
+          "E04-R2",
+          "E04-R3",
+          "E05-R1",
+          "E05-R2",
+          "E05-R3",
+          "E06-R1",
+          "E06-R2",
+          "E06-R3",
+          "E07-R1",
+          "E07-R2",
+          "E07-R3",
+          "E08-R1",
+          "E08-R2",
+          "E08-R3",
+          "E09-R1",
+          "E09-R2",
+          "E09-R3",
+          "Y01-R1",
+          "Y01-R2",
+          "Y01-R3",
+          "Y02-R1",
+          "Y02-R2",
+          "Y02-R3",
+          "Y03-R1",
+          "Y03-R2",
+          "Y03-R3",
+          "Y04-R1",
+          "Y04-R2",
+          "Y04-R3",
+          "Y05-R1",
+          "Y05-R2",
+          "Y05-R3",
+          "Y06-R1",
+          "Y06-R2",
+          "Y06-R3",
+          "Y07-R1",
+          "Y07-R2",
+          "Y07-R3",
+          "Y08-R1",
+          "Y08-R2",
+          "Y08-R3",
+          "Y09-R1",
+          "Y09-R2",
+          "Y09-R3",
+          "J01-R1",
+          "J01-R2",
+          "J01-R3",
+          "J02-R1",
+          "J02-R2",
+          "J02-R3",
+          "J03-R1",
+          "J03-R2",
+          "J03-R3",
+          "J04-R1",
+          "J04-R2",
+          "J04-R3",
+          "J05-R1",
+          "J05-R2",
+          "J05-R3",
+          "J06-R1",
+          "J06-R2",
+          "J06-R3",
+          "J07-R1",
+          "J07-R2",
+          "J07-R3",
+          "F01-R1",
+          "F01-R2",
+          "F01-R3",
+          "F02-R1",
+          "F02-R2",
+          "F02-R3",
+          "F03-R1",
+          "F03-R2",
+          "F03-R3",
+          "F04-R1",
+          "F04-R2",
+          "F04-R3",
+          "F05-R1",
+          "F05-R2",
+          "F05-R3",
+          "F06-R1",
+          "F06-R2",
+          "F06-R3",
+          "F07-R1",
+          "F07-R2",
+          "F07-R3",
+          "F08-R1",
+          "F08-R2",
+          "F08-R3",
+          "F09-R1",
+          "F09-R2",
+          "F09-R3",
+          "M01-R1",
+          "M01-R2",
+          "M01-R3",
+          "M02-R1",
+          "M02-R2",
+          "M02-R3",
+          "M03-R1",
+          "M03-R2",
+          "M03-R3",
+          "M04-R1",
+          "M04-R2",
+          "M04-R3",
+          "M05-R1",
+          "M05-R2",
+          "M05-R3",
+          "M06-R1",
+          "M06-R2",
+          "M06-R3",
+          "M07-R1",
+          "M07-R2",
+          "M07-R3",
+          "M08-R1",
+          "M08-R2",
+          "M08-R3",
+          "M09-R1",
+          "M09-R2",
+          "M09-R3",
+          "X01-R1",
+          "X01-R2",
+          "X01-R3",
+          "X02-R1",
+          "X02-R2",
+          "X02-R3",
+          "X03-R1",
+          "X03-R2",
+          "X03-R3",
+          "X04-R1",
+          "X04-R2",
+          "X04-R3",
+          "X05-R1",
+          "X05-R2",
+          "X05-R3",
+          "X06-R1",
+          "X06-R2",
+          "X06-R3",
+          "X07-R1",
+          "X07-R2",
+          "X07-R3",
+          "X08-R1",
+          "X08-R2",
+          "X08-R3",
+          "C01-R1",
+          "C01-R2",
+          "C01-R3",
+          "C02-R1",
+          "C02-R2",
+          "C02-R3",
+          "C03-R1",
+          "C03-R2",
+          "C03-R3",
+          "C04-R1",
+          "C04-R2",
+          "C04-R3",
+          "C05-R1",
+          "C05-R2",
+          "C05-R3",
+          "C06-R1",
+          "C06-R2",
+          "C06-R3",
+          "C07-R1",
+          "C07-R2",
+          "C07-R3",
+          "C08-R1",
+          "C08-R2",
+          "C08-R3",
+          "C09-R1",
+          "C09-R2",
+          "C09-R3",
+          "C10-R1",
+          "C10-R2",
+          "C10-R3",
+          "C11-R1",
+          "C11-R2",
+          "C11-R3",
+          "H01-R1",
+          "H01-R2",
+          "H01-R3",
+          "H02-R1",
+          "H02-R2",
+          "H02-R3",
+          "H03-R1",
+          "H03-R2",
+          "H03-R3",
+          "H04-R1",
+          "H04-R2",
+          "H04-R3",
+          "H05-R1",
+          "H05-R2",
+          "H05-R3",
+          "H06-R1",
+          "H06-R2",
+          "H06-R3",
+          "H07-R1",
+          "H07-R2",
+          "H07-R3",
+          "H08-R1",
+          "H08-R2",
+          "H08-R3",
+          "H09-R1",
+          "H09-R2",
+          "H09-R3",
+          "H10-R1",
+          "H10-R2",
+          "H10-R3",
+          "H11-R1",
+          "H11-R2",
+          "H11-R3",
+          "H12-R1",
+          "H12-R2",
+          "H12-R3",
+          "D01-R1",
+          "D01-R2",
+          "D01-R3",
+          "D02-R1",
+          "D02-R2",
+          "D02-R3",
+          "D03-R1",
+          "D03-R2",
+          "D03-R3",
+          "D04-R1",
+          "D04-R2",
+          "D04-R3",
+          "D05-R1",
+          "D05-R2",
+          "D05-R3",
+          "D06-R1",
+          "D06-R2",
+          "D06-R3",
+          "D07-R1",
+          "D07-R2",
+          "D07-R3",
+          "D08-R1",
+          "D08-R2",
+          "D08-R3",
+          "K01-R1",
+          "K01-R2",
+          "K01-R3",
+          "K02-R1",
+          "K02-R2",
+          "K02-R3",
+          "K03-R1",
+          "K03-R2",
+          "K03-R3",
+          "K04-R1",
+          "K04-R2",
+          "K04-R3",
+          "K05-R1",
+          "K05-R2",
+          "K05-R3",
+          "K06-R1",
+          "K06-R2",
+          "K06-R3",
+          "O01-R1",
+          "O01-R2",
+          "O01-R3",
+          "O02-R1",
+          "O02-R2",
+          "O02-R3",
+          "O03-R1",
+          "O03-R2",
+          "O03-R3",
+          "O04-R1",
+          "O04-R2",
+          "O04-R3",
+          "O05-R1",
+          "O05-R2",
+          "O05-R3",
+          "O06-R1",
+          "O06-R2",
+          "O06-R3",
+          "O07-R1",
+          "O07-R2",
+          "O07-R3",
+          "W01-R1",
+          "W01-R2",
+          "W01-R3",
+          "W02-R1",
+          "W02-R2",
+          "W02-R3",
+          "W03-R1",
+          "W03-R2",
+          "W03-R3",
+          "W04-R1",
+          "W04-R2",
+          "W04-R3",
+          "W05-R1",
+          "W05-R2",
+          "W05-R3",
+          "W06-R1",
+          "W06-R2",
+          "W06-R3",
+          "W07-R1",
+          "W07-R2",
+          "W07-R3",
+          "W08-R1",
+          "W08-R2",
+          "W08-R3",
+          "W09-R1",
+          "W09-R2",
+          "W09-R3"
+        ],
+        "modules": [
+          "project",
+          "trend",
+          "acquire",
+          "generate",
+          "ingest",
+          "label",
+          "search",
+          "assetops",
+          "voice",
+          "music",
+          "plan",
+          "edit",
+          "render",
+          "account",
+          "publish",
+          "metrics",
+          "learn",
+          "agents",
+          "harness",
+          "data",
+          "security",
+          "ops",
+          "workspace"
+        ],
+        "passed": true,
+        "page_errors": []
+      },
+      "artifacts": {
+        "browser/browser-render.mp4": "ce1eb0883dd5dc6faa4e2750826d7020b2093f4c971f1ab061f52a4c0fc954bb",
+        "browser/browser-report.json": "0351a53a1c9f03fa46a0c052c79aa470416310453eec81dba5c4f33d61519571",
+        "director-chromium/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+        "director-webkit/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+        "media/synthetic-render.mp4": "2adcada3ee6d74eb8d10812b9afbb5ac3804314176a5b1f8c804cec0d1eb7ce6",
+        "media/synthetic-source.mp4": "01ea9c01b0634594a215e826e78db2d1cbc82f6b10fb696b96200eb98f9bf04d",
+        "opening-chromium/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+        "opening-webkit/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+        "studio/edited.mp4": "80a598095348ea5ffe4b0537f6e53e87f53d3de92e7fbfcb3f7b053ed00d49e7",
+        "typed-controls/media-chain-render.mp4": "48afe7bdc9279d6ae4317a1d461b2b98a3cbd608658fcebed4aad61159c9770a",
+        "variants-chromium/variant.mp4": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+        "variants-webkit/variant.mp4": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+        "voice-chromium/voice-cut.mp4": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+        "voice-webkit/voice-cut.mp4": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+        "webkit/edited.mp4": "80a598095348ea5ffe4b0537f6e53e87f53d3de92e7fbfcb3f7b053ed00d49e7"
+      }
+    },
+    {
+      "round": 2,
+      "started_at": "2026-11-24T16:01:25.452224+00:00",
+      "finished_at": "2026-11-24T16:07:05.727682+00:00",
+      "source_sha256": "f7e61d777a25a165fdf1d5545a6eb3337f8f17fbf173249f3893d9003258feaa",
+      "unchanged_during_round": true,
+      "passed": true,
+      "checks": [
+        {
+          "name": "source-contract-integrity",
+          "exit_code": 0,
+          "seconds": 4.115
+        },
+        {
+          "name": "all-backend-media-cross-domain-tests",
+          "exit_code": 0,
+          "seconds": 218.124
+        },
+        {
+          "name": "all-original-feature-workflow-crosswalk",
+          "exit_code": 0,
+          "seconds": 0.417
+        },
+        {
+          "name": "new-module-production-forms",
+          "exit_code": 0,
+          "seconds": 9.581
+        },
+        {
+          "name": "brief-shot-selection-and-editor-handoff",
+          "exit_code": 0,
+          "seconds": 12.302
+        },
+        {
+          "name": "single-screen-edit-session",
+          "exit_code": 0,
+          "seconds": 20.63
+        },
+        {
+          "name": "workspace-route-execution-and-revisions",
+          "exit_code": 0,
+          "seconds": 9.551
+        },
+        {
+          "name": "all-browser-module-syntax",
+          "exit_code": 0,
+          "seconds": 3.671
+        },
+        {
+          "name": "python-formatting",
+          "exit_code": 0,
+          "seconds": 0.268
+        },
+        {
+          "name": "browser-formatting",
+          "exit_code": 0,
+          "seconds": 2.598
+        },
+        {
+          "name": "openapi-snapshot-drift",
+          "exit_code": 0,
+          "seconds": 2.722
+        },
+        {
+          "name": "typed-controls-and-imported-dom-boundaries",
+          "exit_code": 0,
+          "seconds": 14.745
+        },
+        {
+          "name": "exhaustive-browser-and-real-media",
+          "exit_code": 0,
+          "seconds": 34.511
+        },
+        {
+          "name": "scoring-policy-release",
+          "exit_code": 0,
+          "seconds": 7.145
+        },
+        {
+          "name": "comment-feedback",
+          "exit_code": 0,
+          "seconds": 6.458
+        },
+        {
+          "name": "webkit-creative-and-source-manifest",
+          "exit_code": 0,
+          "seconds": 9.656
+        },
+        {
+          "name": "webkit-single-screen-edit-session",
+          "exit_code": 0,
+          "seconds": 26.654
+        },
+        {
+          "name": "chromium-ai-production",
+          "exit_code": 0,
+          "seconds": 27.315
+        },
+        {
+          "name": "chromium-workspace-layout",
+          "exit_code": 0,
+          "seconds": 12.344
+        },
+        {
+          "name": "chromium-visual-transitions",
+          "exit_code": 0,
+          "seconds": 9.493
+        },
+        {
+          "name": "chromium-opening-text",
+          "exit_code": 0,
+          "seconds": 19.729
+        },
+        {
+          "name": "chromium-storyboard-variants",
+          "exit_code": 0,
+          "seconds": 13.788
+        },
+        {
+          "name": "chromium-voice-and-narration",
+          "exit_code": 0,
+          "seconds": 17.009
+        },
+        {
+          "name": "chromium-source-index-and-soundtrack",
+          "exit_code": 0,
+          "seconds": 13.696
+        },
+        {
+          "name": "chromium-asset-lifecycle-and-families",
+          "exit_code": 0,
+          "seconds": 12.353
+        },
+        {
+          "name": "webkit-ai-production",
+          "exit_code": 0,
+          "seconds": 34.589
+        },
+        {
+          "name": "webkit-workspace-layout",
+          "exit_code": 0,
+          "seconds": 14.895
+        },
+        {
+          "name": "webkit-visual-transitions",
+          "exit_code": 0,
+          "seconds": 13.351
+        },
+        {
+          "name": "webkit-opening-text",
+          "exit_code": 0,
+          "seconds": 20.599
+        },
+        {
+          "name": "webkit-storyboard-variants",
+          "exit_code": 0,
+          "seconds": 15.597
+        },
+        {
+          "name": "webkit-voice-and-narration",
+          "exit_code": 0,
+          "seconds": 25.726
+        },
+        {
+          "name": "webkit-source-index-and-soundtrack",
+          "exit_code": 0,
+          "seconds": 19.804
+        },
+        {
+          "name": "webkit-asset-lifecycle-and-families",
+          "exit_code": 0,
+          "seconds": 16.15
+        }
+      ],
+      "unit": {
+        "tests_run": 227,
+        "unique_test_ids": true,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "order_seed": 2
+      },
+      "unit_report_sha256": "6f431dfdecb1ba09a8f363d8b34ea01eddea76ddc2b9210ca82e6cab226c2795",
+      "raw_round_report_sha256": "0020fc429fe4f539ccff355ca6d4cc19208957c6d7173a54414a140a09f97ecf",
+      "browser_summary": {
+        "features": [
+          {
+            "id": "P01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A07",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "G01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I07",
+            "control_count": 11,
+            "passed": true
+          },
+          {
+            "id": "L01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V03",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "V04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B05",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "B06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E02",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "E03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E04",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "E05",
+            "control_count": 11,
+            "passed": true
+          },
+          {
+            "id": "E06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F02",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "F03",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "F04",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "F05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M02",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "M03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X06",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "X07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C10",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C11",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "H01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H10",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H11",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H12",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W09",
+            "control_count": 3,
+            "passed": true
+          }
+        ],
+        "routes": [
+          "P01-R1",
+          "P01-R2",
+          "P01-R3",
+          "P02-R1",
+          "P02-R2",
+          "P02-R3",
+          "P03-R1",
+          "P03-R2",
+          "P03-R3",
+          "P04-R1",
+          "P04-R2",
+          "P04-R3",
+          "P05-R1",
+          "P05-R2",
+          "P05-R3",
+          "P06-R1",
+          "P06-R2",
+          "P06-R3",
+          "T01-R1",
+          "T01-R2",
+          "T01-R3",
+          "T02-R1",
+          "T02-R2",
+          "T02-R3",
+          "T03-R1",
+          "T03-R2",
+          "T03-R3",
+          "T04-R1",
+          "T04-R2",
+          "T04-R3",
+          "T05-R1",
+          "T05-R2",
+          "T05-R3",
+          "T06-R1",
+          "T06-R2",
+          "T06-R3",
+          "A01-R1",
+          "A01-R2",
+          "A01-R3",
+          "A02-R1",
+          "A02-R2",
+          "A02-R3",
+          "A03-R1",
+          "A03-R2",
+          "A03-R3",
+          "A04-R1",
+          "A04-R2",
+          "A04-R3",
+          "A05-R1",
+          "A05-R2",
+          "A05-R3",
+          "A06-R1",
+          "A06-R2",
+          "A06-R3",
+          "A07-R1",
+          "A07-R2",
+          "A07-R3",
+          "G01-R1",
+          "G01-R2",
+          "G01-R3",
+          "G02-R1",
+          "G02-R2",
+          "G02-R3",
+          "G03-R1",
+          "G03-R2",
+          "G03-R3",
+          "G04-R1",
+          "G04-R2",
+          "G04-R3",
+          "G05-R1",
+          "G05-R2",
+          "G05-R3",
+          "G06-R1",
+          "G06-R2",
+          "G06-R3",
+          "I01-R1",
+          "I01-R2",
+          "I01-R3",
+          "I02-R1",
+          "I02-R2",
+          "I02-R3",
+          "I03-R1",
+          "I03-R2",
+          "I03-R3",
+          "I04-R1",
+          "I04-R2",
+          "I04-R3",
+          "I05-R1",
+          "I05-R2",
+          "I05-R3",
+          "I06-R1",
+          "I06-R2",
+          "I06-R3",
+          "I07-R1",
+          "I07-R2",
+          "I07-R3",
+          "L01-R1",
+          "L01-R2",
+          "L01-R3",
+          "L02-R1",
+          "L02-R2",
+          "L02-R3",
+          "L03-R1",
+          "L03-R2",
+          "L03-R3",
+          "L04-R1",
+          "L04-R2",
+          "L04-R3",
+          "L05-R1",
+          "L05-R2",
+          "L05-R3",
+          "L06-R1",
+          "L06-R2",
+          "L06-R3",
+          "L07-R1",
+          "L07-R2",
+          "L07-R3",
+          "S01-R1",
+          "S01-R2",
+          "S01-R3",
+          "S02-R1",
+          "S02-R2",
+          "S02-R3",
+          "S03-R1",
+          "S03-R2",
+          "S03-R3",
+          "S04-R1",
+          "S04-R2",
+          "S04-R3",
+          "S05-R1",
+          "S05-R2",
+          "S05-R3",
+          "S06-R1",
+          "S06-R2",
+          "S06-R3",
+          "U01-R1",
+          "U01-R2",
+          "U01-R3",
+          "U02-R1",
+          "U02-R2",
+          "U02-R3",
+          "U03-R1",
+          "U03-R2",
+          "U03-R3",
+          "U04-R1",
+          "U04-R2",
+          "U04-R3",
+          "U05-R1",
+          "U05-R2",
+          "U05-R3",
+          "U06-R1",
+          "U06-R2",
+          "U06-R3",
+          "U07-R1",
+          "U07-R2",
+          "U07-R3",
+          "V01-R1",
+          "V01-R2",
+          "V01-R3",
+          "V02-R1",
+          "V02-R2",
+          "V02-R3",
+          "V03-R1",
+          "V03-R2",
+          "V03-R3",
+          "V04-R1",
+          "V04-R2",
+          "V04-R3",
+          "V05-R1",
+          "V05-R2",
+          "V05-R3",
+          "V06-R1",
+          "V06-R2",
+          "V06-R3",
+          "V07-R1",
+          "V07-R2",
+          "V07-R3",
+          "V08-R1",
+          "V08-R2",
+          "V08-R3",
+          "V09-R1",
+          "V09-R2",
+          "V09-R3",
+          "B01-R1",
+          "B01-R2",
+          "B01-R3",
+          "B02-R1",
+          "B02-R2",
+          "B02-R3",
+          "B03-R1",
+          "B03-R2",
+          "B03-R3",
+          "B04-R1",
+          "B04-R2",
+          "B04-R3",
+          "B05-R1",
+          "B05-R2",
+          "B05-R3",
+          "B06-R1",
+          "B06-R2",
+          "B06-R3",
+          "N01-R1",
+          "N01-R2",
+          "N01-R3",
+          "N02-R1",
+          "N02-R2",
+          "N02-R3",
+          "N03-R1",
+          "N03-R2",
+          "N03-R3",
+          "N04-R1",
+          "N04-R2",
+          "N04-R3",
+          "N05-R1",
+          "N05-R2",
+          "N05-R3",
+          "N06-R1",
+          "N06-R2",
+          "N06-R3",
+          "N07-R1",
+          "N07-R2",
+          "N07-R3",
+          "E01-R1",
+          "E01-R2",
+          "E01-R3",
+          "E02-R1",
+          "E02-R2",
+          "E02-R3",
+          "E03-R1",
+          "E03-R2",
+          "E03-R3",
+          "E04-R1",
+          "E04-R2",
+          "E04-R3",
+          "E05-R1",
+          "E05-R2",
+          "E05-R3",
+          "E06-R1",
+          "E06-R2",
+          "E06-R3",
+          "E07-R1",
+          "E07-R2",
+          "E07-R3",
+          "E08-R1",
+          "E08-R2",
+          "E08-R3",
+          "E09-R1",
+          "E09-R2",
+          "E09-R3",
+          "Y01-R1",
+          "Y01-R2",
+          "Y01-R3",
+          "Y02-R1",
+          "Y02-R2",
+          "Y02-R3",
+          "Y03-R1",
+          "Y03-R2",
+          "Y03-R3",
+          "Y04-R1",
+          "Y04-R2",
+          "Y04-R3",
+          "Y05-R1",
+          "Y05-R2",
+          "Y05-R3",
+          "Y06-R1",
+          "Y06-R2",
+          "Y06-R3",
+          "Y07-R1",
+          "Y07-R2",
+          "Y07-R3",
+          "Y08-R1",
+          "Y08-R2",
+          "Y08-R3",
+          "Y09-R1",
+          "Y09-R2",
+          "Y09-R3",
+          "J01-R1",
+          "J01-R2",
+          "J01-R3",
+          "J02-R1",
+          "J02-R2",
+          "J02-R3",
+          "J03-R1",
+          "J03-R2",
+          "J03-R3",
+          "J04-R1",
+          "J04-R2",
+          "J04-R3",
+          "J05-R1",
+          "J05-R2",
+          "J05-R3",
+          "J06-R1",
+          "J06-R2",
+          "J06-R3",
+          "J07-R1",
+          "J07-R2",
+          "J07-R3",
+          "F01-R1",
+          "F01-R2",
+          "F01-R3",
+          "F02-R1",
+          "F02-R2",
+          "F02-R3",
+          "F03-R1",
+          "F03-R2",
+          "F03-R3",
+          "F04-R1",
+          "F04-R2",
+          "F04-R3",
+          "F05-R1",
+          "F05-R2",
+          "F05-R3",
+          "F06-R1",
+          "F06-R2",
+          "F06-R3",
+          "F07-R1",
+          "F07-R2",
+          "F07-R3",
+          "F08-R1",
+          "F08-R2",
+          "F08-R3",
+          "F09-R1",
+          "F09-R2",
+          "F09-R3",
+          "M01-R1",
+          "M01-R2",
+          "M01-R3",
+          "M02-R1",
+          "M02-R2",
+          "M02-R3",
+          "M03-R1",
+          "M03-R2",
+          "M03-R3",
+          "M04-R1",
+          "M04-R2",
+          "M04-R3",
+          "M05-R1",
+          "M05-R2",
+          "M05-R3",
+          "M06-R1",
+          "M06-R2",
+          "M06-R3",
+          "M07-R1",
+          "M07-R2",
+          "M07-R3",
+          "M08-R1",
+          "M08-R2",
+          "M08-R3",
+          "M09-R1",
+          "M09-R2",
+          "M09-R3",
+          "X01-R1",
+          "X01-R2",
+          "X01-R3",
+          "X02-R1",
+          "X02-R2",
+          "X02-R3",
+          "X03-R1",
+          "X03-R2",
+          "X03-R3",
+          "X04-R1",
+          "X04-R2",
+          "X04-R3",
+          "X05-R1",
+          "X05-R2",
+          "X05-R3",
+          "X06-R1",
+          "X06-R2",
+          "X06-R3",
+          "X07-R1",
+          "X07-R2",
+          "X07-R3",
+          "X08-R1",
+          "X08-R2",
+          "X08-R3",
+          "C01-R1",
+          "C01-R2",
+          "C01-R3",
+          "C02-R1",
+          "C02-R2",
+          "C02-R3",
+          "C03-R1",
+          "C03-R2",
+          "C03-R3",
+          "C04-R1",
+          "C04-R2",
+          "C04-R3",
+          "C05-R1",
+          "C05-R2",
+          "C05-R3",
+          "C06-R1",
+          "C06-R2",
+          "C06-R3",
+          "C07-R1",
+          "C07-R2",
+          "C07-R3",
+          "C08-R1",
+          "C08-R2",
+          "C08-R3",
+          "C09-R1",
+          "C09-R2",
+          "C09-R3",
+          "C10-R1",
+          "C10-R2",
+          "C10-R3",
+          "C11-R1",
+          "C11-R2",
+          "C11-R3",
+          "H01-R1",
+          "H01-R2",
+          "H01-R3",
+          "H02-R1",
+          "H02-R2",
+          "H02-R3",
+          "H03-R1",
+          "H03-R2",
+          "H03-R3",
+          "H04-R1",
+          "H04-R2",
+          "H04-R3",
+          "H05-R1",
+          "H05-R2",
+          "H05-R3",
+          "H06-R1",
+          "H06-R2",
+          "H06-R3",
+          "H07-R1",
+          "H07-R2",
+          "H07-R3",
+          "H08-R1",
+          "H08-R2",
+          "H08-R3",
+          "H09-R1",
+          "H09-R2",
+          "H09-R3",
+          "H10-R1",
+          "H10-R2",
+          "H10-R3",
+          "H11-R1",
+          "H11-R2",
+          "H11-R3",
+          "H12-R1",
+          "H12-R2",
+          "H12-R3",
+          "D01-R1",
+          "D01-R2",
+          "D01-R3",
+          "D02-R1",
+          "D02-R2",
+          "D02-R3",
+          "D03-R1",
+          "D03-R2",
+          "D03-R3",
+          "D04-R1",
+          "D04-R2",
+          "D04-R3",
+          "D05-R1",
+          "D05-R2",
+          "D05-R3",
+          "D06-R1",
+          "D06-R2",
+          "D06-R3",
+          "D07-R1",
+          "D07-R2",
+          "D07-R3",
+          "D08-R1",
+          "D08-R2",
+          "D08-R3",
+          "K01-R1",
+          "K01-R2",
+          "K01-R3",
+          "K02-R1",
+          "K02-R2",
+          "K02-R3",
+          "K03-R1",
+          "K03-R2",
+          "K03-R3",
+          "K04-R1",
+          "K04-R2",
+          "K04-R3",
+          "K05-R1",
+          "K05-R2",
+          "K05-R3",
+          "K06-R1",
+          "K06-R2",
+          "K06-R3",
+          "O01-R1",
+          "O01-R2",
+          "O01-R3",
+          "O02-R1",
+          "O02-R2",
+          "O02-R3",
+          "O03-R1",
+          "O03-R2",
+          "O03-R3",
+          "O04-R1",
+          "O04-R2",
+          "O04-R3",
+          "O05-R1",
+          "O05-R2",
+          "O05-R3",
+          "O06-R1",
+          "O06-R2",
+          "O06-R3",
+          "O07-R1",
+          "O07-R2",
+          "O07-R3",
+          "W01-R1",
+          "W01-R2",
+          "W01-R3",
+          "W02-R1",
+          "W02-R2",
+          "W02-R3",
+          "W03-R1",
+          "W03-R2",
+          "W03-R3",
+          "W04-R1",
+          "W04-R2",
+          "W04-R3",
+          "W05-R1",
+          "W05-R2",
+          "W05-R3",
+          "W06-R1",
+          "W06-R2",
+          "W06-R3",
+          "W07-R1",
+          "W07-R2",
+          "W07-R3",
+          "W08-R1",
+          "W08-R2",
+          "W08-R3",
+          "W09-R1",
+          "W09-R2",
+          "W09-R3"
+        ],
+        "modules": [
+          "project",
+          "trend",
+          "acquire",
+          "generate",
+          "ingest",
+          "label",
+          "search",
+          "assetops",
+          "voice",
+          "music",
+          "plan",
+          "edit",
+          "render",
+          "account",
+          "publish",
+          "metrics",
+          "learn",
+          "agents",
+          "harness",
+          "data",
+          "security",
+          "ops",
+          "workspace"
+        ],
+        "passed": true,
+        "page_errors": []
+      },
+      "artifacts": {
+        "browser/browser-render.mp4": "ce1eb0883dd5dc6faa4e2750826d7020b2093f4c971f1ab061f52a4c0fc954bb",
+        "browser/browser-report.json": "6287661aaef30e251e1b7632a6e2dcfe1cb9614ef301a1be9f4643a8801be69c",
+        "director-chromium/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+        "director-webkit/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+        "media/synthetic-render.mp4": "2adcada3ee6d74eb8d10812b9afbb5ac3804314176a5b1f8c804cec0d1eb7ce6",
+        "media/synthetic-source.mp4": "01ea9c01b0634594a215e826e78db2d1cbc82f6b10fb696b96200eb98f9bf04d",
+        "opening-chromium/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+        "opening-webkit/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+        "studio/edited.mp4": "80a598095348ea5ffe4b0537f6e53e87f53d3de92e7fbfcb3f7b053ed00d49e7",
+        "typed-controls/media-chain-render.mp4": "48afe7bdc9279d6ae4317a1d461b2b98a3cbd608658fcebed4aad61159c9770a",
+        "variants-chromium/variant.mp4": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+        "variants-webkit/variant.mp4": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+        "voice-chromium/voice-cut.mp4": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+        "voice-webkit/voice-cut.mp4": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+        "webkit/edited.mp4": "80a598095348ea5ffe4b0537f6e53e87f53d3de92e7fbfcb3f7b053ed00d49e7"
+      }
+    },
+    {
+      "round": 3,
+      "started_at": "2026-11-24T16:02:39.017342+00:00",
+      "finished_at": "2026-11-24T16:08:16.316818+00:00",
+      "source_sha256": "f7e61d777a25a165fdf1d5545a6eb3337f8f17fbf173249f3893d9003258feaa",
+      "unchanged_during_round": true,
+      "passed": true,
+      "checks": [
+        {
+          "name": "source-contract-integrity",
+          "exit_code": 0,
+          "seconds": 4.577
+        },
+        {
+          "name": "all-backend-media-cross-domain-tests",
+          "exit_code": 0,
+          "seconds": 218.613
+        },
+        {
+          "name": "all-original-feature-workflow-crosswalk",
+          "exit_code": 0,
+          "seconds": 0.415
+        },
+        {
+          "name": "new-module-production-forms",
+          "exit_code": 0,
+          "seconds": 9.068
+        },
+        {
+          "name": "brief-shot-selection-and-editor-handoff",
+          "exit_code": 0,
+          "seconds": 11.644
+        },
+        {
+          "name": "single-screen-edit-session",
+          "exit_code": 0,
+          "seconds": 20.572
+        },
+        {
+          "name": "workspace-route-execution-and-revisions",
+          "exit_code": 0,
+          "seconds": 9.14
+        },
+        {
+          "name": "all-browser-module-syntax",
+          "exit_code": 0,
+          "seconds": 3.214
+        },
+        {
+          "name": "python-formatting",
+          "exit_code": 0,
+          "seconds": 0.269
+        },
+        {
+          "name": "browser-formatting",
+          "exit_code": 0,
+          "seconds": 2.719
+        },
+        {
+          "name": "openapi-snapshot-drift",
+          "exit_code": 0,
+          "seconds": 1.818
+        },
+        {
+          "name": "typed-controls-and-imported-dom-boundaries",
+          "exit_code": 0,
+          "seconds": 14.008
+        },
+        {
+          "name": "exhaustive-browser-and-real-media",
+          "exit_code": 0,
+          "seconds": 34.225
+        },
+        {
+          "name": "scoring-policy-release",
+          "exit_code": 0,
+          "seconds": 6.481
+        },
+        {
+          "name": "comment-feedback",
+          "exit_code": 0,
+          "seconds": 5.745
+        },
+        {
+          "name": "webkit-creative-and-source-manifest",
+          "exit_code": 0,
+          "seconds": 9.342
+        },
+        {
+          "name": "webkit-single-screen-edit-session",
+          "exit_code": 0,
+          "seconds": 24.699
+        },
+        {
+          "name": "chromium-ai-production",
+          "exit_code": 0,
+          "seconds": 30.574
+        },
+        {
+          "name": "chromium-workspace-layout",
+          "exit_code": 0,
+          "seconds": 12.816
+        },
+        {
+          "name": "chromium-visual-transitions",
+          "exit_code": 0,
+          "seconds": 10.321
+        },
+        {
+          "name": "chromium-opening-text",
+          "exit_code": 0,
+          "seconds": 18.903
+        },
+        {
+          "name": "chromium-storyboard-variants",
+          "exit_code": 0,
+          "seconds": 13.661
+        },
+        {
+          "name": "chromium-voice-and-narration",
+          "exit_code": 0,
+          "seconds": 19.895
+        },
+        {
+          "name": "chromium-source-index-and-soundtrack",
+          "exit_code": 0,
+          "seconds": 16.077
+        },
+        {
+          "name": "chromium-asset-lifecycle-and-families",
+          "exit_code": 0,
+          "seconds": 14.41
+        },
+        {
+          "name": "webkit-ai-production",
+          "exit_code": 0,
+          "seconds": 35.725
+        },
+        {
+          "name": "webkit-workspace-layout",
+          "exit_code": 0,
+          "seconds": 14.822
+        },
+        {
+          "name": "webkit-visual-transitions",
+          "exit_code": 0,
+          "seconds": 13.642
+        },
+        {
+          "name": "webkit-opening-text",
+          "exit_code": 0,
+          "seconds": 20.243
+        },
+        {
+          "name": "webkit-storyboard-variants",
+          "exit_code": 0,
+          "seconds": 14.992
+        },
+        {
+          "name": "webkit-voice-and-narration",
+          "exit_code": 0,
+          "seconds": 21.056
+        },
+        {
+          "name": "webkit-source-index-and-soundtrack",
+          "exit_code": 0,
+          "seconds": 16.971
+        },
+        {
+          "name": "webkit-asset-lifecycle-and-families",
+          "exit_code": 0,
+          "seconds": 13.776
+        }
+      ],
+      "unit": {
+        "tests_run": 227,
+        "unique_test_ids": true,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "order_seed": 3
+      },
+      "unit_report_sha256": "16c23f51ade4e40bbecf030fd33ed0898a51668ee5a5d899c2580ffa7994c4f0",
+      "raw_round_report_sha256": "fc4c82d33d502d674f779927d74dffea9c9007b8c2dad4b8e3ecf735e99936b4",
+      "browser_summary": {
+        "features": [
+          {
+            "id": "P01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A07",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "G01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I07",
+            "control_count": 11,
+            "passed": true
+          },
+          {
+            "id": "L01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V03",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "V04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B05",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "B06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E02",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "E03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E04",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "E05",
+            "control_count": 11,
+            "passed": true
+          },
+          {
+            "id": "E06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F02",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "F03",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "F04",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "F05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M02",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "M03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X06",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "X07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C10",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C11",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "H01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H10",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H11",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H12",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W09",
+            "control_count": 3,
+            "passed": true
+          }
+        ],
+        "routes": [
+          "P01-R1",
+          "P01-R2",
+          "P01-R3",
+          "P02-R1",
+          "P02-R2",
+          "P02-R3",
+          "P03-R1",
+          "P03-R2",
+          "P03-R3",
+          "P04-R1",
+          "P04-R2",
+          "P04-R3",
+          "P05-R1",
+          "P05-R2",
+          "P05-R3",
+          "P06-R1",
+          "P06-R2",
+          "P06-R3",
+          "T01-R1",
+          "T01-R2",
+          "T01-R3",
+          "T02-R1",
+          "T02-R2",
+          "T02-R3",
+          "T03-R1",
+          "T03-R2",
+          "T03-R3",
+          "T04-R1",
+          "T04-R2",
+          "T04-R3",
+          "T05-R1",
+          "T05-R2",
+          "T05-R3",
+          "T06-R1",
+          "T06-R2",
+          "T06-R3",
+          "A01-R1",
+          "A01-R2",
+          "A01-R3",
+          "A02-R1",
+          "A02-R2",
+          "A02-R3",
+          "A03-R1",
+          "A03-R2",
+          "A03-R3",
+          "A04-R1",
+          "A04-R2",
+          "A04-R3",
+          "A05-R1",
+          "A05-R2",
+          "A05-R3",
+          "A06-R1",
+          "A06-R2",
+          "A06-R3",
+          "A07-R1",
+          "A07-R2",
+          "A07-R3",
+          "G01-R1",
+          "G01-R2",
+          "G01-R3",
+          "G02-R1",
+          "G02-R2",
+          "G02-R3",
+          "G03-R1",
+          "G03-R2",
+          "G03-R3",
+          "G04-R1",
+          "G04-R2",
+          "G04-R3",
+          "G05-R1",
+          "G05-R2",
+          "G05-R3",
+          "G06-R1",
+          "G06-R2",
+          "G06-R3",
+          "I01-R1",
+          "I01-R2",
+          "I01-R3",
+          "I02-R1",
+          "I02-R2",
+          "I02-R3",
+          "I03-R1",
+          "I03-R2",
+          "I03-R3",
+          "I04-R1",
+          "I04-R2",
+          "I04-R3",
+          "I05-R1",
+          "I05-R2",
+          "I05-R3",
+          "I06-R1",
+          "I06-R2",
+          "I06-R3",
+          "I07-R1",
+          "I07-R2",
+          "I07-R3",
+          "L01-R1",
+          "L01-R2",
+          "L01-R3",
+          "L02-R1",
+          "L02-R2",
+          "L02-R3",
+          "L03-R1",
+          "L03-R2",
+          "L03-R3",
+          "L04-R1",
+          "L04-R2",
+          "L04-R3",
+          "L05-R1",
+          "L05-R2",
+          "L05-R3",
+          "L06-R1",
+          "L06-R2",
+          "L06-R3",
+          "L07-R1",
+          "L07-R2",
+          "L07-R3",
+          "S01-R1",
+          "S01-R2",
+          "S01-R3",
+          "S02-R1",
+          "S02-R2",
+          "S02-R3",
+          "S03-R1",
+          "S03-R2",
+          "S03-R3",
+          "S04-R1",
+          "S04-R2",
+          "S04-R3",
+          "S05-R1",
+          "S05-R2",
+          "S05-R3",
+          "S06-R1",
+          "S06-R2",
+          "S06-R3",
+          "U01-R1",
+          "U01-R2",
+          "U01-R3",
+          "U02-R1",
+          "U02-R2",
+          "U02-R3",
+          "U03-R1",
+          "U03-R2",
+          "U03-R3",
+          "U04-R1",
+          "U04-R2",
+          "U04-R3",
+          "U05-R1",
+          "U05-R2",
+          "U05-R3",
+          "U06-R1",
+          "U06-R2",
+          "U06-R3",
+          "U07-R1",
+          "U07-R2",
+          "U07-R3",
+          "V01-R1",
+          "V01-R2",
+          "V01-R3",
+          "V02-R1",
+          "V02-R2",
+          "V02-R3",
+          "V03-R1",
+          "V03-R2",
+          "V03-R3",
+          "V04-R1",
+          "V04-R2",
+          "V04-R3",
+          "V05-R1",
+          "V05-R2",
+          "V05-R3",
+          "V06-R1",
+          "V06-R2",
+          "V06-R3",
+          "V07-R1",
+          "V07-R2",
+          "V07-R3",
+          "V08-R1",
+          "V08-R2",
+          "V08-R3",
+          "V09-R1",
+          "V09-R2",
+          "V09-R3",
+          "B01-R1",
+          "B01-R2",
+          "B01-R3",
+          "B02-R1",
+          "B02-R2",
+          "B02-R3",
+          "B03-R1",
+          "B03-R2",
+          "B03-R3",
+          "B04-R1",
+          "B04-R2",
+          "B04-R3",
+          "B05-R1",
+          "B05-R2",
+          "B05-R3",
+          "B06-R1",
+          "B06-R2",
+          "B06-R3",
+          "N01-R1",
+          "N01-R2",
+          "N01-R3",
+          "N02-R1",
+          "N02-R2",
+          "N02-R3",
+          "N03-R1",
+          "N03-R2",
+          "N03-R3",
+          "N04-R1",
+          "N04-R2",
+          "N04-R3",
+          "N05-R1",
+          "N05-R2",
+          "N05-R3",
+          "N06-R1",
+          "N06-R2",
+          "N06-R3",
+          "N07-R1",
+          "N07-R2",
+          "N07-R3",
+          "E01-R1",
+          "E01-R2",
+          "E01-R3",
+          "E02-R1",
+          "E02-R2",
+          "E02-R3",
+          "E03-R1",
+          "E03-R2",
+          "E03-R3",
+          "E04-R1",
+          "E04-R2",
+          "E04-R3",
+          "E05-R1",
+          "E05-R2",
+          "E05-R3",
+          "E06-R1",
+          "E06-R2",
+          "E06-R3",
+          "E07-R1",
+          "E07-R2",
+          "E07-R3",
+          "E08-R1",
+          "E08-R2",
+          "E08-R3",
+          "E09-R1",
+          "E09-R2",
+          "E09-R3",
+          "Y01-R1",
+          "Y01-R2",
+          "Y01-R3",
+          "Y02-R1",
+          "Y02-R2",
+          "Y02-R3",
+          "Y03-R1",
+          "Y03-R2",
+          "Y03-R3",
+          "Y04-R1",
+          "Y04-R2",
+          "Y04-R3",
+          "Y05-R1",
+          "Y05-R2",
+          "Y05-R3",
+          "Y06-R1",
+          "Y06-R2",
+          "Y06-R3",
+          "Y07-R1",
+          "Y07-R2",
+          "Y07-R3",
+          "Y08-R1",
+          "Y08-R2",
+          "Y08-R3",
+          "Y09-R1",
+          "Y09-R2",
+          "Y09-R3",
+          "J01-R1",
+          "J01-R2",
+          "J01-R3",
+          "J02-R1",
+          "J02-R2",
+          "J02-R3",
+          "J03-R1",
+          "J03-R2",
+          "J03-R3",
+          "J04-R1",
+          "J04-R2",
+          "J04-R3",
+          "J05-R1",
+          "J05-R2",
+          "J05-R3",
+          "J06-R1",
+          "J06-R2",
+          "J06-R3",
+          "J07-R1",
+          "J07-R2",
+          "J07-R3",
+          "F01-R1",
+          "F01-R2",
+          "F01-R3",
+          "F02-R1",
+          "F02-R2",
+          "F02-R3",
+          "F03-R1",
+          "F03-R2",
+          "F03-R3",
+          "F04-R1",
+          "F04-R2",
+          "F04-R3",
+          "F05-R1",
+          "F05-R2",
+          "F05-R3",
+          "F06-R1",
+          "F06-R2",
+          "F06-R3",
+          "F07-R1",
+          "F07-R2",
+          "F07-R3",
+          "F08-R1",
+          "F08-R2",
+          "F08-R3",
+          "F09-R1",
+          "F09-R2",
+          "F09-R3",
+          "M01-R1",
+          "M01-R2",
+          "M01-R3",
+          "M02-R1",
+          "M02-R2",
+          "M02-R3",
+          "M03-R1",
+          "M03-R2",
+          "M03-R3",
+          "M04-R1",
+          "M04-R2",
+          "M04-R3",
+          "M05-R1",
+          "M05-R2",
+          "M05-R3",
+          "M06-R1",
+          "M06-R2",
+          "M06-R3",
+          "M07-R1",
+          "M07-R2",
+          "M07-R3",
+          "M08-R1",
+          "M08-R2",
+          "M08-R3",
+          "M09-R1",
+          "M09-R2",
+          "M09-R3",
+          "X01-R1",
+          "X01-R2",
+          "X01-R3",
+          "X02-R1",
+          "X02-R2",
+          "X02-R3",
+          "X03-R1",
+          "X03-R2",
+          "X03-R3",
+          "X04-R1",
+          "X04-R2",
+          "X04-R3",
+          "X05-R1",
+          "X05-R2",
+          "X05-R3",
+          "X06-R1",
+          "X06-R2",
+          "X06-R3",
+          "X07-R1",
+          "X07-R2",
+          "X07-R3",
+          "X08-R1",
+          "X08-R2",
+          "X08-R3",
+          "C01-R1",
+          "C01-R2",
+          "C01-R3",
+          "C02-R1",
+          "C02-R2",
+          "C02-R3",
+          "C03-R1",
+          "C03-R2",
+          "C03-R3",
+          "C04-R1",
+          "C04-R2",
+          "C04-R3",
+          "C05-R1",
+          "C05-R2",
+          "C05-R3",
+          "C06-R1",
+          "C06-R2",
+          "C06-R3",
+          "C07-R1",
+          "C07-R2",
+          "C07-R3",
+          "C08-R1",
+          "C08-R2",
+          "C08-R3",
+          "C09-R1",
+          "C09-R2",
+          "C09-R3",
+          "C10-R1",
+          "C10-R2",
+          "C10-R3",
+          "C11-R1",
+          "C11-R2",
+          "C11-R3",
+          "H01-R1",
+          "H01-R2",
+          "H01-R3",
+          "H02-R1",
+          "H02-R2",
+          "H02-R3",
+          "H03-R1",
+          "H03-R2",
+          "H03-R3",
+          "H04-R1",
+          "H04-R2",
+          "H04-R3",
+          "H05-R1",
+          "H05-R2",
+          "H05-R3",
+          "H06-R1",
+          "H06-R2",
+          "H06-R3",
+          "H07-R1",
+          "H07-R2",
+          "H07-R3",
+          "H08-R1",
+          "H08-R2",
+          "H08-R3",
+          "H09-R1",
+          "H09-R2",
+          "H09-R3",
+          "H10-R1",
+          "H10-R2",
+          "H10-R3",
+          "H11-R1",
+          "H11-R2",
+          "H11-R3",
+          "H12-R1",
+          "H12-R2",
+          "H12-R3",
+          "D01-R1",
+          "D01-R2",
+          "D01-R3",
+          "D02-R1",
+          "D02-R2",
+          "D02-R3",
+          "D03-R1",
+          "D03-R2",
+          "D03-R3",
+          "D04-R1",
+          "D04-R2",
+          "D04-R3",
+          "D05-R1",
+          "D05-R2",
+          "D05-R3",
+          "D06-R1",
+          "D06-R2",
+          "D06-R3",
+          "D07-R1",
+          "D07-R2",
+          "D07-R3",
+          "D08-R1",
+          "D08-R2",
+          "D08-R3",
+          "K01-R1",
+          "K01-R2",
+          "K01-R3",
+          "K02-R1",
+          "K02-R2",
+          "K02-R3",
+          "K03-R1",
+          "K03-R2",
+          "K03-R3",
+          "K04-R1",
+          "K04-R2",
+          "K04-R3",
+          "K05-R1",
+          "K05-R2",
+          "K05-R3",
+          "K06-R1",
+          "K06-R2",
+          "K06-R3",
+          "O01-R1",
+          "O01-R2",
+          "O01-R3",
+          "O02-R1",
+          "O02-R2",
+          "O02-R3",
+          "O03-R1",
+          "O03-R2",
+          "O03-R3",
+          "O04-R1",
+          "O04-R2",
+          "O04-R3",
+          "O05-R1",
+          "O05-R2",
+          "O05-R3",
+          "O06-R1",
+          "O06-R2",
+          "O06-R3",
+          "O07-R1",
+          "O07-R2",
+          "O07-R3",
+          "W01-R1",
+          "W01-R2",
+          "W01-R3",
+          "W02-R1",
+          "W02-R2",
+          "W02-R3",
+          "W03-R1",
+          "W03-R2",
+          "W03-R3",
+          "W04-R1",
+          "W04-R2",
+          "W04-R3",
+          "W05-R1",
+          "W05-R2",
+          "W05-R3",
+          "W06-R1",
+          "W06-R2",
+          "W06-R3",
+          "W07-R1",
+          "W07-R2",
+          "W07-R3",
+          "W08-R1",
+          "W08-R2",
+          "W08-R3",
+          "W09-R1",
+          "W09-R2",
+          "W09-R3"
+        ],
+        "modules": [
+          "project",
+          "trend",
+          "acquire",
+          "generate",
+          "ingest",
+          "label",
+          "search",
+          "assetops",
+          "voice",
+          "music",
+          "plan",
+          "edit",
+          "render",
+          "account",
+          "publish",
+          "metrics",
+          "learn",
+          "agents",
+          "harness",
+          "data",
+          "security",
+          "ops",
+          "workspace"
+        ],
+        "passed": true,
+        "page_errors": []
+      },
+      "artifacts": {
+        "browser/browser-render.mp4": "ce1eb0883dd5dc6faa4e2750826d7020b2093f4c971f1ab061f52a4c0fc954bb",
+        "browser/browser-report.json": "f8b371e10b374c9b290c09747a288a09edd8318c2044933056e9b91e7b2bd81b",
+        "director-chromium/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+        "director-webkit/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+        "media/synthetic-render.mp4": "2adcada3ee6d74eb8d10812b9afbb5ac3804314176a5b1f8c804cec0d1eb7ce6",
+        "media/synthetic-source.mp4": "01ea9c01b0634594a215e826e78db2d1cbc82f6b10fb696b96200eb98f9bf04d",
+        "opening-chromium/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+        "opening-webkit/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+        "studio/edited.mp4": "fac2eba5180ce1208c242ceda1a8d50453220c1e888f7bdd6547ea782c155150",
+        "typed-controls/media-chain-render.mp4": "48afe7bdc9279d6ae4317a1d461b2b98a3cbd608658fcebed4aad61159c9770a",
+        "variants-chromium/variant.mp4": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+        "variants-webkit/variant.mp4": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+        "voice-chromium/voice-cut.mp4": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+        "voice-webkit/voice-cut.mp4": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+        "webkit/edited.mp4": "59137e373d61250528a885af3c65ab62d5f05cf25d3a1a65bc3a3f5c277c019c"
+      }
+    },
+    {
+      "round": 4,
+      "started_at": "2026-11-24T16:07:05.904083+00:00",
+      "finished_at": "2026-11-24T16:12:41.748029+00:00",
+      "source_sha256": "f7e61d777a25a165fdf1d5545a6eb3337f8f17fbf173249f3893d9003258feaa",
+      "unchanged_during_round": true,
+      "passed": true,
+      "checks": [
+        {
+          "name": "source-contract-integrity",
+          "exit_code": 0,
+          "seconds": 4.776
+        },
+        {
+          "name": "all-backend-media-cross-domain-tests",
+          "exit_code": 0,
+          "seconds": 208.027
+        },
+        {
+          "name": "all-original-feature-workflow-crosswalk",
+          "exit_code": 0,
+          "seconds": 0.416
+        },
+        {
+          "name": "new-module-production-forms",
+          "exit_code": 0,
+          "seconds": 10.897
+        },
+        {
+          "name": "brief-shot-selection-and-editor-handoff",
+          "exit_code": 0,
+          "seconds": 13.898
+        },
+        {
+          "name": "single-screen-edit-session",
+          "exit_code": 0,
+          "seconds": 21.545
+        },
+        {
+          "name": "workspace-route-execution-and-revisions",
+          "exit_code": 0,
+          "seconds": 9.891
+        },
+        {
+          "name": "all-browser-module-syntax",
+          "exit_code": 0,
+          "seconds": 3.533
+        },
+        {
+          "name": "python-formatting",
+          "exit_code": 0,
+          "seconds": 0.455
+        },
+        {
+          "name": "browser-formatting",
+          "exit_code": 0,
+          "seconds": 2.298
+        },
+        {
+          "name": "openapi-snapshot-drift",
+          "exit_code": 0,
+          "seconds": 2.067
+        },
+        {
+          "name": "typed-controls-and-imported-dom-boundaries",
+          "exit_code": 0,
+          "seconds": 12.805
+        },
+        {
+          "name": "exhaustive-browser-and-real-media",
+          "exit_code": 0,
+          "seconds": 33.233
+        },
+        {
+          "name": "scoring-policy-release",
+          "exit_code": 0,
+          "seconds": 6.39
+        },
+        {
+          "name": "comment-feedback",
+          "exit_code": 0,
+          "seconds": 5.416
+        },
+        {
+          "name": "webkit-creative-and-source-manifest",
+          "exit_code": 0,
+          "seconds": 8.526
+        },
+        {
+          "name": "webkit-single-screen-edit-session",
+          "exit_code": 0,
+          "seconds": 25.288
+        },
+        {
+          "name": "chromium-ai-production",
+          "exit_code": 0,
+          "seconds": 26.974
+        },
+        {
+          "name": "chromium-workspace-layout",
+          "exit_code": 0,
+          "seconds": 12.249
+        },
+        {
+          "name": "chromium-visual-transitions",
+          "exit_code": 0,
+          "seconds": 10.356
+        },
+        {
+          "name": "chromium-opening-text",
+          "exit_code": 0,
+          "seconds": 20.016
+        },
+        {
+          "name": "chromium-storyboard-variants",
+          "exit_code": 0,
+          "seconds": 14.652
+        },
+        {
+          "name": "chromium-voice-and-narration",
+          "exit_code": 0,
+          "seconds": 17.332
+        },
+        {
+          "name": "chromium-source-index-and-soundtrack",
+          "exit_code": 0,
+          "seconds": 13.347
+        },
+        {
+          "name": "chromium-asset-lifecycle-and-families",
+          "exit_code": 0,
+          "seconds": 12.783
+        },
+        {
+          "name": "webkit-ai-production",
+          "exit_code": 0,
+          "seconds": 35.397
+        },
+        {
+          "name": "webkit-workspace-layout",
+          "exit_code": 0,
+          "seconds": 15.275
+        },
+        {
+          "name": "webkit-visual-transitions",
+          "exit_code": 0,
+          "seconds": 13.236
+        },
+        {
+          "name": "webkit-opening-text",
+          "exit_code": 0,
+          "seconds": 20.708
+        },
+        {
+          "name": "webkit-storyboard-variants",
+          "exit_code": 0,
+          "seconds": 15.13
+        },
+        {
+          "name": "webkit-voice-and-narration",
+          "exit_code": 0,
+          "seconds": 28.109
+        },
+        {
+          "name": "webkit-source-index-and-soundtrack",
+          "exit_code": 0,
+          "seconds": 18.904
+        },
+        {
+          "name": "webkit-asset-lifecycle-and-families",
+          "exit_code": 0,
+          "seconds": 17.681
+        }
+      ],
+      "unit": {
+        "tests_run": 227,
+        "unique_test_ids": true,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "order_seed": 4
+      },
+      "unit_report_sha256": "461f858d9fbe910ddbdd75911bf6601f1fb7e8e39dba6ce5be2c6bf9bfd1f0bf",
+      "raw_round_report_sha256": "29aee88660e5eb9b80cc4fe50187c88cf8b67f4957e22162efe3377198067d41",
+      "browser_summary": {
+        "features": [
+          {
+            "id": "P01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A07",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "G01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I07",
+            "control_count": 11,
+            "passed": true
+          },
+          {
+            "id": "L01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V03",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "V04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B05",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "B06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E02",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "E03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E04",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "E05",
+            "control_count": 11,
+            "passed": true
+          },
+          {
+            "id": "E06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F02",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "F03",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "F04",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "F05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M02",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "M03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X06",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "X07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C10",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C11",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "H01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H10",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H11",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H12",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W09",
+            "control_count": 3,
+            "passed": true
+          }
+        ],
+        "routes": [
+          "P01-R1",
+          "P01-R2",
+          "P01-R3",
+          "P02-R1",
+          "P02-R2",
+          "P02-R3",
+          "P03-R1",
+          "P03-R2",
+          "P03-R3",
+          "P04-R1",
+          "P04-R2",
+          "P04-R3",
+          "P05-R1",
+          "P05-R2",
+          "P05-R3",
+          "P06-R1",
+          "P06-R2",
+          "P06-R3",
+          "T01-R1",
+          "T01-R2",
+          "T01-R3",
+          "T02-R1",
+          "T02-R2",
+          "T02-R3",
+          "T03-R1",
+          "T03-R2",
+          "T03-R3",
+          "T04-R1",
+          "T04-R2",
+          "T04-R3",
+          "T05-R1",
+          "T05-R2",
+          "T05-R3",
+          "T06-R1",
+          "T06-R2",
+          "T06-R3",
+          "A01-R1",
+          "A01-R2",
+          "A01-R3",
+          "A02-R1",
+          "A02-R2",
+          "A02-R3",
+          "A03-R1",
+          "A03-R2",
+          "A03-R3",
+          "A04-R1",
+          "A04-R2",
+          "A04-R3",
+          "A05-R1",
+          "A05-R2",
+          "A05-R3",
+          "A06-R1",
+          "A06-R2",
+          "A06-R3",
+          "A07-R1",
+          "A07-R2",
+          "A07-R3",
+          "G01-R1",
+          "G01-R2",
+          "G01-R3",
+          "G02-R1",
+          "G02-R2",
+          "G02-R3",
+          "G03-R1",
+          "G03-R2",
+          "G03-R3",
+          "G04-R1",
+          "G04-R2",
+          "G04-R3",
+          "G05-R1",
+          "G05-R2",
+          "G05-R3",
+          "G06-R1",
+          "G06-R2",
+          "G06-R3",
+          "I01-R1",
+          "I01-R2",
+          "I01-R3",
+          "I02-R1",
+          "I02-R2",
+          "I02-R3",
+          "I03-R1",
+          "I03-R2",
+          "I03-R3",
+          "I04-R1",
+          "I04-R2",
+          "I04-R3",
+          "I05-R1",
+          "I05-R2",
+          "I05-R3",
+          "I06-R1",
+          "I06-R2",
+          "I06-R3",
+          "I07-R1",
+          "I07-R2",
+          "I07-R3",
+          "L01-R1",
+          "L01-R2",
+          "L01-R3",
+          "L02-R1",
+          "L02-R2",
+          "L02-R3",
+          "L03-R1",
+          "L03-R2",
+          "L03-R3",
+          "L04-R1",
+          "L04-R2",
+          "L04-R3",
+          "L05-R1",
+          "L05-R2",
+          "L05-R3",
+          "L06-R1",
+          "L06-R2",
+          "L06-R3",
+          "L07-R1",
+          "L07-R2",
+          "L07-R3",
+          "S01-R1",
+          "S01-R2",
+          "S01-R3",
+          "S02-R1",
+          "S02-R2",
+          "S02-R3",
+          "S03-R1",
+          "S03-R2",
+          "S03-R3",
+          "S04-R1",
+          "S04-R2",
+          "S04-R3",
+          "S05-R1",
+          "S05-R2",
+          "S05-R3",
+          "S06-R1",
+          "S06-R2",
+          "S06-R3",
+          "U01-R1",
+          "U01-R2",
+          "U01-R3",
+          "U02-R1",
+          "U02-R2",
+          "U02-R3",
+          "U03-R1",
+          "U03-R2",
+          "U03-R3",
+          "U04-R1",
+          "U04-R2",
+          "U04-R3",
+          "U05-R1",
+          "U05-R2",
+          "U05-R3",
+          "U06-R1",
+          "U06-R2",
+          "U06-R3",
+          "U07-R1",
+          "U07-R2",
+          "U07-R3",
+          "V01-R1",
+          "V01-R2",
+          "V01-R3",
+          "V02-R1",
+          "V02-R2",
+          "V02-R3",
+          "V03-R1",
+          "V03-R2",
+          "V03-R3",
+          "V04-R1",
+          "V04-R2",
+          "V04-R3",
+          "V05-R1",
+          "V05-R2",
+          "V05-R3",
+          "V06-R1",
+          "V06-R2",
+          "V06-R3",
+          "V07-R1",
+          "V07-R2",
+          "V07-R3",
+          "V08-R1",
+          "V08-R2",
+          "V08-R3",
+          "V09-R1",
+          "V09-R2",
+          "V09-R3",
+          "B01-R1",
+          "B01-R2",
+          "B01-R3",
+          "B02-R1",
+          "B02-R2",
+          "B02-R3",
+          "B03-R1",
+          "B03-R2",
+          "B03-R3",
+          "B04-R1",
+          "B04-R2",
+          "B04-R3",
+          "B05-R1",
+          "B05-R2",
+          "B05-R3",
+          "B06-R1",
+          "B06-R2",
+          "B06-R3",
+          "N01-R1",
+          "N01-R2",
+          "N01-R3",
+          "N02-R1",
+          "N02-R2",
+          "N02-R3",
+          "N03-R1",
+          "N03-R2",
+          "N03-R3",
+          "N04-R1",
+          "N04-R2",
+          "N04-R3",
+          "N05-R1",
+          "N05-R2",
+          "N05-R3",
+          "N06-R1",
+          "N06-R2",
+          "N06-R3",
+          "N07-R1",
+          "N07-R2",
+          "N07-R3",
+          "E01-R1",
+          "E01-R2",
+          "E01-R3",
+          "E02-R1",
+          "E02-R2",
+          "E02-R3",
+          "E03-R1",
+          "E03-R2",
+          "E03-R3",
+          "E04-R1",
+          "E04-R2",
+          "E04-R3",
+          "E05-R1",
+          "E05-R2",
+          "E05-R3",
+          "E06-R1",
+          "E06-R2",
+          "E06-R3",
+          "E07-R1",
+          "E07-R2",
+          "E07-R3",
+          "E08-R1",
+          "E08-R2",
+          "E08-R3",
+          "E09-R1",
+          "E09-R2",
+          "E09-R3",
+          "Y01-R1",
+          "Y01-R2",
+          "Y01-R3",
+          "Y02-R1",
+          "Y02-R2",
+          "Y02-R3",
+          "Y03-R1",
+          "Y03-R2",
+          "Y03-R3",
+          "Y04-R1",
+          "Y04-R2",
+          "Y04-R3",
+          "Y05-R1",
+          "Y05-R2",
+          "Y05-R3",
+          "Y06-R1",
+          "Y06-R2",
+          "Y06-R3",
+          "Y07-R1",
+          "Y07-R2",
+          "Y07-R3",
+          "Y08-R1",
+          "Y08-R2",
+          "Y08-R3",
+          "Y09-R1",
+          "Y09-R2",
+          "Y09-R3",
+          "J01-R1",
+          "J01-R2",
+          "J01-R3",
+          "J02-R1",
+          "J02-R2",
+          "J02-R3",
+          "J03-R1",
+          "J03-R2",
+          "J03-R3",
+          "J04-R1",
+          "J04-R2",
+          "J04-R3",
+          "J05-R1",
+          "J05-R2",
+          "J05-R3",
+          "J06-R1",
+          "J06-R2",
+          "J06-R3",
+          "J07-R1",
+          "J07-R2",
+          "J07-R3",
+          "F01-R1",
+          "F01-R2",
+          "F01-R3",
+          "F02-R1",
+          "F02-R2",
+          "F02-R3",
+          "F03-R1",
+          "F03-R2",
+          "F03-R3",
+          "F04-R1",
+          "F04-R2",
+          "F04-R3",
+          "F05-R1",
+          "F05-R2",
+          "F05-R3",
+          "F06-R1",
+          "F06-R2",
+          "F06-R3",
+          "F07-R1",
+          "F07-R2",
+          "F07-R3",
+          "F08-R1",
+          "F08-R2",
+          "F08-R3",
+          "F09-R1",
+          "F09-R2",
+          "F09-R3",
+          "M01-R1",
+          "M01-R2",
+          "M01-R3",
+          "M02-R1",
+          "M02-R2",
+          "M02-R3",
+          "M03-R1",
+          "M03-R2",
+          "M03-R3",
+          "M04-R1",
+          "M04-R2",
+          "M04-R3",
+          "M05-R1",
+          "M05-R2",
+          "M05-R3",
+          "M06-R1",
+          "M06-R2",
+          "M06-R3",
+          "M07-R1",
+          "M07-R2",
+          "M07-R3",
+          "M08-R1",
+          "M08-R2",
+          "M08-R3",
+          "M09-R1",
+          "M09-R2",
+          "M09-R3",
+          "X01-R1",
+          "X01-R2",
+          "X01-R3",
+          "X02-R1",
+          "X02-R2",
+          "X02-R3",
+          "X03-R1",
+          "X03-R2",
+          "X03-R3",
+          "X04-R1",
+          "X04-R2",
+          "X04-R3",
+          "X05-R1",
+          "X05-R2",
+          "X05-R3",
+          "X06-R1",
+          "X06-R2",
+          "X06-R3",
+          "X07-R1",
+          "X07-R2",
+          "X07-R3",
+          "X08-R1",
+          "X08-R2",
+          "X08-R3",
+          "C01-R1",
+          "C01-R2",
+          "C01-R3",
+          "C02-R1",
+          "C02-R2",
+          "C02-R3",
+          "C03-R1",
+          "C03-R2",
+          "C03-R3",
+          "C04-R1",
+          "C04-R2",
+          "C04-R3",
+          "C05-R1",
+          "C05-R2",
+          "C05-R3",
+          "C06-R1",
+          "C06-R2",
+          "C06-R3",
+          "C07-R1",
+          "C07-R2",
+          "C07-R3",
+          "C08-R1",
+          "C08-R2",
+          "C08-R3",
+          "C09-R1",
+          "C09-R2",
+          "C09-R3",
+          "C10-R1",
+          "C10-R2",
+          "C10-R3",
+          "C11-R1",
+          "C11-R2",
+          "C11-R3",
+          "H01-R1",
+          "H01-R2",
+          "H01-R3",
+          "H02-R1",
+          "H02-R2",
+          "H02-R3",
+          "H03-R1",
+          "H03-R2",
+          "H03-R3",
+          "H04-R1",
+          "H04-R2",
+          "H04-R3",
+          "H05-R1",
+          "H05-R2",
+          "H05-R3",
+          "H06-R1",
+          "H06-R2",
+          "H06-R3",
+          "H07-R1",
+          "H07-R2",
+          "H07-R3",
+          "H08-R1",
+          "H08-R2",
+          "H08-R3",
+          "H09-R1",
+          "H09-R2",
+          "H09-R3",
+          "H10-R1",
+          "H10-R2",
+          "H10-R3",
+          "H11-R1",
+          "H11-R2",
+          "H11-R3",
+          "H12-R1",
+          "H12-R2",
+          "H12-R3",
+          "D01-R1",
+          "D01-R2",
+          "D01-R3",
+          "D02-R1",
+          "D02-R2",
+          "D02-R3",
+          "D03-R1",
+          "D03-R2",
+          "D03-R3",
+          "D04-R1",
+          "D04-R2",
+          "D04-R3",
+          "D05-R1",
+          "D05-R2",
+          "D05-R3",
+          "D06-R1",
+          "D06-R2",
+          "D06-R3",
+          "D07-R1",
+          "D07-R2",
+          "D07-R3",
+          "D08-R1",
+          "D08-R2",
+          "D08-R3",
+          "K01-R1",
+          "K01-R2",
+          "K01-R3",
+          "K02-R1",
+          "K02-R2",
+          "K02-R3",
+          "K03-R1",
+          "K03-R2",
+          "K03-R3",
+          "K04-R1",
+          "K04-R2",
+          "K04-R3",
+          "K05-R1",
+          "K05-R2",
+          "K05-R3",
+          "K06-R1",
+          "K06-R2",
+          "K06-R3",
+          "O01-R1",
+          "O01-R2",
+          "O01-R3",
+          "O02-R1",
+          "O02-R2",
+          "O02-R3",
+          "O03-R1",
+          "O03-R2",
+          "O03-R3",
+          "O04-R1",
+          "O04-R2",
+          "O04-R3",
+          "O05-R1",
+          "O05-R2",
+          "O05-R3",
+          "O06-R1",
+          "O06-R2",
+          "O06-R3",
+          "O07-R1",
+          "O07-R2",
+          "O07-R3",
+          "W01-R1",
+          "W01-R2",
+          "W01-R3",
+          "W02-R1",
+          "W02-R2",
+          "W02-R3",
+          "W03-R1",
+          "W03-R2",
+          "W03-R3",
+          "W04-R1",
+          "W04-R2",
+          "W04-R3",
+          "W05-R1",
+          "W05-R2",
+          "W05-R3",
+          "W06-R1",
+          "W06-R2",
+          "W06-R3",
+          "W07-R1",
+          "W07-R2",
+          "W07-R3",
+          "W08-R1",
+          "W08-R2",
+          "W08-R3",
+          "W09-R1",
+          "W09-R2",
+          "W09-R3"
+        ],
+        "modules": [
+          "project",
+          "trend",
+          "acquire",
+          "generate",
+          "ingest",
+          "label",
+          "search",
+          "assetops",
+          "voice",
+          "music",
+          "plan",
+          "edit",
+          "render",
+          "account",
+          "publish",
+          "metrics",
+          "learn",
+          "agents",
+          "harness",
+          "data",
+          "security",
+          "ops",
+          "workspace"
+        ],
+        "passed": true,
+        "page_errors": []
+      },
+      "artifacts": {
+        "browser/browser-render.mp4": "ce1eb0883dd5dc6faa4e2750826d7020b2093f4c971f1ab061f52a4c0fc954bb",
+        "browser/browser-report.json": "4e39f7ff5b709f47a2763464cdee277dd2b1c4dd69b3034f574bd2c6fb2a78f1",
+        "director-chromium/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+        "director-webkit/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+        "media/synthetic-render.mp4": "2adcada3ee6d74eb8d10812b9afbb5ac3804314176a5b1f8c804cec0d1eb7ce6",
+        "media/synthetic-source.mp4": "01ea9c01b0634594a215e826e78db2d1cbc82f6b10fb696b96200eb98f9bf04d",
+        "opening-chromium/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+        "opening-webkit/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+        "studio/edited.mp4": "100f8249999b7e6c13f9e3223d230973c2d331f92ffdf5650e9c92cea79c4ba4",
+        "typed-controls/media-chain-render.mp4": "48afe7bdc9279d6ae4317a1d461b2b98a3cbd608658fcebed4aad61159c9770a",
+        "variants-chromium/variant.mp4": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+        "variants-webkit/variant.mp4": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+        "voice-chromium/voice-cut.mp4": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+        "voice-webkit/voice-cut.mp4": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+        "webkit/edited.mp4": "80a598095348ea5ffe4b0537f6e53e87f53d3de92e7fbfcb3f7b053ed00d49e7"
+      }
+    },
+    {
+      "round": 5,
+      "started_at": "2026-11-24T16:08:16.448146+00:00",
+      "finished_at": "2026-11-24T16:13:42.287323+00:00",
+      "source_sha256": "f7e61d777a25a165fdf1d5545a6eb3337f8f17fbf173249f3893d9003258feaa",
+      "unchanged_during_round": true,
+      "passed": true,
+      "checks": [
+        {
+          "name": "source-contract-integrity",
+          "exit_code": 0,
+          "seconds": 4.273
+        },
+        {
+          "name": "all-backend-media-cross-domain-tests",
+          "exit_code": 0,
+          "seconds": 208.0
+        },
+        {
+          "name": "all-original-feature-workflow-crosswalk",
+          "exit_code": 0,
+          "seconds": 0.374
+        },
+        {
+          "name": "new-module-production-forms",
+          "exit_code": 0,
+          "seconds": 8.98
+        },
+        {
+          "name": "brief-shot-selection-and-editor-handoff",
+          "exit_code": 0,
+          "seconds": 12.156
+        },
+        {
+          "name": "single-screen-edit-session",
+          "exit_code": 0,
+          "seconds": 18.73
+        },
+        {
+          "name": "workspace-route-execution-and-revisions",
+          "exit_code": 0,
+          "seconds": 7.944
+        },
+        {
+          "name": "all-browser-module-syntax",
+          "exit_code": 0,
+          "seconds": 2.594
+        },
+        {
+          "name": "python-formatting",
+          "exit_code": 0,
+          "seconds": 0.217
+        },
+        {
+          "name": "browser-formatting",
+          "exit_code": 0,
+          "seconds": 1.934
+        },
+        {
+          "name": "openapi-snapshot-drift",
+          "exit_code": 0,
+          "seconds": 1.719
+        },
+        {
+          "name": "typed-controls-and-imported-dom-boundaries",
+          "exit_code": 0,
+          "seconds": 12.698
+        },
+        {
+          "name": "exhaustive-browser-and-real-media",
+          "exit_code": 0,
+          "seconds": 33.443
+        },
+        {
+          "name": "scoring-policy-release",
+          "exit_code": 0,
+          "seconds": 5.974
+        },
+        {
+          "name": "comment-feedback",
+          "exit_code": 0,
+          "seconds": 5.324
+        },
+        {
+          "name": "webkit-creative-and-source-manifest",
+          "exit_code": 0,
+          "seconds": 9.285
+        },
+        {
+          "name": "webkit-single-screen-edit-session",
+          "exit_code": 0,
+          "seconds": 26.578
+        },
+        {
+          "name": "chromium-ai-production",
+          "exit_code": 0,
+          "seconds": 31.107
+        },
+        {
+          "name": "chromium-workspace-layout",
+          "exit_code": 0,
+          "seconds": 13.933
+        },
+        {
+          "name": "chromium-visual-transitions",
+          "exit_code": 0,
+          "seconds": 9.564
+        },
+        {
+          "name": "chromium-opening-text",
+          "exit_code": 0,
+          "seconds": 20.074
+        },
+        {
+          "name": "chromium-storyboard-variants",
+          "exit_code": 0,
+          "seconds": 14.848
+        },
+        {
+          "name": "chromium-voice-and-narration",
+          "exit_code": 0,
+          "seconds": 17.444
+        },
+        {
+          "name": "chromium-source-index-and-soundtrack",
+          "exit_code": 0,
+          "seconds": 15.635
+        },
+        {
+          "name": "chromium-asset-lifecycle-and-families",
+          "exit_code": 0,
+          "seconds": 17.184
+        },
+        {
+          "name": "webkit-ai-production",
+          "exit_code": 0,
+          "seconds": 38.803
+        },
+        {
+          "name": "webkit-workspace-layout",
+          "exit_code": 0,
+          "seconds": 14.516
+        },
+        {
+          "name": "webkit-visual-transitions",
+          "exit_code": 0,
+          "seconds": 11.715
+        },
+        {
+          "name": "webkit-opening-text",
+          "exit_code": 0,
+          "seconds": 18.857
+        },
+        {
+          "name": "webkit-storyboard-variants",
+          "exit_code": 0,
+          "seconds": 14.562
+        },
+        {
+          "name": "webkit-voice-and-narration",
+          "exit_code": 0,
+          "seconds": 17.784
+        },
+        {
+          "name": "webkit-source-index-and-soundtrack",
+          "exit_code": 0,
+          "seconds": 14.489
+        },
+        {
+          "name": "webkit-asset-lifecycle-and-families",
+          "exit_code": 0,
+          "seconds": 11.007
+        }
+      ],
+      "unit": {
+        "tests_run": 227,
+        "unique_test_ids": true,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "order_seed": 5
+      },
+      "unit_report_sha256": "52656eb777eaff199c29a36c25488b38f42eced47ae682439f8462aacf64fdbe",
+      "raw_round_report_sha256": "961057792c64702cd198d78b7c78a2c03d4ec867da1c9ec60dc17e020174c361",
+      "browser_summary": {
+        "features": [
+          {
+            "id": "P01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "P06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "T06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "A07",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "G01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "G06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "I07",
+            "control_count": 11,
+            "passed": true
+          },
+          {
+            "id": "L01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "L07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "S06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "U07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V03",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "V04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "V09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "B05",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "B06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "N07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E02",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "E03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E04",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "E05",
+            "control_count": 11,
+            "passed": true
+          },
+          {
+            "id": "E06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "E09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "Y09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "J07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F02",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "F03",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "F04",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "F05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "F09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M02",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "M03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "M09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X06",
+            "control_count": 4,
+            "passed": true
+          },
+          {
+            "id": "X07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "X08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C10",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "C11",
+            "control_count": 5,
+            "passed": true
+          },
+          {
+            "id": "H01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H09",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H10",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H11",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "H12",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "D08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "K06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "O07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W01",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W02",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W03",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W04",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W05",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W06",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W07",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W08",
+            "control_count": 3,
+            "passed": true
+          },
+          {
+            "id": "W09",
+            "control_count": 3,
+            "passed": true
+          }
+        ],
+        "routes": [
+          "P01-R1",
+          "P01-R2",
+          "P01-R3",
+          "P02-R1",
+          "P02-R2",
+          "P02-R3",
+          "P03-R1",
+          "P03-R2",
+          "P03-R3",
+          "P04-R1",
+          "P04-R2",
+          "P04-R3",
+          "P05-R1",
+          "P05-R2",
+          "P05-R3",
+          "P06-R1",
+          "P06-R2",
+          "P06-R3",
+          "T01-R1",
+          "T01-R2",
+          "T01-R3",
+          "T02-R1",
+          "T02-R2",
+          "T02-R3",
+          "T03-R1",
+          "T03-R2",
+          "T03-R3",
+          "T04-R1",
+          "T04-R2",
+          "T04-R3",
+          "T05-R1",
+          "T05-R2",
+          "T05-R3",
+          "T06-R1",
+          "T06-R2",
+          "T06-R3",
+          "A01-R1",
+          "A01-R2",
+          "A01-R3",
+          "A02-R1",
+          "A02-R2",
+          "A02-R3",
+          "A03-R1",
+          "A03-R2",
+          "A03-R3",
+          "A04-R1",
+          "A04-R2",
+          "A04-R3",
+          "A05-R1",
+          "A05-R2",
+          "A05-R3",
+          "A06-R1",
+          "A06-R2",
+          "A06-R3",
+          "A07-R1",
+          "A07-R2",
+          "A07-R3",
+          "G01-R1",
+          "G01-R2",
+          "G01-R3",
+          "G02-R1",
+          "G02-R2",
+          "G02-R3",
+          "G03-R1",
+          "G03-R2",
+          "G03-R3",
+          "G04-R1",
+          "G04-R2",
+          "G04-R3",
+          "G05-R1",
+          "G05-R2",
+          "G05-R3",
+          "G06-R1",
+          "G06-R2",
+          "G06-R3",
+          "I01-R1",
+          "I01-R2",
+          "I01-R3",
+          "I02-R1",
+          "I02-R2",
+          "I02-R3",
+          "I03-R1",
+          "I03-R2",
+          "I03-R3",
+          "I04-R1",
+          "I04-R2",
+          "I04-R3",
+          "I05-R1",
+          "I05-R2",
+          "I05-R3",
+          "I06-R1",
+          "I06-R2",
+          "I06-R3",
+          "I07-R1",
+          "I07-R2",
+          "I07-R3",
+          "L01-R1",
+          "L01-R2",
+          "L01-R3",
+          "L02-R1",
+          "L02-R2",
+          "L02-R3",
+          "L03-R1",
+          "L03-R2",
+          "L03-R3",
+          "L04-R1",
+          "L04-R2",
+          "L04-R3",
+          "L05-R1",
+          "L05-R2",
+          "L05-R3",
+          "L06-R1",
+          "L06-R2",
+          "L06-R3",
+          "L07-R1",
+          "L07-R2",
+          "L07-R3",
+          "S01-R1",
+          "S01-R2",
+          "S01-R3",
+          "S02-R1",
+          "S02-R2",
+          "S02-R3",
+          "S03-R1",
+          "S03-R2",
+          "S03-R3",
+          "S04-R1",
+          "S04-R2",
+          "S04-R3",
+          "S05-R1",
+          "S05-R2",
+          "S05-R3",
+          "S06-R1",
+          "S06-R2",
+          "S06-R3",
+          "U01-R1",
+          "U01-R2",
+          "U01-R3",
+          "U02-R1",
+          "U02-R2",
+          "U02-R3",
+          "U03-R1",
+          "U03-R2",
+          "U03-R3",
+          "U04-R1",
+          "U04-R2",
+          "U04-R3",
+          "U05-R1",
+          "U05-R2",
+          "U05-R3",
+          "U06-R1",
+          "U06-R2",
+          "U06-R3",
+          "U07-R1",
+          "U07-R2",
+          "U07-R3",
+          "V01-R1",
+          "V01-R2",
+          "V01-R3",
+          "V02-R1",
+          "V02-R2",
+          "V02-R3",
+          "V03-R1",
+          "V03-R2",
+          "V03-R3",
+          "V04-R1",
+          "V04-R2",
+          "V04-R3",
+          "V05-R1",
+          "V05-R2",
+          "V05-R3",
+          "V06-R1",
+          "V06-R2",
+          "V06-R3",
+          "V07-R1",
+          "V07-R2",
+          "V07-R3",
+          "V08-R1",
+          "V08-R2",
+          "V08-R3",
+          "V09-R1",
+          "V09-R2",
+          "V09-R3",
+          "B01-R1",
+          "B01-R2",
+          "B01-R3",
+          "B02-R1",
+          "B02-R2",
+          "B02-R3",
+          "B03-R1",
+          "B03-R2",
+          "B03-R3",
+          "B04-R1",
+          "B04-R2",
+          "B04-R3",
+          "B05-R1",
+          "B05-R2",
+          "B05-R3",
+          "B06-R1",
+          "B06-R2",
+          "B06-R3",
+          "N01-R1",
+          "N01-R2",
+          "N01-R3",
+          "N02-R1",
+          "N02-R2",
+          "N02-R3",
+          "N03-R1",
+          "N03-R2",
+          "N03-R3",
+          "N04-R1",
+          "N04-R2",
+          "N04-R3",
+          "N05-R1",
+          "N05-R2",
+          "N05-R3",
+          "N06-R1",
+          "N06-R2",
+          "N06-R3",
+          "N07-R1",
+          "N07-R2",
+          "N07-R3",
+          "E01-R1",
+          "E01-R2",
+          "E01-R3",
+          "E02-R1",
+          "E02-R2",
+          "E02-R3",
+          "E03-R1",
+          "E03-R2",
+          "E03-R3",
+          "E04-R1",
+          "E04-R2",
+          "E04-R3",
+          "E05-R1",
+          "E05-R2",
+          "E05-R3",
+          "E06-R1",
+          "E06-R2",
+          "E06-R3",
+          "E07-R1",
+          "E07-R2",
+          "E07-R3",
+          "E08-R1",
+          "E08-R2",
+          "E08-R3",
+          "E09-R1",
+          "E09-R2",
+          "E09-R3",
+          "Y01-R1",
+          "Y01-R2",
+          "Y01-R3",
+          "Y02-R1",
+          "Y02-R2",
+          "Y02-R3",
+          "Y03-R1",
+          "Y03-R2",
+          "Y03-R3",
+          "Y04-R1",
+          "Y04-R2",
+          "Y04-R3",
+          "Y05-R1",
+          "Y05-R2",
+          "Y05-R3",
+          "Y06-R1",
+          "Y06-R2",
+          "Y06-R3",
+          "Y07-R1",
+          "Y07-R2",
+          "Y07-R3",
+          "Y08-R1",
+          "Y08-R2",
+          "Y08-R3",
+          "Y09-R1",
+          "Y09-R2",
+          "Y09-R3",
+          "J01-R1",
+          "J01-R2",
+          "J01-R3",
+          "J02-R1",
+          "J02-R2",
+          "J02-R3",
+          "J03-R1",
+          "J03-R2",
+          "J03-R3",
+          "J04-R1",
+          "J04-R2",
+          "J04-R3",
+          "J05-R1",
+          "J05-R2",
+          "J05-R3",
+          "J06-R1",
+          "J06-R2",
+          "J06-R3",
+          "J07-R1",
+          "J07-R2",
+          "J07-R3",
+          "F01-R1",
+          "F01-R2",
+          "F01-R3",
+          "F02-R1",
+          "F02-R2",
+          "F02-R3",
+          "F03-R1",
+          "F03-R2",
+          "F03-R3",
+          "F04-R1",
+          "F04-R2",
+          "F04-R3",
+          "F05-R1",
+          "F05-R2",
+          "F05-R3",
+          "F06-R1",
+          "F06-R2",
+          "F06-R3",
+          "F07-R1",
+          "F07-R2",
+          "F07-R3",
+          "F08-R1",
+          "F08-R2",
+          "F08-R3",
+          "F09-R1",
+          "F09-R2",
+          "F09-R3",
+          "M01-R1",
+          "M01-R2",
+          "M01-R3",
+          "M02-R1",
+          "M02-R2",
+          "M02-R3",
+          "M03-R1",
+          "M03-R2",
+          "M03-R3",
+          "M04-R1",
+          "M04-R2",
+          "M04-R3",
+          "M05-R1",
+          "M05-R2",
+          "M05-R3",
+          "M06-R1",
+          "M06-R2",
+          "M06-R3",
+          "M07-R1",
+          "M07-R2",
+          "M07-R3",
+          "M08-R1",
+          "M08-R2",
+          "M08-R3",
+          "M09-R1",
+          "M09-R2",
+          "M09-R3",
+          "X01-R1",
+          "X01-R2",
+          "X01-R3",
+          "X02-R1",
+          "X02-R2",
+          "X02-R3",
+          "X03-R1",
+          "X03-R2",
+          "X03-R3",
+          "X04-R1",
+          "X04-R2",
+          "X04-R3",
+          "X05-R1",
+          "X05-R2",
+          "X05-R3",
+          "X06-R1",
+          "X06-R2",
+          "X06-R3",
+          "X07-R1",
+          "X07-R2",
+          "X07-R3",
+          "X08-R1",
+          "X08-R2",
+          "X08-R3",
+          "C01-R1",
+          "C01-R2",
+          "C01-R3",
+          "C02-R1",
+          "C02-R2",
+          "C02-R3",
+          "C03-R1",
+          "C03-R2",
+          "C03-R3",
+          "C04-R1",
+          "C04-R2",
+          "C04-R3",
+          "C05-R1",
+          "C05-R2",
+          "C05-R3",
+          "C06-R1",
+          "C06-R2",
+          "C06-R3",
+          "C07-R1",
+          "C07-R2",
+          "C07-R3",
+          "C08-R1",
+          "C08-R2",
+          "C08-R3",
+          "C09-R1",
+          "C09-R2",
+          "C09-R3",
+          "C10-R1",
+          "C10-R2",
+          "C10-R3",
+          "C11-R1",
+          "C11-R2",
+          "C11-R3",
+          "H01-R1",
+          "H01-R2",
+          "H01-R3",
+          "H02-R1",
+          "H02-R2",
+          "H02-R3",
+          "H03-R1",
+          "H03-R2",
+          "H03-R3",
+          "H04-R1",
+          "H04-R2",
+          "H04-R3",
+          "H05-R1",
+          "H05-R2",
+          "H05-R3",
+          "H06-R1",
+          "H06-R2",
+          "H06-R3",
+          "H07-R1",
+          "H07-R2",
+          "H07-R3",
+          "H08-R1",
+          "H08-R2",
+          "H08-R3",
+          "H09-R1",
+          "H09-R2",
+          "H09-R3",
+          "H10-R1",
+          "H10-R2",
+          "H10-R3",
+          "H11-R1",
+          "H11-R2",
+          "H11-R3",
+          "H12-R1",
+          "H12-R2",
+          "H12-R3",
+          "D01-R1",
+          "D01-R2",
+          "D01-R3",
+          "D02-R1",
+          "D02-R2",
+          "D02-R3",
+          "D03-R1",
+          "D03-R2",
+          "D03-R3",
+          "D04-R1",
+          "D04-R2",
+          "D04-R3",
+          "D05-R1",
+          "D05-R2",
+          "D05-R3",
+          "D06-R1",
+          "D06-R2",
+          "D06-R3",
+          "D07-R1",
+          "D07-R2",
+          "D07-R3",
+          "D08-R1",
+          "D08-R2",
+          "D08-R3",
+          "K01-R1",
+          "K01-R2",
+          "K01-R3",
+          "K02-R1",
+          "K02-R2",
+          "K02-R3",
+          "K03-R1",
+          "K03-R2",
+          "K03-R3",
+          "K04-R1",
+          "K04-R2",
+          "K04-R3",
+          "K05-R1",
+          "K05-R2",
+          "K05-R3",
+          "K06-R1",
+          "K06-R2",
+          "K06-R3",
+          "O01-R1",
+          "O01-R2",
+          "O01-R3",
+          "O02-R1",
+          "O02-R2",
+          "O02-R3",
+          "O03-R1",
+          "O03-R2",
+          "O03-R3",
+          "O04-R1",
+          "O04-R2",
+          "O04-R3",
+          "O05-R1",
+          "O05-R2",
+          "O05-R3",
+          "O06-R1",
+          "O06-R2",
+          "O06-R3",
+          "O07-R1",
+          "O07-R2",
+          "O07-R3",
+          "W01-R1",
+          "W01-R2",
+          "W01-R3",
+          "W02-R1",
+          "W02-R2",
+          "W02-R3",
+          "W03-R1",
+          "W03-R2",
+          "W03-R3",
+          "W04-R1",
+          "W04-R2",
+          "W04-R3",
+          "W05-R1",
+          "W05-R2",
+          "W05-R3",
+          "W06-R1",
+          "W06-R2",
+          "W06-R3",
+          "W07-R1",
+          "W07-R2",
+          "W07-R3",
+          "W08-R1",
+          "W08-R2",
+          "W08-R3",
+          "W09-R1",
+          "W09-R2",
+          "W09-R3"
+        ],
+        "modules": [
+          "project",
+          "trend",
+          "acquire",
+          "generate",
+          "ingest",
+          "label",
+          "search",
+          "assetops",
+          "voice",
+          "music",
+          "plan",
+          "edit",
+          "render",
+          "account",
+          "publish",
+          "metrics",
+          "learn",
+          "agents",
+          "harness",
+          "data",
+          "security",
+          "ops",
+          "workspace"
+        ],
+        "passed": true,
+        "page_errors": []
+      },
+      "artifacts": {
+        "browser/browser-render.mp4": "ce1eb0883dd5dc6faa4e2750826d7020b2093f4c971f1ab061f52a4c0fc954bb",
+        "browser/browser-report.json": "e43e763a8a338f6f25cb6d23a8fe44c7b587c4bca92bd2860ba36715dea93175",
+        "director-chromium/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+        "director-webkit/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+        "media/synthetic-render.mp4": "2adcada3ee6d74eb8d10812b9afbb5ac3804314176a5b1f8c804cec0d1eb7ce6",
+        "media/synthetic-source.mp4": "01ea9c01b0634594a215e826e78db2d1cbc82f6b10fb696b96200eb98f9bf04d",
+        "opening-chromium/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+        "opening-webkit/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+        "studio/edited.mp4": "100f8249999b7e6c13f9e3223d230973c2d331f92ffdf5650e9c92cea79c4ba4",
+        "typed-controls/media-chain-render.mp4": "48afe7bdc9279d6ae4317a1d461b2b98a3cbd608658fcebed4aad61159c9770a",
+        "variants-chromium/variant.mp4": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+        "variants-webkit/variant.mp4": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+        "voice-chromium/voice-cut.mp4": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+        "voice-webkit/voice-cut.mp4": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+        "webkit/edited.mp4": "100f8249999b7e6c13f9e3223d230973c2d331f92ffdf5650e9c92cea79c4ba4"
+      }
+    }
+  ]
+}

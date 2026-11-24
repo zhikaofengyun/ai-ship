@@ -1,0 +1,38 @@
+{
+  "attempt": {
+    "source_sha256": "6ef5b4d95876909bbd47a58899961111ecb386f3e45f4d24c865588bfec0ad37",
+    "started_at": "2026-11-24T16:25:38.098146+00:00",
+    "finished_at": "2026-11-24T16:32:47.495370+00:00",
+    "round": 1,
+    "groups_passed": 38,
+    "groups_total": 39,
+    "failed_group": "webkit-storyboard-variants",
+    "exception": "AssertionError: ['ResizeObserver loop completed with undelivered notifications.']",
+    "failed_log_sha256": "99bf31d317e41ff5060b4e5776ac8bb7bdf8c9387148b84516f277b9dfb3e3fe"
+  },
+  "focused_retry": {
+    "engine": "webkit",
+    "passed": true,
+    "page_errors": [],
+    "checks": [
+      "Uploaded three audiovisual sources; built a two-shot AI plan, held its opening and returned one admissible option out of three requested, with four measured differences.",
+      "Reloaded the persisted family and opened its selected child proposal on the same page with parent version and human decision intact.",
+      "Approved and rendered the child via existing controls, decoded both video segments and the audio stream, matched their expected on-screen words and re-read the unchanged parent."
+    ],
+    "report_sha256": "2cf41e2879ac06d23033948ba6d040100019f2451cb45a0155e8561284456972"
+  },
+  "additional_development_runs": [
+    {
+      "test": "tests.test_auto_edits.AutoEditTests.test_overlapping_requests_reserve_once_and_cannot_forge_ocr_or_double_apply",
+      "parallel_result": "test waiter exceeded its 20-second bound",
+      "isolated_result": "passed",
+      "isolated_seconds": 2.879
+    },
+    {
+      "test": "extra WebKit repetition of the storyboard-variant case",
+      "parallel_result": "a measured comparison dimension was unavailable, so the numeric-comparison assertion failed",
+      "page_errors": [],
+      "dedicated_layout_diagnostic": "layout-diagnostics.json"
+    }
+  ]
+}

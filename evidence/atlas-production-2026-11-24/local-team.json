@@ -1,0 +1,317 @@
+{
+  "passed": true,
+  "models": {
+    "director": {
+      "model": "qwen2.5-1.5b",
+      "weights": "qwen2.5-1.5b.gguf",
+      "sha256": "183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4",
+      "bytes": 986048512,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    },
+    "reviewer": {
+      "model": "qwen2.5-0.5b",
+      "weights": "qwen2.5-0.5b.gguf",
+      "sha256": "c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515",
+      "bytes": 397807936,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    },
+    "judge": {
+      "model": "smollm2-360m",
+      "weights": "smollm2-360m.gguf",
+      "sha256": "2fa3f013dcdd7b99f9b237717fa0b12d75bbb89984cc1274be1471a465bac9c2",
+      "bytes": 270590880,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    }
+  },
+  "decisions": [
+    {
+      "role": "director",
+      "call": {
+        "id": "toolcall_f67bdb9846c74b8cbd4ee9cc18829088",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "8d3e41c5f2f5a13d458290654775833d5620fe261bcacc4b13e602b5c0e3300e"
+      },
+      "provider_request_id": "chatcmpl-jngoGLkzZT9o7P7PfPVTC8sXkAtO6N5B",
+      "requested_model": "qwen2.5-1.5b",
+      "reported_model": "qwen2.5-1.5b",
+      "request_hash": "d83d87374bdb318bc743a48c2327b2b35c2cc5cadd284ebb8c796aec5f862224",
+      "measured_tokens": {
+        "completion_tokens": 73,
+        "prompt_tokens": 489,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 562
+      },
+      "decision": {
+        "choice": "C",
+        "reason": "The cut sequence in choice C has a total duration of 2.0 seconds, which matches the goal duration of 2.0 seconds. The source with visible words 'FRESH LIME' is also present in choice C, aligning with the requirement to prioritize the source with those visible words."
+      },
+      "outcome": "succeeded",
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "reviewer",
+      "call": {
+        "id": "toolcall_c8502cb95ae7437db5038afa54a017a0",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "2ccda517e99b0bd0c61aa2f30be3fa3a7ace56a49d960d770b84147b7e212cb7"
+      },
+      "provider_request_id": "chatcmpl-qZqeLWAzkz8lgETxs2GsBBdgYMAGGmyG",
+      "requested_model": "qwen2.5-0.5b",
+      "reported_model": "qwen2.5-0.5b",
+      "request_hash": "a4932cb66ed1631fd49147e8b751079ed7e4b06d3464d572255446270c1362aa",
+      "measured_tokens": {
+        "completion_tokens": 107,
+        "prompt_tokens": 1449,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 1556
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "SAMPLE",
+        "reason": "The evidence ID 'D1' indicates that the source 'SAMPLE.mp4' has a duration of 1.6 seconds. This is a crucial piece of information for the user to prioritize the source with those visible words. The other evidence IDs 'W1' and 'W2' do not provide any specific information about the source duration."
+      },
+      "outcome": "succeeded",
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "judge",
+      "call": {
+        "id": "toolcall_fd309c8cd77c4e5aa1895e691630761e",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "a1651da28cec31896886acbdb4585b1a17a57b69f670a16ca34e10e8715fe8d8"
+      },
+      "provider_request_id": "chatcmpl-urWoaNoet6t6aKIQhe52lO4192x5zXLh",
+      "requested_model": "smollm2-360m",
+      "reported_model": "smollm2-360m",
+      "request_hash": "b62d3e5b2a0a79ed4aabda9ba013982655c49a5c1ecbc8f8dbf321ec40abe80e",
+      "measured_tokens": {
+        "completion_tokens": 101,
+        "prompt_tokens": 1753,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 1854
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "SAMPLE",
+        "reason": "The evidence ID 'D1' indicates that the source 'SAMPLE.mp4' has a duration of 1.6 seconds. This is a crucial piece of information for the user to prioritize the source with those visible words. The other evidence IDs 'W1' and 'W2' do not provide any specific information about the source duration."
+      },
+      "outcome": "succeeded",
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    }
+  ],
+  "checks": [
+    "three distinct pinned model files, authenticated localhost model endpoints",
+    "authenticated Atlas viewer denied production write; project owner request reached all three real GGUF models",
+    "source OCR plus scoped evidence, measured token usage, provider identities; no external billing",
+    "repeated run request has the same run and exactly three recorded model calls",
+    "independent verdict or measured evidence gate blocked adoption of the original proposal",
+    "authenticated test reviewer adopted the eligible proposal; owner rendered, downloaded video/audio fully decoded"
+  ],
+  "engine": "version: 1.0.0-dev (build 12671, commit ab789a246)\nbuilt with GNU 11.4.0 for Linux x86_64",
+  "server_sha256": "e172daae7f3c14ed9bbcde1753cfcc9bf3d9e058eab478d1ec666138ed97e287",
+  "stage": "blocked",
+  "issue": {
+    "code": "TEAM_EVIDENCE_REQUIRED",
+    "message": "模型复核与原片观测未匹配，方案保留供局部修改。"
+  },
+  "elapsed_seconds": 37.771,
+  "project_id": "project_7f7a05fd03914acdbc9be46b1e78c00a",
+  "run_id": "edit_fad78e50e661b125c72f3169aa4e65349dc9",
+  "goal": "Create a short shot list for FRESH LIME. Prioritize the source with those visible words. No new product claims.",
+  "inputs": [
+    {
+      "id": "asset_06cf42cf2f584abc85fd5f6263da4738",
+      "filename": "SAMPLE.mp4",
+      "version": 1,
+      "content_hash": "e1b1ab24e69b610bf4bb9fa107c066f5162c026732323ba0ae9f956b4bda3fc1"
+    },
+    {
+      "id": "asset_9ae76d64a18a445caa276b7c65d289e5",
+      "filename": "FRESH LIME.mp4",
+      "version": 1,
+      "content_hash": "9ab47e1efdc57050fdd596b588cb6b3563085bce7d942e0ec601cbbfe4e88559"
+    }
+  ],
+  "review_findings": [
+    {
+      "call_ref": {
+        "id": "toolcall_c8502cb95ae7437db5038afa54a017a0",
+        "kind": "ToolCall",
+        "reported_model": "qwen2.5-0.5b",
+        "role": "reviewer",
+        "version": 2
+      },
+      "decision": "accept",
+      "evidence_id": "D1",
+      "evidence_problem": "引用的观测值与已解码原片不符。",
+      "observed_value": "SAMPLE",
+      "reason": "The evidence ID 'D1' indicates that the source 'SAMPLE.mp4' has a duration of 1.6 seconds. This is a crucial piece of information for the user to prioritize the source with those visible words. The other evidence IDs 'W1' and 'W2' do not provide any specific information about the source duration.",
+      "role": "reviewer",
+      "verified_observation": null
+    },
+    {
+      "call_ref": {
+        "id": "toolcall_fd309c8cd77c4e5aa1895e691630761e",
+        "kind": "ToolCall",
+        "reported_model": "smollm2-360m",
+        "role": "judge",
+        "version": 2
+      },
+      "decision": "accept",
+      "evidence_id": "D1",
+      "evidence_problem": "复核原样重复已有模型理由，未提供独立判断。",
+      "observed_value": "SAMPLE",
+      "reason": "The evidence ID 'D1' indicates that the source 'SAMPLE.mp4' has a duration of 1.6 seconds. This is a crucial piece of information for the user to prioritize the source with those visible words. The other evidence IDs 'W1' and 'W2' do not provide any specific information about the source duration.",
+      "role": "judge",
+      "verified_observation": null
+    }
+  ],
+  "manual_recovery": {
+    "original_blocked": "edit_fad78e50e661b125c72f3169aa4e65349dc9",
+    "new_proposal": "edit_46eb7d4793ec7bb7abde57642fc4b406bdbd",
+    "changed_shot": 0,
+    "at": 0.8,
+    "observed_ocr": [
+      {
+        "box_px": [
+          101,
+          92,
+          235,
+          57
+        ],
+        "confidence": 0.967,
+        "text": "FRESH"
+      },
+      {
+        "box_px": [
+          375,
+          92,
+          166,
+          56
+        ],
+        "confidence": 0.968,
+        "text": "LIME"
+      }
+    ]
+  },
+  "proposal": {
+    "title": "Create a short shot list for FRESH LIME. Prioritize the source with those visible words. No new prod",
+    "approach": "The cut sequence in choice C has a total duration of 2.0 seconds, which matches the goal duration of 2.0 seconds. The source with visible words 'FRESH LIME' is also present in choice C, aligning with the requirement to prioritize the source with those visible words.",
+    "shots": [
+      {
+        "asset_id": "asset_9ae76d64a18a445caa276b7c65d289e5",
+        "asset_version": 1,
+        "name": "FRESH LIME.mp4",
+        "reason": "Authenticated test editor selected a measured source showing FRESH LIME for the opening.",
+        "source_in": 0.2,
+        "source_out": 0.8,
+        "timeline_start": 0.0
+      },
+      {
+        "asset_id": "asset_9ae76d64a18a445caa276b7c65d289e5",
+        "asset_version": 1,
+        "name": "FRESH LIME.mp4",
+        "reason": "候选结构采用该段真实原片区间。",
+        "source_in": 0.6,
+        "source_out": 1.6,
+        "timeline_start": 0.6
+      }
+    ],
+    "missing": [
+      "当前可用编排比目标短 0.40 秒。"
+    ],
+    "reviews": null,
+    "model_selection": null
+  },
+  "frame_qc": {
+    "checks": {
+      "audio_presence": true,
+      "bytes_present": true,
+      "dimensions": true,
+      "duration_positive": true,
+      "duration_within_tolerance": true,
+      "full_decode": true
+    },
+    "content_review_required": true,
+    "not_checked": [
+      "商品事实与数量",
+      "来源和使用许可",
+      "字幕语义和可读性",
+      "审美与场景连续性",
+      "人工指定音画语义锚点"
+    ],
+    "probe": {
+      "audio_codec": "aac",
+      "duration": 1.6,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "fps": "25/1",
+      "has_audio": true,
+      "has_video": true,
+      "height": 180,
+      "is_still": false,
+      "probe_version": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+      "source_time_base": "1/12800",
+      "streams": [
+        {
+          "avg_frame_rate": "25/1",
+          "codec_name": "h264",
+          "codec_type": "video",
+          "duration": "1.600000",
+          "height": 180,
+          "index": 0,
+          "nb_frames": "40",
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "25/1",
+          "start_time": "0.000000",
+          "time_base": "1/12800",
+          "width": 320
+        },
+        {
+          "avg_frame_rate": "0/0",
+          "channel_layout": "stereo",
+          "channels": 2,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "duration": "1.600000",
+          "index": 1,
+          "nb_frames": "76",
+          "r_frame_rate": "0/0",
+          "sample_rate": "48000",
+          "start_time": "0.000000",
+          "time_base": "1/48000"
+        }
+      ],
+      "video_codec": "h264",
+      "width": 320
+    },
+    "publish_ready": false,
+    "status": "technical_passed"
+  },
+  "movie_sha256": "037f23c1c0cd3e969816d1194751057e5ba810649b1f99a16ad8955cb1253092",
+  "timeline": {
+    "id": "timeline_0b98f01ea2654f709076ad4f7a219882",
+    "kind": "Timeline",
+    "version": 1,
+    "hash": "9162f9c7deee538748f15c868a6f8fc5ff1cdfcde1c9018911bb4a96d475fa82"
+  }
+}

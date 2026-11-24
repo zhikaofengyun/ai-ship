@@ -1,0 +1,378 @@
+{
+  "passed": true,
+  "checks": [
+    "SD1.5 text-to-image inference / PNG original / human-specified hold into a separate 24-frame asset",
+    "actual text-to-video graph, deduplicated task and eight decoded, non-identical frames",
+    "actual reference image, pinned project revision, uploaded before inference, eight distinct-time decoded video frames, source retained",
+    "generated source → versioned rough-cut → approval → full audio/video decode"
+  ],
+  "profile_file": "contracts/examples/comfy-animatediff.json",
+  "events": [],
+  "cpu_dtype": "fp16",
+  "task_events": {
+    "text-to-image": [
+      {
+        "stage": "queued",
+        "seconds": 0.0
+      },
+      {
+        "stage": "running",
+        "seconds": 2.02
+      },
+      {
+        "stage": "ready",
+        "seconds": 280.13
+      }
+    ],
+    "text-to-video": [
+      {
+        "stage": "queued",
+        "seconds": 0.0
+      },
+      {
+        "stage": "running",
+        "seconds": 2.06
+      },
+      {
+        "stage": "ready",
+        "seconds": 54.57
+      }
+    ],
+    "image-to-video": [
+      {
+        "stage": "queued",
+        "seconds": 0.0
+      },
+      {
+        "stage": "running",
+        "seconds": 2.04
+      },
+      {
+        "stage": "ready",
+        "seconds": 174.38
+      }
+    ]
+  },
+  "generated_still": {
+    "sha256": "1c95d794a1d2bc27e5f8614f732861f5ad6bb812ce397bf488679ca70829b7ea",
+    "job": {
+      "asset_ref": {
+        "id": "asset_9e3f1f7237dd4f689515e283ad4c0e50",
+        "kind": "Asset",
+        "version": 1
+      },
+      "billing_scope": "self_hosted_compute",
+      "charge": null,
+      "client_id": "bb04934b-c399-46a4-9f4a-48ecd3a5ac1f",
+      "cost_ref": {
+        "id": "cost_3a146036688240868e7030962fa1e3d1",
+        "kind": "Cost",
+        "version": 1
+      },
+      "generation_scope": "d258d9efba57d2ece34d7b16301012bfa509d4b658a235003c922b1c5a463701",
+      "graph_hash": "ac6746e2dde2d80be1681527815380c2180ad8b727240b10f79dc95bdaa21d3b",
+      "import_entry_ref": {
+        "id": "importentry_f07fddba06b24cb8a5d2d4a9e90b615f",
+        "kind": "ImportEntry",
+        "version": 1
+      },
+      "issue": null,
+      "model": "Stable Diffusion 1.5",
+      "name": "商品静帧候选",
+      "observed_remote_state": "running",
+      "operation_kind": "comfy_image_generation",
+      "output_kind": "image",
+      "output_node": "8",
+      "profile_hash": "7a26919839e29aff0c7d0f8c93c21c6f73a307c009f2cd30bcc52ca8340e645f",
+      "profile_id": "sd15-still",
+      "prompt": "A close-up film shot of a blue ceramic coffee cup on a light wooden table, morning light, gentle steam rising, a slow camera push forward, realistic studio photography.",
+      "provider_terminal": "success",
+      "reference_asset_ref": null,
+      "reference_input": null,
+      "remote_id": "2b8cb081-5dd5-4a2e-9a8c-c3fd7ea0f835",
+      "request_hash": "d2b17a32e3d861605ce819cc7f5f4b72e7c5083fb2c84fb8420ad450df11639d",
+      "requested_prompt_id": "2b8cb081-5dd5-4a2e-9a8c-c3fd7ea0f835",
+      "seed": 48185,
+      "slot": "商品静帧候选",
+      "source_run_id": null,
+      "stage": "ready",
+      "technical_qc": {
+        "checks": {
+          "codec_matches_extension": true,
+          "full_decode": true,
+          "single_frame": true
+        },
+        "media_type": "image/png",
+        "probe": {
+          "audio_codec": null,
+          "duration": 0,
+          "format_name": "png_pipe",
+          "fps": "25/1",
+          "has_audio": false,
+          "has_video": true,
+          "height": 512,
+          "is_still": true,
+          "probe_version": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+          "source_time_base": "1/25",
+          "streams": [
+            {
+              "avg_frame_rate": "25/1",
+              "codec_name": "png",
+              "codec_type": "video",
+              "height": 512,
+              "index": 0,
+              "pix_fmt": "rgb24",
+              "r_frame_rate": "25/1",
+              "time_base": "1/25",
+              "width": 512
+            }
+          ],
+          "video_codec": "png",
+          "width": 512
+        },
+        "publish_ready": false
+      },
+      "version_ref": {
+        "id": "assetversion_74edecd30cbc48b784f44b527fa9a4c2",
+        "kind": "AssetVersion",
+        "version": 1
+      }
+    },
+    "hold": {
+      "duration": 1.0,
+      "fps": 24,
+      "frames": 24,
+      "requested_duration": 1.0
+    }
+  },
+  "job": {
+    "asset_ref": {
+      "id": "asset_07dd1af65db9487b9af658ab3a7c8598",
+      "kind": "Asset",
+      "version": 1
+    },
+    "billing_scope": "self_hosted_compute",
+    "charge": null,
+    "client_id": "c0d44238-e58f-40f3-8e52-56c7a2cd13a2",
+    "cost_ref": {
+      "id": "cost_8d98dc92b30f4cd3ad7234f3736f536d",
+      "kind": "Cost",
+      "version": 1
+    },
+    "generation_scope": "1091190e44c25cc55a370f9105849fb62e2d884a77499448630164b31df0de74",
+    "graph_hash": "1cd7459f948d2ca8ad37750baae8142181631abaa3ebb3419377bb8707c093d5",
+    "import_entry_ref": {
+      "id": "importentry_39915a3ff1c241c697a455b243a775c3",
+      "kind": "ImportEntry",
+      "version": 1
+    },
+    "issue": null,
+    "model": "Stable Diffusion 1.5 + AnimateDiff-Lightning 2-step",
+    "name": "咖啡杯产品镜头",
+    "observed_remote_state": "running",
+    "operation_kind": "comfy_video_generation",
+    "output_kind": "video",
+    "output_node": "8",
+    "profile_hash": "d00941f82ecf88959e6ce066e187b5cc9a89b7be425824ff04a7b7b59c6f2d35",
+    "profile_id": "animatediff-local",
+    "prompt": "A close-up film shot of a blue ceramic coffee cup on a light wooden table, morning light, gentle steam rising, a slow camera push forward, realistic studio photography.",
+    "provider_terminal": "success",
+    "reference_asset_ref": null,
+    "reference_input": null,
+    "remote_id": "b998a479-bc3a-407e-a523-021a44cc4219",
+    "request_hash": "1ed29e1c22319be7f5601003f047b5d275782388759a541f6d585389f34db925",
+    "requested_prompt_id": "b998a479-bc3a-407e-a523-021a44cc4219",
+    "seed": 48185,
+    "slot": "咖啡杯产品镜头",
+    "source_run_id": null,
+    "stage": "ready",
+    "technical_qc": {
+      "checks": {
+        "bytes_present": true,
+        "dimensions": true,
+        "duration_positive": true,
+        "duration_within_tolerance": true,
+        "full_decode": true
+      },
+      "content_review_required": true,
+      "not_checked": [
+        "商品事实与数量",
+        "来源和使用许可",
+        "字幕语义和可读性",
+        "审美与场景连续性",
+        "人工指定音画语义锚点"
+      ],
+      "probe": {
+        "audio_codec": null,
+        "duration": 1.0,
+        "format_name": "matroska,webm",
+        "fps": "8/1",
+        "has_audio": false,
+        "has_video": true,
+        "height": 256,
+        "is_still": false,
+        "probe_version": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+        "source_time_base": "1/1000",
+        "streams": [
+          {
+            "avg_frame_rate": "8/1",
+            "codec_name": "vp9",
+            "codec_type": "video",
+            "height": 256,
+            "index": 0,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "8/1",
+            "start_time": "0.000000",
+            "time_base": "1/1000",
+            "width": 256
+          }
+        ],
+        "video_codec": "vp9",
+        "width": 256
+      },
+      "publish_ready": false,
+      "status": "technical_passed"
+    },
+    "version_ref": {
+      "id": "assetversion_19a54b37d8104a6e9ebcf2ae6cfeb43c",
+      "kind": "AssetVersion",
+      "version": 1
+    }
+  },
+  "source_sha256": "e6947394f4522e66a01d0072e0449d496397e2d21383144bf38ae9c11105f842",
+  "conditioned_job": {
+    "asset_ref": {
+      "id": "asset_75439cb8899b4f2090caca2bfb07ce60",
+      "kind": "Asset",
+      "version": 1
+    },
+    "billing_scope": "self_hosted_compute",
+    "charge": null,
+    "client_id": "a441ade8-8317-4432-9dc1-6dde11d77f4c",
+    "cost_ref": {
+      "id": "cost_1507bd67b632439b9758b5dcc2530ee9",
+      "kind": "Cost",
+      "version": 1
+    },
+    "generation_scope": "827c94e3f0b0a6b0c005e548b5e4329bf53c49961fee768829cbd023de425da4",
+    "graph_hash": "2bf65e1625b9d36cabc83641eef46fe0f33cc0632010decf701c9ccb249bc042",
+    "import_entry_ref": {
+      "id": "importentry_8369ca825a9841c8a40f7f85cf53696c",
+      "kind": "ImportEntry",
+      "version": 1
+    },
+    "issue": null,
+    "model": "Stable Diffusion 1.5 + AnimateDiff-Lightning image conditioned",
+    "name": "咖啡杯产品镜头",
+    "observed_remote_state": "running",
+    "operation_kind": "comfy_video_generation",
+    "output_kind": "video",
+    "output_node": "8",
+    "profile_hash": "37d815605f31f238985b44828ca0acfa36973575babee09c7383a74b63dfddef",
+    "profile_id": "animatediff-reference",
+    "prompt": "A close-up film shot of a blue ceramic coffee cup on a light wooden table, morning light, gentle steam rising, a slow camera push forward, realistic studio photography.",
+    "provider_terminal": "success",
+    "reference_asset_ref": {
+      "id": "asset_9e3f1f7237dd4f689515e283ad4c0e50",
+      "kind": "Asset",
+      "version": 1
+    },
+    "reference_input": {
+      "asset_ref": {
+        "id": "asset_9e3f1f7237dd4f689515e283ad4c0e50",
+        "kind": "Asset",
+        "version": 1
+      },
+      "bytes": 605961,
+      "filename": "atlas-ref-9671bf60742d26e3-f6b936638cc3794982995103c8f17dea6c729be30280e5529e2abea943764f49.png",
+      "height": 512,
+      "original_sha256": "1c95d794a1d2bc27e5f8614f732861f5ad6bb812ce397bf488679ca70829b7ea",
+      "png_sha256": "f6b936638cc3794982995103c8f17dea6c729be30280e5529e2abea943764f49",
+      "width": 512
+    },
+    "reference_upload": {
+      "descriptor": {
+        "name": "atlas-ref-9671bf60742d26e3-f6b936638cc3794982995103c8f17dea6c729be30280e5529e2abea943764f49.png",
+        "subfolder": "",
+        "type": "input"
+      },
+      "verified_at": "2026-11-24T15:50:40.118696+00:00",
+      "verified_bytes": 605961,
+      "verified_sha256": "f6b936638cc3794982995103c8f17dea6c729be30280e5529e2abea943764f49"
+    },
+    "remote_id": "3561b1b2-1708-42a2-9234-4863d7114c61",
+    "request_hash": "baae90900c9967e6df4cf75a45a971c0e60e7341aca6dcb6d15fb28a2c9993f4",
+    "requested_prompt_id": "3561b1b2-1708-42a2-9234-4863d7114c61",
+    "seed": 48185,
+    "slot": "咖啡杯产品镜头",
+    "source_run_id": null,
+    "stage": "ready",
+    "technical_qc": {
+      "checks": {
+        "bytes_present": true,
+        "dimensions": true,
+        "duration_positive": true,
+        "duration_within_tolerance": true,
+        "full_decode": true
+      },
+      "content_review_required": true,
+      "not_checked": [
+        "商品事实与数量",
+        "来源和使用许可",
+        "字幕语义和可读性",
+        "审美与场景连续性",
+        "人工指定音画语义锚点"
+      ],
+      "probe": {
+        "audio_codec": null,
+        "duration": 1.0,
+        "format_name": "matroska,webm",
+        "fps": "8/1",
+        "has_audio": false,
+        "has_video": true,
+        "height": 384,
+        "is_still": false,
+        "probe_version": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+        "source_time_base": "1/1000",
+        "streams": [
+          {
+            "avg_frame_rate": "8/1",
+            "codec_name": "vp9",
+            "codec_type": "video",
+            "height": 384,
+            "index": 0,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "8/1",
+            "start_time": "0.000000",
+            "time_base": "1/1000",
+            "width": 384
+          }
+        ],
+        "video_codec": "vp9",
+        "width": 384
+      },
+      "publish_ready": false,
+      "status": "technical_passed"
+    },
+    "version_ref": {
+      "id": "assetversion_fee4359e2a4a4efe8ca7eb19f9551f00",
+      "kind": "AssetVersion",
+      "version": 1
+    }
+  },
+  "conditioned_sha256": "65cde8cc1d3c62bc20600b32c4cded58ba25c77cbf4b9b52fba53ca2632e5c70",
+  "reference_frame_comparison": {
+    "generated-shot.webm": {
+      "0": 96.638,
+      "0.5": 96.366,
+      "0.875": 100.799
+    },
+    "reference-motion.webm": {
+      "0": 14.346,
+      "0.5": 13.503,
+      "0.875": 21.459
+    }
+  },
+  "reference_frame_measurement": "RGB24 average absolute difference at 64x64; color similarity alone cannot certify object identity",
+  "render_sha256": "0724ce7c28d7564dfe3704553d90cf6bac10f86df3a3a09f1cd8165c4b917112"
+}

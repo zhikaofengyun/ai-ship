@@ -1,0 +1,125 @@
+{
+  "voice-cut.mp4": {
+    "sha256": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+    "bytes": 34256,
+    "full_decode": true,
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1080,
+        "height": 1920,
+        "nb_read_frames": "51"
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "sample_rate": "48000",
+        "channels": 2,
+        "nb_read_frames": "96"
+      }
+    ],
+    "format": {
+      "duration": "2.048000"
+    }
+  },
+  "storyboard-variant.mp4": {
+    "sha256": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+    "bytes": 41203,
+    "full_decode": true,
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 480,
+        "height": 240,
+        "nb_read_frames": "50"
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "sample_rate": "48000",
+        "channels": 2,
+        "nb_read_frames": "94"
+      }
+    ],
+    "format": {
+      "duration": "2.000000"
+    }
+  },
+  "reference-motion.webm": {
+    "sha256": "65cde8cc1d3c62bc20600b32c4cded58ba25c77cbf4b9b52fba53ca2632e5c70",
+    "bytes": 143768,
+    "full_decode": true,
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "vp9",
+        "codec_type": "video",
+        "width": 384,
+        "height": 384,
+        "nb_read_frames": "8"
+      }
+    ],
+    "format": {
+      "duration": "1.000000"
+    }
+  },
+  "generated-cut.mp4": {
+    "sha256": "0724ce7c28d7564dfe3704553d90cf6bac10f86df3a3a09f1cd8165c4b917112",
+    "bytes": 124276,
+    "full_decode": true,
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 384,
+        "height": 384,
+        "nb_read_frames": "24"
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "sample_rate": "48000",
+        "channels": 2,
+        "nb_read_frames": "47"
+      }
+    ],
+    "format": {
+      "duration": "1.000000"
+    }
+  },
+  "team-cut.mp4": {
+    "sha256": "037f23c1c0cd3e969816d1194751057e5ba810649b1f99a16ad8955cb1253092",
+    "bytes": 5903,
+    "full_decode": true,
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 320,
+        "height": 180,
+        "nb_read_frames": "40"
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "sample_rate": "48000",
+        "channels": 2,
+        "nb_read_frames": "75"
+      }
+    ],
+    "format": {
+      "duration": "1.600000"
+    }
+  }
+}

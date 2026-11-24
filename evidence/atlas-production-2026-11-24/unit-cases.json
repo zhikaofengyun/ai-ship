@@ -1,0 +1,1538 @@
+{
+  "started_at": "2026-11-24T16:41:17.207929+00:00",
+  "finished_at": "2026-11-24T16:45:21.501278+00:00",
+  "tests_run": 254,
+  "unique_test_ids": true,
+  "order_seed": 1,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "passed": true,
+  "cases": [
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_all_five_renderable_transitions_restore_full_ranges_and_source_link",
+      "started_at": "2026-11-24T16:41:18.002881+00:00",
+      "status": "passed",
+      "seconds": 2.485
+    },
+    {
+      "id": "tests.test_voice_studio.VoiceStudioTests.test_untimed_estimated_gap_repair_and_immutable_old_script",
+      "started_at": "2026-11-24T16:41:20.655974+00:00",
+      "status": "passed",
+      "seconds": 1.5355
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_cookie_session_does_not_bypass_origin_guard",
+      "started_at": "2026-11-24T16:41:22.191665+00:00",
+      "status": "passed",
+      "seconds": 0.0145
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_search_excludes_current_revoked_source",
+      "started_at": "2026-11-24T16:41:22.206204+00:00",
+      "status": "passed",
+      "seconds": 0.0219
+    },
+    {
+      "id": "tests.test_asset_lifecycle.AssetLifecycleTests.test_cold_restore_preserves_refs_alias_and_index_and_rechecks_bytes_rights",
+      "started_at": "2026-11-24T16:41:22.228202+00:00",
+      "status": "passed",
+      "seconds": 0.3788
+    },
+    {
+      "id": "tests.test_render_recovery.RenderRecoveryTests.test_retry_uses_frozen_sequence_exact_fps_full_decode_and_no_duplicate_outputs",
+      "started_at": "2026-11-24T16:41:22.607068+00:00",
+      "status": "passed",
+      "seconds": 1.8431
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_asymmetric_external_dissolve_preserves_nominal_cut_on_reexport",
+      "started_at": "2026-11-24T16:41:24.566630+00:00",
+      "status": "passed",
+      "seconds": 0.8285
+    },
+    {
+      "id": "tests.test_selection.SelectionTests.test_invalid_claims_expired_foreign_and_stale_approvals_are_atomic",
+      "started_at": "2026-11-24T16:41:25.395307+00:00",
+      "status": "passed",
+      "seconds": 0.0385
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_orphan_delivery_zip_recovery_rechecks_current_artifact_rights",
+      "started_at": "2026-11-24T16:41:25.648910+00:00",
+      "status": "passed",
+      "seconds": 0.5435
+    },
+    {
+      "id": "tests.test_render_recovery.RenderRecoveryTests.test_legacy_jobs_require_reconstructible_input_refs_and_exact_rate",
+      "started_at": "2026-11-24T16:41:26.192458+00:00",
+      "status": "passed",
+      "seconds": 1.713
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_product_csv_money_exact_and_bad_rows_isolated",
+      "started_at": "2026-11-24T16:41:27.905516+00:00",
+      "status": "passed",
+      "seconds": 0.0088
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_transform_real_bytes_trim_scale_color_loudness",
+      "started_at": "2026-11-24T16:41:28.103949+00:00",
+      "status": "passed",
+      "seconds": 0.5738
+    },
+    {
+      "id": "tests.test_asset_lifecycle.AssetLifecycleTests.test_plan_used_by_director_rechecks_version_purpose_and_live_pressure",
+      "started_at": "2026-11-24T16:41:28.677825+00:00",
+      "status": "passed",
+      "seconds": 1.3821
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_reference_scope_wrong_kind_stale_missing_disconnected_and_unsupported",
+      "started_at": "2026-11-24T16:41:30.060016+00:00",
+      "status": "passed",
+      "seconds": 1.1466
+    },
+    {
+      "id": "tests.test_asset_lifecycle.AssetLifecycleTests.test_family_pressure_distinguishes_reservations_previews_and_accounts",
+      "started_at": "2026-11-24T16:41:31.206723+00:00",
+      "status": "passed",
+      "seconds": 0.5648
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_actual_calculated_and_estimated_are_not_added_twice_or_erased_by_old_release",
+      "started_at": "2026-11-24T16:41:31.771592+00:00",
+      "status": "passed",
+      "seconds": 0.0195
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_legacy_unsettled_request_remains_blocked_after_hash_upgrade",
+      "started_at": "2026-11-24T16:41:31.791111+00:00",
+      "status": "passed",
+      "seconds": 0.0528
+    },
+    {
+      "id": "tests.test_asset_lifecycle.AssetLifecycleTests.test_generic_edits_preserve_archive_and_cannot_mint_computed_selection",
+      "started_at": "2026-11-24T16:41:31.844090+00:00",
+      "status": "passed",
+      "seconds": 0.7386
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_tag_range_and_versioned_manual_evidence",
+      "started_at": "2026-11-24T16:41:32.582758+00:00",
+      "status": "passed",
+      "seconds": 0.0299
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_ancestor_lock_yields_proposal_and_keeps_captured_value",
+      "started_at": "2026-11-24T16:41:32.612733+00:00",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_schedule_dst_gap_ambiguity_and_utc",
+      "started_at": "2026-11-24T16:41:32.612892+00:00",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_real_scene_candidates_frame_and_onsets_are_not_semantic_claims",
+      "started_at": "2026-11-24T16:41:32.862439+00:00",
+      "status": "passed",
+      "seconds": 0.7271
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_measured_model_cost_cannot_release_and_reduces_manual_capacity",
+      "started_at": "2026-11-24T16:41:33.589670+00:00",
+      "status": "passed",
+      "seconds": 0.0249
+    },
+    {
+      "id": "tests.test_quota_commercial_integration.QuotaCommercialIntegration.test_inflight_receipt_and_late_product_observation_survive_sale_expiry",
+      "started_at": "2026-11-24T16:41:33.614679+00:00",
+      "status": "passed",
+      "seconds": 1.1429
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_money_exact_decimal_and_currency",
+      "started_at": "2026-11-24T16:41:34.757662+00:00",
+      "status": "passed",
+      "seconds": 0.0082
+    },
+    {
+      "id": "tests.test_variants.StoryboardVariantTests.test_product_guard_locked_interval_and_changed_fact",
+      "started_at": "2026-11-24T16:41:35.293191+00:00",
+      "status": "passed",
+      "seconds": 8.2553
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_clips_lock_and_edit_clear_locked_flag",
+      "started_at": "2026-11-24T16:41:43.548577+00:00",
+      "status": "passed",
+      "seconds": 0.0104
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_remote_session_requires_https_and_sets_secure_cookie",
+      "started_at": "2026-11-24T16:41:43.558987+00:00",
+      "status": "passed",
+      "seconds": 0.0175
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_node_binding_cannot_read_nonancestor_layout_node",
+      "started_at": "2026-11-24T16:41:43.742087+00:00",
+      "status": "passed",
+      "seconds": 0.0874
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_cross_tenant_references_never_resolve",
+      "started_at": "2026-11-24T16:41:43.829533+00:00",
+      "status": "passed",
+      "seconds": 0.0037
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_unknown_custom_disabled_or_insufficient_transition_handles_are_atomic",
+      "started_at": "2026-11-24T16:41:43.947881+00:00",
+      "status": "passed",
+      "seconds": 0.5139
+    },
+    {
+      "id": "tests.test_soundtrack.SoundtrackTests.test_ducking_changes_only_music_under_dialogue_and_periods_are_preserved",
+      "started_at": "2026-11-24T16:41:44.461899+00:00",
+      "status": "passed",
+      "seconds": 4.19
+    },
+    {
+      "id": "tests.test_comment_feedback.CommentFeedbackTests.test_scope_expiry_and_repeat_conflicts",
+      "started_at": "2026-11-24T16:41:48.651960+00:00",
+      "status": "passed",
+      "seconds": 0.0799
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_usage_reservation_conflict_release_and_history",
+      "started_at": "2026-11-24T16:41:48.731901+00:00",
+      "status": "passed",
+      "seconds": 0.0492
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_real_waveform_and_audio_extract",
+      "started_at": "2026-11-24T16:41:49.004847+00:00",
+      "status": "passed",
+      "seconds": 0.6422
+    },
+    {
+      "id": "tests.test_production.RealMediaCrossDomainTests.test_real_probe_bounds_tags_search_and_audio_anchors",
+      "started_at": "2026-11-24T16:41:49.770235+00:00",
+      "status": "passed",
+      "seconds": 0.6155
+    },
+    {
+      "id": "tests.test_post_reviews.PostReviewTests.test_archive_rolls_back_on_bad_row_and_account_metrics_cannot_be_used",
+      "started_at": "2026-11-24T16:41:50.385814+00:00",
+      "status": "passed",
+      "seconds": 0.0591
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_source_expiry_is_timezone_aware_and_inspection_never_grants_rights",
+      "started_at": "2026-11-24T16:41:50.727942+00:00",
+      "status": "passed",
+      "seconds": 0.1492
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_publication_reviews_current_rights_and_manual_receipt",
+      "started_at": "2026-11-24T16:41:50.877289+00:00",
+      "status": "passed",
+      "seconds": 0.1013
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_http_only_session_supports_media_identity_and_revocation",
+      "started_at": "2026-11-24T16:41:50.978636+00:00",
+      "status": "passed",
+      "seconds": 0.021
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_verified_generated_image_stays_distinct_from_explicit_timed_still_and_is_reusable",
+      "started_at": "2026-11-24T16:41:50.999741+00:00",
+      "status": "passed",
+      "seconds": 1.7727
+    },
+    {
+      "id": "tests.test_soundtrack.SoundtrackTests.test_meter_cannot_approve_different_file_or_fabricated_mix",
+      "started_at": "2026-11-24T16:41:52.772561+00:00",
+      "status": "passed",
+      "seconds": 2.2914
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_opening_text_conflict_freezes_original_and_rechecks_pinned_human_replacement",
+      "started_at": "2026-11-24T16:41:55.064004+00:00",
+      "status": "passed",
+      "seconds": 8.7159
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_immutable_history_and_cas_conflict",
+      "started_at": "2026-11-24T16:42:03.779981+00:00",
+      "status": "passed",
+      "seconds": 0.0107
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_reference_uploaded_read_back_bound_to_graph_and_generated_lineage",
+      "started_at": "2026-11-24T16:42:03.790745+00:00",
+      "status": "passed",
+      "seconds": 2.1911
+    },
+    {
+      "id": "tests.test_selection.SelectionTests.test_real_shot_selection_then_locked_change_gap_and_lineage",
+      "started_at": "2026-11-24T16:42:05.981894+00:00",
+      "status": "passed",
+      "seconds": 0.6272
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_real_orphan_delivery_zip_recovers_without_repackaging",
+      "started_at": "2026-11-24T16:42:06.780760+00:00",
+      "status": "passed",
+      "seconds": 0.5044
+    },
+    {
+      "id": "tests.test_clip_transitions.ClipTransitionTests.test_decoded_five_transitions_audio_mix_and_lineage",
+      "started_at": "2026-11-24T16:42:07.285301+00:00",
+      "status": "passed",
+      "seconds": 5.4771
+    },
+    {
+      "id": "tests.test_voice_studio.VoiceStudioTests.test_actual_audio_clock_counterexample_clip_audio_caption_render_and_idempotency",
+      "started_at": "2026-11-24T16:42:12.979459+00:00",
+      "status": "passed",
+      "seconds": 2.8773
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_missing_metric_differs_from_zero",
+      "started_at": "2026-11-24T16:42:15.856810+00:00",
+      "status": "passed",
+      "seconds": 0.0024
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_rights_graph_is_bounded_and_keeps_pinned_creative_dependencies",
+      "started_at": "2026-11-24T16:42:16.075710+00:00",
+      "status": "passed",
+      "seconds": 0.5719
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_decimal_boundary_and_idempotent_reservation_do_not_double_spend",
+      "started_at": "2026-11-24T16:42:16.647774+00:00",
+      "status": "passed",
+      "seconds": 0.0077
+    },
+    {
+      "id": "tests.test_asset_index.AssetIndexTests.test_switch_race_stale_source_and_atomic_failure_keep_previous",
+      "started_at": "2026-11-24T16:42:16.655486+00:00",
+      "status": "passed",
+      "seconds": 0.0808
+    },
+    {
+      "id": "tests.test_rhythm.ManualRhythmTests.test_invalid_project_time_revision_duplicates_and_no_inferred_hits",
+      "started_at": "2026-11-24T16:42:16.736309+00:00",
+      "status": "passed",
+      "seconds": 0.8544
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_foreign_metadata_disclosed_and_needs_explicit_consent",
+      "started_at": "2026-11-24T16:42:17.705523+00:00",
+      "status": "passed",
+      "seconds": 0.6282
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_event_recovery_reads_ascending_page_without_skipping",
+      "started_at": "2026-11-24T16:42:18.333850+00:00",
+      "status": "passed",
+      "seconds": 0.0644
+    },
+    {
+      "id": "tests.test_score_policies.ScorePolicyTests.test_forgery_staleness_and_project_scope",
+      "started_at": "2026-11-24T16:42:18.398318+00:00",
+      "status": "passed",
+      "seconds": 0.1196
+    },
+    {
+      "id": "tests.test_voice_studio.VoiceStudioTests.test_clock_bounds_untrusted_notes_conflict_and_project_scope",
+      "started_at": "2026-11-24T16:42:18.633447+00:00",
+      "status": "passed",
+      "seconds": 0.9331
+    },
+    {
+      "id": "tests.test_asset_index.AssetIndexTests.test_shadow_switch_fallback_incremental_then_rollback",
+      "started_at": "2026-11-24T16:42:19.566605+00:00",
+      "status": "passed",
+      "seconds": 0.1043
+    },
+    {
+      "id": "tests.test_clip_transitions.ClipTransitionTests.test_pair_constraints_and_unsupported_effects",
+      "started_at": "2026-11-24T16:42:19.671007+00:00",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_selection.SelectionTests.test_creative_choice_retains_alternatives_and_exact_approval",
+      "started_at": "2026-11-24T16:42:19.671138+00:00",
+      "status": "passed",
+      "seconds": 0.0238
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_resume_rejects_changed_input_version_and_keeps_completed_nodes",
+      "started_at": "2026-11-24T16:42:19.809443+00:00",
+      "status": "passed",
+      "seconds": 0.1289
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_legacy_unversioned_asset_and_fractional_fps_roundtrip",
+      "started_at": "2026-11-24T16:42:20.054711+00:00",
+      "status": "passed",
+      "seconds": 0.5457
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_manual_reservation_blocks_model_before_network_then_releases_exact_hold",
+      "started_at": "2026-11-24T16:42:20.600793+00:00",
+      "status": "passed",
+      "seconds": 0.0322
+    },
+    {
+      "id": "tests.test_narration.NarrationTests.test_dag_freezes_script_and_review_and_produces_playable_audio",
+      "started_at": "2026-11-24T16:42:20.633040+00:00",
+      "status": "passed",
+      "seconds": 0.2727
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_concurrent_cas_allows_only_one_winner",
+      "started_at": "2026-11-24T16:42:20.905802+00:00",
+      "status": "passed",
+      "seconds": 0.0153
+    },
+    {
+      "id": "tests.test_context_pack.RecoveryPackTests.test_configured_product_is_required_without_reselecting_and_flags_price_drift",
+      "started_at": "2026-11-24T16:42:20.921151+00:00",
+      "status": "passed",
+      "seconds": 0.0481
+    },
+    {
+      "id": "tests.test_context_pack.RecoveryPackTests.test_late_tool_result_marks_the_original_call_without_advancing_the_run",
+      "started_at": "2026-11-24T16:42:20.969249+00:00",
+      "status": "passed",
+      "seconds": 0.0305
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_revocation_during_render_rechecked_before_fact_commit",
+      "started_at": "2026-11-24T16:42:21.240104+00:00",
+      "status": "passed",
+      "seconds": 0.7378
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_navigation_edges_and_unbounded_loops_not_execution",
+      "started_at": "2026-11-24T16:42:21.978063+00:00",
+      "status": "passed",
+      "seconds": 0.0002
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_valid_typed_workflow_and_bounds",
+      "started_at": "2026-11-24T16:42:21.978256+00:00",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_configure_feature_never_fakes_domain_completion",
+      "started_at": "2026-11-24T16:42:21.978338+00:00",
+      "status": "passed",
+      "seconds": 0.0038
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_expired_fence_rejects_output_and_orphan_attempt_requires_reconciliation",
+      "started_at": "2026-11-24T16:42:22.150687+00:00",
+      "status": "passed",
+      "seconds": 0.094
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_create_edit_reload_history_and_error_envelope",
+      "started_at": "2026-11-24T16:42:22.244796+00:00",
+      "status": "passed",
+      "seconds": 0.0216
+    },
+    {
+      "id": "tests.test_narration.NarrationTests.test_pcm_dedup_tempo_current_voice_rights_and_unknown_language",
+      "started_at": "2026-11-24T16:42:22.266463+00:00",
+      "status": "passed",
+      "seconds": 0.4392
+    },
+    {
+      "id": "tests.test_asset_lifecycle.AssetLifecycleTests.test_post_mapping_rejects_different_bytes_and_pins_human_observation",
+      "started_at": "2026-11-24T16:42:22.705767+00:00",
+      "status": "passed",
+      "seconds": 0.6796
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_bounded_menu_freezes_actual_range_options_and_json_schema",
+      "started_at": "2026-11-24T16:42:23.385454+00:00",
+      "status": "passed",
+      "seconds": 2.1646
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_experiment_latest_missing_or_immature_does_not_reuse_old_values",
+      "started_at": "2026-11-24T16:42:25.550800+00:00",
+      "status": "passed",
+      "seconds": 0.4025
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_concurrent_reservations_admit_only_one_under_shared_cap",
+      "started_at": "2026-11-24T16:42:25.953354+00:00",
+      "status": "passed",
+      "seconds": 0.0089
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_concurrent_resume_does_not_mark_live_worker_unknown",
+      "started_at": "2026-11-24T16:42:26.182394+00:00",
+      "status": "passed",
+      "seconds": 0.146
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_secret_values_rejected_but_voice_token_allowed",
+      "started_at": "2026-11-24T16:42:26.328536+00:00",
+      "status": "passed",
+      "seconds": 0.0045
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_audio_commit_rechecks_expiry_after_real_decode",
+      "started_at": "2026-11-24T16:42:26.597737+00:00",
+      "status": "passed",
+      "seconds": 0.5375
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_export_refuses_silent_retime_loss_and_overlaps",
+      "started_at": "2026-11-24T16:42:27.253583+00:00",
+      "status": "passed",
+      "seconds": 0.3151
+    },
+    {
+      "id": "tests.test_workspace_catalog.WorkspaceCatalogTests.test_interactive_projection_matches_every_control_route_and_workflow_port",
+      "started_at": "2026-11-24T16:42:27.568733+00:00",
+      "status": "passed",
+      "seconds": 0.0026
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_real_analysis_approval_render_decode_replay_and_listing",
+      "started_at": "2026-11-24T16:42:27.571371+00:00",
+      "status": "passed",
+      "seconds": 3.3534
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_source_revision_after_proposal_blocks_approval_and_other_project_is_rejected",
+      "started_at": "2026-11-24T16:42:30.924794+00:00",
+      "status": "passed",
+      "seconds": 2.5392
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_reference_lost_prompt_ack_reconciles_existing_exact_graph",
+      "started_at": "2026-11-24T16:42:33.464047+00:00",
+      "status": "passed",
+      "seconds": 1.347
+    },
+    {
+      "id": "tests.test_commercial_handoff.CommercialHandoffTests.test_readable_parent_package_and_expired_or_missing_facts",
+      "started_at": "2026-11-24T16:42:34.811108+00:00",
+      "status": "passed",
+      "seconds": 0.7524
+    },
+    {
+      "id": "tests.test_rhythm.ManualRhythmTests.test_manual_audio_marks_independent_clock_disable_and_versions",
+      "started_at": "2026-11-24T16:42:35.563546+00:00",
+      "status": "passed",
+      "seconds": 0.8441
+    },
+    {
+      "id": "tests.test_asset_index.AssetIndexTests.test_replay_restart_short_terms_tenant_scope_and_request_conflict",
+      "started_at": "2026-11-24T16:42:36.407677+00:00",
+      "status": "passed",
+      "seconds": 0.1181
+    },
+    {
+      "id": "tests.test_asset_index.AssetIndexTests.test_current_grant_is_checked_in_every_search_route",
+      "started_at": "2026-11-24T16:42:36.525770+00:00",
+      "status": "passed",
+      "seconds": 0.06
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_dependency_invalidation_uses_fields_and_half_open_ranges",
+      "started_at": "2026-11-24T16:42:36.585830+00:00",
+      "status": "passed",
+      "seconds": 0.0052
+    },
+    {
+      "id": "tests.test_account_quota.AccountQuotaTests.test_inflight_intent_cannot_be_rebound_or_edited_and_expired_hold_is_reclaimable",
+      "started_at": "2026-11-24T16:42:36.591068+00:00",
+      "status": "passed",
+      "seconds": 0.1427
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_real_http_contract_three_roles_cost_replay_and_independent_judge",
+      "started_at": "2026-11-24T16:42:36.733783+00:00",
+      "status": "passed",
+      "seconds": 2.5059
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_running_cancel_preserves_actual_terminal_and_rejects_unverified_video",
+      "started_at": "2026-11-24T16:42:39.239722+00:00",
+      "status": "passed",
+      "seconds": 0.7221
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_injected_qc_failure_does_not_create_deliverable",
+      "started_at": "2026-11-24T16:42:40.245086+00:00",
+      "status": "passed",
+      "seconds": 0.4239
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_evidence_mismatch_blocks_even_when_real_protocol_roles_vote_accept",
+      "started_at": "2026-11-24T16:42:40.669055+00:00",
+      "status": "passed",
+      "seconds": 3.0948
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_model_success_idempotency_and_config_price_not_bill",
+      "started_at": "2026-11-24T16:42:43.763922+00:00",
+      "status": "passed",
+      "seconds": 0.0312
+    },
+    {
+      "id": "tests.test_post_reviews.PostReviewTests.test_pre_maturity_observation_cannot_age_into_final_evidence",
+      "started_at": "2026-11-24T16:42:43.795231+00:00",
+      "status": "passed",
+      "seconds": 0.0296
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_transform_rejects_unknown_effect_and_bad_parameters",
+      "started_at": "2026-11-24T16:42:44.068694+00:00",
+      "status": "passed",
+      "seconds": 0.8105
+    },
+    {
+      "id": "tests.test_score_policies.ScorePolicyTests.test_pause_blocks_policy_scores_and_role_gate",
+      "started_at": "2026-11-24T16:42:44.879335+00:00",
+      "status": "passed",
+      "seconds": 0.1455
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_out_of_bounds_and_invented_model_asset_never_become_a_timeline",
+      "started_at": "2026-11-24T16:42:45.024845+00:00",
+      "status": "passed",
+      "seconds": 4.2053
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_controls_validate_declared_enum_types_and_unknown_fields",
+      "started_at": "2026-11-24T16:42:49.230183+00:00",
+      "status": "passed",
+      "seconds": 0.0012
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_budget_and_homogeneous_team_fail_before_network",
+      "started_at": "2026-11-24T16:42:49.231434+00:00",
+      "status": "passed",
+      "seconds": 0.0157
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_team_identity_isolation_and_read_only_role",
+      "started_at": "2026-11-24T16:42:49.247173+00:00",
+      "status": "passed",
+      "seconds": 0.0213
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_artifact_traces_current_grant_through_frozen_deep_inputs",
+      "started_at": "2026-11-24T16:42:49.466855+00:00",
+      "status": "passed",
+      "seconds": 1.7207
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_unknown_model_outcome_retains_reservation_and_cannot_be_released",
+      "started_at": "2026-11-24T16:42:51.187857+00:00",
+      "status": "passed",
+      "seconds": 0.0163
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_import_probe_original_dedup_and_relative_path",
+      "started_at": "2026-11-24T16:42:51.412309+00:00",
+      "status": "passed",
+      "seconds": 0.2495
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_http_range_bytes_and_filename_security",
+      "started_at": "2026-11-24T16:42:51.661824+00:00",
+      "status": "passed",
+      "seconds": 0.1119
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_catalog_exact_counts_and_schema_for_every_entity",
+      "started_at": "2026-11-24T16:42:51.773878+00:00",
+      "status": "passed",
+      "seconds": 0.0038
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_exact_four_mib_upload_chunk_and_one_byte_over_limit",
+      "started_at": "2026-11-24T16:42:51.777709+00:00",
+      "status": "passed",
+      "seconds": 0.0574
+    },
+    {
+      "id": "tests.test_source_changes.SourceChangeTests.test_scoped_manifest_separates_origin_removal_rights_and_historical_posts",
+      "started_at": "2026-11-24T16:42:51.835304+00:00",
+      "status": "passed",
+      "seconds": 0.1452
+    },
+    {
+      "id": "tests.test_soundtrack.SoundtrackTests.test_remove_score_preserves_voice_and_source_versions",
+      "started_at": "2026-11-24T16:42:51.980520+00:00",
+      "status": "passed",
+      "seconds": 3.0947
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_bad_json_does_not_complete_and_no_credentials_no_call",
+      "started_at": "2026-11-24T16:42:55.075311+00:00",
+      "status": "passed",
+      "seconds": 0.0113
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_official_serializer_cuts_gap_captions_pinned_refs_and_idempotent_import",
+      "started_at": "2026-11-24T16:42:55.202132+00:00",
+      "status": "passed",
+      "seconds": 0.4079
+    },
+    {
+      "id": "tests.test_captions.CaptionExchangeTests.test_limits_and_no_silent_loss_on_export",
+      "started_at": "2026-11-24T16:42:55.610135+00:00",
+      "status": "passed",
+      "seconds": 0.0379
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_delete_override_restores_parent_and_missing_value_is_rejected",
+      "started_at": "2026-11-24T16:42:55.648058+00:00",
+      "status": "passed",
+      "seconds": 0.0002
+    },
+    {
+      "id": "tests.test_post_reviews.PostReviewTests.test_missing_latest_ambiguous_time_and_incomparable_rejected",
+      "started_at": "2026-11-24T16:42:55.648323+00:00",
+      "status": "passed",
+      "seconds": 0.1018
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_metric_duplicate_detection_covers_more_than_recent_500",
+      "started_at": "2026-11-24T16:42:55.750196+00:00",
+      "status": "passed",
+      "seconds": 0.1288
+    },
+    {
+      "id": "tests.test_context_pack.RecoveryPackTests.test_window_refusal_and_optional_data_truncation_are_atomic",
+      "started_at": "2026-11-24T16:42:55.879013+00:00",
+      "status": "passed",
+      "seconds": 0.0439
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_experiment_unit_data_and_honest_effect_boundary",
+      "started_at": "2026-11-24T16:42:55.922970+00:00",
+      "status": "passed",
+      "seconds": 0.0459
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_voice_alignment_untimed_range_and_script_versions",
+      "started_at": "2026-11-24T16:42:55.968917+00:00",
+      "status": "passed",
+      "seconds": 0.0329
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_health_catalog_and_openapi_are_real",
+      "started_at": "2026-11-24T16:42:56.001907+00:00",
+      "status": "passed",
+      "seconds": 1.3757
+    },
+    {
+      "id": "tests.test_render_recovery.RenderRecoveryTests.test_running_predecessor_is_fenced_after_confirmed_handoff",
+      "started_at": "2026-11-24T16:42:57.377671+00:00",
+      "status": "passed",
+      "seconds": 1.5207
+    },
+    {
+      "id": "tests.test_captions.CaptionExchangeTests.test_multiline_overlapping_cues_keep_actual_millisecond_and_language",
+      "started_at": "2026-11-24T16:42:58.898452+00:00",
+      "status": "passed",
+      "seconds": 0.037
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_cancel_finishes_current_node_and_preserves_checkpoint",
+      "started_at": "2026-11-24T16:42:59.105566+00:00",
+      "status": "passed",
+      "seconds": 0.1292
+    },
+    {
+      "id": "tests.test_context_pack.RecoveryPackTests.test_cross_project_stale_and_repeated_evidence_are_refused",
+      "started_at": "2026-11-24T16:42:59.234836+00:00",
+      "status": "passed",
+      "seconds": 0.0495
+    },
+    {
+      "id": "tests.test_asset_lifecycle.AssetLifecycleTests.test_backup_with_only_cold_bytes_restores_and_still_checks_permission",
+      "started_at": "2026-11-24T16:42:59.284437+00:00",
+      "status": "passed",
+      "seconds": 0.4941
+    },
+    {
+      "id": "tests.test_creative.CreativeTests.test_reposted_sources_conflicts_expiry_and_hypothesis_gate",
+      "started_at": "2026-11-24T16:42:59.778633+00:00",
+      "status": "passed",
+      "seconds": 0.0965
+    },
+    {
+      "id": "tests.test_comment_feedback.CommentFeedbackTests.test_external_link_and_revoked_account",
+      "started_at": "2026-11-24T16:42:59.875184+00:00",
+      "status": "passed",
+      "seconds": 0.0434
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_rights_withdrawn_during_provider_inference_cannot_become_a_proposal",
+      "started_at": "2026-11-24T16:42:59.918679+00:00",
+      "status": "passed",
+      "seconds": 2.551
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_unavailable_command_and_spoofed_actor_are_rejected",
+      "started_at": "2026-11-24T16:43:02.469767+00:00",
+      "status": "passed",
+      "seconds": 0.0034
+    },
+    {
+      "id": "tests.test_account_quota.AccountQuotaTests.test_defer_scoping_roles_and_reservation_revisions",
+      "started_at": "2026-11-24T16:43:02.473171+00:00",
+      "status": "passed",
+      "seconds": 0.3143
+    },
+    {
+      "id": "tests.test_soundtrack.SoundtrackTests.test_licensed_stock_and_scope_expiry_no_music_and_platform_handoff",
+      "started_at": "2026-11-24T16:43:02.787505+00:00",
+      "status": "passed",
+      "seconds": 0.7936
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_provider_display_labels_cannot_fake_heterogeneous_models",
+      "started_at": "2026-11-24T16:43:03.581196+00:00",
+      "status": "passed",
+      "seconds": 0.0175
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_manual_field_lock_blocks_changes_and_removal",
+      "started_at": "2026-11-24T16:43:03.598779+00:00",
+      "status": "passed",
+      "seconds": 0.0045
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_unknown_wire_request_cannot_retry_by_changing_non_wire_metadata",
+      "started_at": "2026-11-24T16:43:03.603380+00:00",
+      "status": "passed",
+      "seconds": 0.034
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_queue_download_probe_generated_origin_and_deduplicated_adoption",
+      "started_at": "2026-11-24T16:43:03.637472+00:00",
+      "status": "passed",
+      "seconds": 1.7403
+    },
+    {
+      "id": "tests.test_score_policies.ScorePolicyTests.test_concurrent_activation_commits_one_pointer_revision",
+      "started_at": "2026-11-24T16:43:05.377910+00:00",
+      "status": "passed",
+      "seconds": 0.2397
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_timeout_preserves_reservation_and_cannot_change_key",
+      "started_at": "2026-11-24T16:43:05.617644+00:00",
+      "status": "passed",
+      "seconds": 0.022
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_cross_project_media_stays_offline_and_never_attaches_original",
+      "started_at": "2026-11-24T16:43:05.756502+00:00",
+      "status": "passed",
+      "seconds": 0.2169
+    },
+    {
+      "id": "tests.test_comment_feedback.CommentFeedbackTests.test_deletion_purges_excerpts_and_excludes_judgments",
+      "started_at": "2026-11-24T16:43:05.973459+00:00",
+      "status": "passed",
+      "seconds": 0.054
+    },
+    {
+      "id": "tests.test_account_quota.AccountQuotaTests.test_fifo_idempotent_release_handoff_and_receipt",
+      "started_at": "2026-11-24T16:43:06.027488+00:00",
+      "status": "passed",
+      "seconds": 0.2653
+    },
+    {
+      "id": "tests.test_selection.SelectionTests.test_missing_bytes_out_of_range_or_unavailable_version_never_creates_plan",
+      "started_at": "2026-11-24T16:43:06.292845+00:00",
+      "status": "passed",
+      "seconds": 0.34
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_score_missing_dimensions_not_zero",
+      "started_at": "2026-11-24T16:43:06.632920+00:00",
+      "status": "passed",
+      "seconds": 0.0115
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_derivative_chain_keeps_original_identity_and_revocation_blocks_all",
+      "started_at": "2026-11-24T16:43:06.878556+00:00",
+      "status": "passed",
+      "seconds": 1.7118
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_unpriced_local_telemetry_is_explicit_but_unknown_monetary_liability_blocks",
+      "started_at": "2026-11-24T16:43:08.590522+00:00",
+      "status": "passed",
+      "seconds": 0.0172
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_rect_mask_after_rotation_and_cover_is_applied_once_to_decoded_pixels",
+      "started_at": "2026-11-24T16:43:08.847453+00:00",
+      "status": "passed",
+      "seconds": 1.2147
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_budget_reservation_and_actual_cost_not_released",
+      "started_at": "2026-11-24T16:43:10.062220+00:00",
+      "status": "passed",
+      "seconds": 0.0111
+    },
+    {
+      "id": "tests.test_asset_index.AssetIndexTests.test_result_pagination_rechecks_view_and_current_rights",
+      "started_at": "2026-11-24T16:43:10.073419+00:00",
+      "status": "passed",
+      "seconds": 0.0543
+    },
+    {
+      "id": "tests.test_variants.StoryboardVariantTests.test_locked_slot_manual_rewrite_and_repeat_history",
+      "started_at": "2026-11-24T16:43:10.610493+00:00",
+      "status": "passed",
+      "seconds": 13.8638
+    },
+    {
+      "id": "tests.test_render_recovery.RenderRecoveryTests.test_direct_rerun_of_completed_version_compares_both_decoded_streams_and_preserves_original",
+      "started_at": "2026-11-24T16:43:24.474366+00:00",
+      "status": "passed",
+      "seconds": 3.0323
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_single_node_cannot_commit_after_deadline",
+      "started_at": "2026-11-24T16:43:27.681012+00:00",
+      "status": "passed",
+      "seconds": 1.3219
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_patch_preserves_unrelated_fields_and_rejects_stale_revision",
+      "started_at": "2026-11-24T16:43:29.003080+00:00",
+      "status": "passed",
+      "seconds": 0.0063
+    },
+    {
+      "id": "tests.test_soundtrack.SoundtrackTests.test_mix_scopes_stale_pins_invalid_ranges_and_currency_of_rights",
+      "started_at": "2026-11-24T16:43:29.009446+00:00",
+      "status": "passed",
+      "seconds": 2.4052
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_reference_revocation_between_upload_submit_and_adoption",
+      "started_at": "2026-11-24T16:43:31.414778+00:00",
+      "status": "passed",
+      "seconds": 2.2384
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_project_limit_cannot_be_expanded_or_reused_in_another_currency",
+      "started_at": "2026-11-24T16:43:33.653315+00:00",
+      "status": "passed",
+      "seconds": 0.0116
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_opening_checks_exact_trim_and_returns_later_verified_candidate_in_same_asset",
+      "started_at": "2026-11-24T16:43:33.664943+00:00",
+      "status": "passed",
+      "seconds": 4.303
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_lost_ack_reconciles_original_queue_and_never_interrupts_other_jobs",
+      "started_at": "2026-11-24T16:43:37.967971+00:00",
+      "status": "passed",
+      "seconds": 0.78
+    },
+    {
+      "id": "tests.test_quota_commercial_integration.QuotaCommercialIntegration.test_binding_and_reservation_race_cannot_both_target_the_same_version",
+      "started_at": "2026-11-24T16:43:38.748084+00:00",
+      "status": "passed",
+      "seconds": 1.014
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_edited_timeline_renders_current_opening_including_origin_and_actual_composition",
+      "started_at": "2026-11-24T16:43:39.762137+00:00",
+      "status": "passed",
+      "seconds": 10.104
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_same_project_transaction_references",
+      "started_at": "2026-11-24T16:43:49.866215+00:00",
+      "status": "passed",
+      "seconds": 0.0043
+    },
+    {
+      "id": "tests.test_maintenance.MaintenanceTests.test_backup_restore_checks_database_and_real_object_bytes",
+      "started_at": "2026-11-24T16:43:49.870558+00:00",
+      "status": "passed",
+      "seconds": 0.099
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_nested_failure_savepoint_does_not_commit_partial_operation",
+      "started_at": "2026-11-24T16:43:49.969784+00:00",
+      "status": "passed",
+      "seconds": 0.0038
+    },
+    {
+      "id": "tests.test_captions.CaptionExchangeTests.test_invalid_files_return_original_line_and_no_partial_result",
+      "started_at": "2026-11-24T16:43:49.973639+00:00",
+      "status": "passed",
+      "seconds": 0.0668
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_distinct_wire_payload_remains_an_explicit_new_request",
+      "started_at": "2026-11-24T16:43:50.040488+00:00",
+      "status": "passed",
+      "seconds": 0.0284
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_cycle_dangling_and_wrong_route",
+      "started_at": "2026-11-24T16:43:50.068898+00:00",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_context_pack.RecoveryPackTests.test_evidence_sources_and_stops_survive_pressure_and_unknown_requires_review",
+      "started_at": "2026-11-24T16:43:50.069041+00:00",
+      "status": "passed",
+      "seconds": 0.1224
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_real_transform_then_extract_audio_and_idempotent_replay",
+      "started_at": "2026-11-24T16:43:50.459684+00:00",
+      "status": "passed",
+      "seconds": 1.2926
+    },
+    {
+      "id": "tests.test_asset_families.AssetFamilyTests.test_same_bytes_and_same_source_distinct_from_semantic_and_partial_ranges",
+      "started_at": "2026-11-24T16:43:51.752479+00:00",
+      "status": "passed",
+      "seconds": 4.9528
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_metric_zero_null_duplicates_and_scope_groups",
+      "started_at": "2026-11-24T16:43:56.705346+00:00",
+      "status": "passed",
+      "seconds": 0.0397
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_unknown_side_effect_is_not_cancelled_or_retried",
+      "started_at": "2026-11-24T16:43:56.745076+00:00",
+      "status": "passed",
+      "seconds": 0.0081
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_replay_checks_bytes_and_current_rights_and_bidirectional_lineage",
+      "started_at": "2026-11-24T16:43:56.753206+00:00",
+      "status": "passed",
+      "seconds": 0.0874
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_team_viewer_cannot_start_or_forge_owner_role",
+      "started_at": "2026-11-24T16:43:57.056672+00:00",
+      "status": "passed",
+      "seconds": 0.1704
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_invalid_path_invalid_bytes_and_cross_tenant",
+      "started_at": "2026-11-24T16:43:57.612125+00:00",
+      "status": "passed",
+      "seconds": 0.4432
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_invalid_project_and_forged_tenant_body_rejected",
+      "started_at": "2026-11-24T16:43:58.075358+00:00",
+      "status": "passed",
+      "seconds": 0.0527
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_batch_failure_rolls_back_all_records_and_events",
+      "started_at": "2026-11-24T16:43:58.128569+00:00",
+      "status": "passed",
+      "seconds": 0.0043
+    },
+    {
+      "id": "tests.test_captions.CaptionExchangeTests.test_vtt_literal_text_escapes_and_time_order",
+      "started_at": "2026-11-24T16:43:58.132895+00:00",
+      "status": "passed",
+      "seconds": 0.0364
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_half_open_multi_contributor_reverse_time_map",
+      "started_at": "2026-11-24T16:43:58.169379+00:00",
+      "status": "passed",
+      "seconds": 0.0385
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_worker_unknown_cannot_be_retried_without_reconciliation",
+      "started_at": "2026-11-24T16:43:58.374398+00:00",
+      "status": "passed",
+      "seconds": 0.1562
+    },
+    {
+      "id": "tests.test_render_recovery.RenderRecoveryTests.test_mid_encode_input_update_has_no_publishable_child",
+      "started_at": "2026-11-24T16:43:58.530661+00:00",
+      "status": "passed",
+      "seconds": 1.3703
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_unsupported_route_blocks_only_its_dependants",
+      "started_at": "2026-11-24T16:44:00.072950+00:00",
+      "status": "passed",
+      "seconds": 0.3072
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_database_triggers_prevent_rewriting_facts_and_events",
+      "started_at": "2026-11-24T16:44:00.380280+00:00",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "id": "tests.test_variants.StoryboardVariantTests.test_revision_scope_and_usage_revocation",
+      "started_at": "2026-11-24T16:44:01.248977+00:00",
+      "status": "passed",
+      "seconds": 8.0428
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_streamed_json_without_content_length_is_still_limited",
+      "started_at": "2026-11-24T16:44:09.291902+00:00",
+      "status": "passed",
+      "seconds": 0.0146
+    },
+    {
+      "id": "tests.test_narration.NarrationTests.test_corrected_price_reading_preserves_currency_numbers_and_uses_actual_tts",
+      "started_at": "2026-11-24T16:44:09.306601+00:00",
+      "status": "passed",
+      "seconds": 0.4871
+    },
+    {
+      "id": "tests.test_captions.CaptionExchangeTests.test_team_credentials_required_for_exchange",
+      "started_at": "2026-11-24T16:44:09.793759+00:00",
+      "status": "passed",
+      "seconds": 0.0111
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_literal_opening_observation_requires_order_confidence_and_an_explicit_constraint",
+      "started_at": "2026-11-24T16:44:09.804906+00:00",
+      "status": "passed",
+      "seconds": 6.1672
+    },
+    {
+      "id": "tests.test_narration.NarrationTests.test_reading_rejects_foreign_symbols_extra_units_and_either_side_of_ranges",
+      "started_at": "2026-11-24T16:44:15.972142+00:00",
+      "status": "passed",
+      "seconds": 0.127
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_actual_multitrack_render_manifest_package_and_qc_boundary",
+      "started_at": "2026-11-24T16:44:16.350015+00:00",
+      "status": "passed",
+      "seconds": 1.3327
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_six_layers_orientation_and_explicit_null",
+      "started_at": "2026-11-24T16:44:17.682857+00:00",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_voice_studio.VoiceStudioTests.test_rhythm_preserves_speech_and_lock_and_uses_a_real_marked_audio_clock",
+      "started_at": "2026-11-24T16:44:17.848540+00:00",
+      "status": "passed",
+      "seconds": 2.421
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_schema_errors_do_not_echo_supplied_secrets",
+      "started_at": "2026-11-24T16:44:20.269639+00:00",
+      "status": "passed",
+      "seconds": 0.0162
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_http_start_and_resume_contracts",
+      "started_at": "2026-11-24T16:44:20.453439+00:00",
+      "status": "passed",
+      "seconds": 0.1574
+    },
+    {
+      "id": "tests.test_variants.StoryboardVariantTests.test_quota_committed_vs_reserved_and_policy_approval",
+      "started_at": "2026-11-24T16:44:21.152478+00:00",
+      "status": "passed",
+      "seconds": 6.4351
+    },
+    {
+      "id": "tests.test_quota_commercial_integration.QuotaCommercialIntegration.test_queued_expired_and_unconfigured_intents_can_still_bind",
+      "started_at": "2026-11-24T16:44:27.587718+00:00",
+      "status": "passed",
+      "seconds": 0.7122
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_metric_timezones_choose_actual_latest_and_canonical_windows",
+      "started_at": "2026-11-24T16:44:28.299930+00:00",
+      "status": "passed",
+      "seconds": 0.0139
+    },
+    {
+      "id": "tests.test_production.RealMediaCrossDomainTests.test_actual_render_timemap_and_replay_resolve_immutable_bytes",
+      "started_at": "2026-11-24T16:44:28.431208+00:00",
+      "status": "passed",
+      "seconds": 0.5381
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_fencing_token_prevents_old_worker_release",
+      "started_at": "2026-11-24T16:44:28.969419+00:00",
+      "status": "passed",
+      "seconds": 0.0067
+    },
+    {
+      "id": "tests.test_context_pack.RecoveryPackTests.test_cancelled_unknown_effect_keeps_operator_stop_and_original_run_version",
+      "started_at": "2026-11-24T16:44:28.976121+00:00",
+      "status": "passed",
+      "seconds": 0.0375
+    },
+    {
+      "id": "tests.test_maintenance.MaintenanceTests.test_corrupt_and_path_traversal_archives_do_not_commit",
+      "started_at": "2026-11-24T16:44:29.013686+00:00",
+      "status": "passed",
+      "seconds": 0.0585
+    },
+    {
+      "id": "tests.test_variants.StoryboardVariantTests.test_replay_conflict_family_reload_and_explicit_zero",
+      "started_at": "2026-11-24T16:44:29.569536+00:00",
+      "status": "passed",
+      "seconds": 8.7783
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_committed_orphan_output_can_be_reconciled_without_reexecution",
+      "started_at": "2026-11-24T16:44:38.465822+00:00",
+      "status": "passed",
+      "seconds": 0.1509
+    },
+    {
+      "id": "tests.test_source_changes.SourceChangeTests.test_revision_review_dedup_late_conflict_and_per_entry_failure",
+      "started_at": "2026-11-24T16:44:38.616898+00:00",
+      "status": "passed",
+      "seconds": 0.074
+    },
+    {
+      "id": "tests.test_commercial_handoff.CommercialHandoffTests.test_manual_binding_preflight_observed_products_and_disclosure_are_separate",
+      "started_at": "2026-11-24T16:44:38.690901+00:00",
+      "status": "passed",
+      "seconds": 0.9524
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_reference_upload_failures_never_submit_or_charge",
+      "started_at": "2026-11-24T16:44:39.643352+00:00",
+      "status": "passed",
+      "seconds": 1.9593
+    },
+    {
+      "id": "tests.test_score_policies.ScorePolicyTests.test_incomplete_duplicate_or_failed_case_blocks_approval",
+      "started_at": "2026-11-24T16:44:41.602707+00:00",
+      "status": "passed",
+      "seconds": 0.1371
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_unstructured_validity_is_a_reported_blocker_not_a_server_error",
+      "started_at": "2026-11-24T16:44:41.739821+00:00",
+      "status": "passed",
+      "seconds": 0.0282
+    },
+    {
+      "id": "tests.test_creative.CreativeTests.test_director_proposals_comparison_and_approval_share_pinned_facts",
+      "started_at": "2026-11-24T16:44:41.768069+00:00",
+      "status": "passed",
+      "seconds": 0.0755
+    },
+    {
+      "id": "tests.test_commercial_handoff.CommercialHandoffTests.test_accountless_package_actual_members_hashes_receipt_and_recheck",
+      "started_at": "2026-11-24T16:44:41.843612+00:00",
+      "status": "passed",
+      "seconds": 1.1851
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_preflight_rechecks_grant_attached_after_artifact_was_frozen",
+      "started_at": "2026-11-24T16:44:43.028748+00:00",
+      "status": "passed",
+      "seconds": 0.041
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_unsupported_transitions_and_invalid_document_leave_draft_untouched",
+      "started_at": "2026-11-24T16:44:43.184548+00:00",
+      "status": "passed",
+      "seconds": 0.2581
+    },
+    {
+      "id": "tests.test_account_quota.AccountQuotaTests.test_fair_race_expiry_and_unknown_handoff_never_auto_releases",
+      "started_at": "2026-11-24T16:44:43.442757+00:00",
+      "status": "passed",
+      "seconds": 0.1365
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_unregistered_config_changed_and_output_path_bounds",
+      "started_at": "2026-11-24T16:44:43.579329+00:00",
+      "status": "passed",
+      "seconds": 0.6585
+    },
+    {
+      "id": "tests.test_variants.StoryboardVariantTests.test_actual_picture_text_audio_structure_family_choose_render_and_decode",
+      "started_at": "2026-11-24T16:44:44.654847+00:00",
+      "status": "passed",
+      "seconds": 7.4835
+    },
+    {
+      "id": "tests.test_account_quota.AccountQuotaTests.test_other_tenant_contract_and_failed_preflight_create_no_ticket",
+      "started_at": "2026-11-24T16:44:52.138420+00:00",
+      "status": "passed",
+      "seconds": 0.1145
+    },
+    {
+      "id": "tests.test_account_quota.AccountQuotaTests.test_limits_apply_to_out_of_band_receipts_and_existing_holds",
+      "started_at": "2026-11-24T16:44:52.252984+00:00",
+      "status": "passed",
+      "seconds": 0.1487
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_external_address_requires_user_binding_and_unresolved_never_creates",
+      "started_at": "2026-11-24T16:44:52.517877+00:00",
+      "status": "passed",
+      "seconds": 0.5866
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_command_idempotent_replay_without_duplicate_writes",
+      "started_at": "2026-11-24T16:44:53.105280+00:00",
+      "status": "passed",
+      "seconds": 0.0123
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_loopback_transport_never_admits_bare_remote_or_untrusted_credentials",
+      "started_at": "2026-11-24T16:44:53.117742+00:00",
+      "status": "passed",
+      "seconds": 0.5574
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_keyframe_render_changes_actual_frame_pixels",
+      "started_at": "2026-11-24T16:44:53.899252+00:00",
+      "status": "passed",
+      "seconds": 1.5451
+    },
+    {
+      "id": "tests.test_commercial_handoff.CommercialHandoffTests.test_stale_sources_role_market_unapproved_bytes_and_reserved_bindings",
+      "started_at": "2026-11-24T16:44:55.444756+00:00",
+      "status": "passed",
+      "seconds": 1.0834
+    },
+    {
+      "id": "tests.test_voice_studio.VoiceStudioTests.test_human_lock_local_replanning_stale_product_and_revoked_source",
+      "started_at": "2026-11-24T16:44:56.693578+00:00",
+      "status": "passed",
+      "seconds": 1.9113
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_trend_source_window_and_atomicity",
+      "started_at": "2026-11-24T16:44:58.604977+00:00",
+      "status": "passed",
+      "seconds": 0.0228
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_cross_origin_and_dns_rebinding_blocked",
+      "started_at": "2026-11-24T16:44:58.627795+00:00",
+      "status": "passed",
+      "seconds": 0.0081
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_corrupt_missing_or_unavailable_orphan_delivery_zip_stays_unknown",
+      "started_at": "2026-11-24T16:44:58.801839+00:00",
+      "status": "passed",
+      "seconds": 0.5341
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_replay_and_tenant_scope_are_not_fabricated",
+      "started_at": "2026-11-24T16:44:59.336049+00:00",
+      "status": "passed",
+      "seconds": 0.0314
+    },
+    {
+      "id": "tests.test_account_quota.AccountQuotaTests.test_backoff_requires_fresh_evidence_and_prevents_early_reset",
+      "started_at": "2026-11-24T16:44:59.367548+00:00",
+      "status": "passed",
+      "seconds": 0.1034
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_three_role_team_persists_checkpoints_and_independent_proposals",
+      "started_at": "2026-11-24T16:44:59.471025+00:00",
+      "status": "passed",
+      "seconds": 0.0546
+    },
+    {
+      "id": "tests.test_voice_studio.VoiceStudioTests.test_equal_duration_audio_changes_require_new_attestation_and_changed_clip_blocks_render",
+      "started_at": "2026-11-24T16:44:59.641841+00:00",
+      "status": "passed",
+      "seconds": 2.3378
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_render_rejects_unlocked_stale_version_and_unsupported_keyframes",
+      "started_at": "2026-11-24T16:45:02.207979+00:00",
+      "status": "passed",
+      "seconds": 0.0984
+    },
+    {
+      "id": "tests.test_creative.CreativeTests.test_scoped_match_versions_and_evergreen_fallback",
+      "started_at": "2026-11-24T16:45:02.306462+00:00",
+      "status": "passed",
+      "seconds": 0.0424
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_union_reference_type_and_pinned_version",
+      "started_at": "2026-11-24T16:45:02.348878+00:00",
+      "status": "passed",
+      "seconds": 0.0076
+    },
+    {
+      "id": "tests.test_score_policies.ScorePolicyTests.test_changed_sample_automatically_rolls_back_before_next_score",
+      "started_at": "2026-11-24T16:45:02.356525+00:00",
+      "status": "passed",
+      "seconds": 0.1118
+    },
+    {
+      "id": "tests.test_soundtrack.SoundtrackTests.test_stock_arrange_adopt_without_duplication_deliver_measure_and_revoke",
+      "started_at": "2026-11-24T16:45:02.468415+00:00",
+      "status": "passed",
+      "seconds": 3.546
+    },
+    {
+      "id": "tests.test_asset_families.AssetFamilyTests.test_decoded_frames_near_review_and_retirement_recompute_family_pressure",
+      "started_at": "2026-11-24T16:45:06.014479+00:00",
+      "status": "passed",
+      "seconds": 3.4704
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_revoked_worker_credential_cannot_commit_new_output",
+      "started_at": "2026-11-24T16:45:09.654875+00:00",
+      "status": "passed",
+      "seconds": 0.1283
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_invalid_unknown_shortfall_and_unconfigured_model",
+      "started_at": "2026-11-24T16:45:09.783340+00:00",
+      "status": "passed",
+      "seconds": 2.3112
+    },
+    {
+      "id": "tests.test_comment_feedback.CommentFeedbackTests.test_independent_body_and_classification_revisions",
+      "started_at": "2026-11-24T16:45:12.094635+00:00",
+      "status": "passed",
+      "seconds": 0.1
+    },
+    {
+      "id": "tests.test_quota_commercial_integration.QuotaCommercialIntegration.test_active_hold_cannot_rebind_even_via_cosmetic_revision_then_releases",
+      "started_at": "2026-11-24T16:45:12.194652+00:00",
+      "status": "passed",
+      "seconds": 0.8601
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_timeline_integrity_and_untimed_anchor",
+      "started_at": "2026-11-24T16:45:13.054782+00:00",
+      "status": "passed",
+      "seconds": 0.0023
+    },
+    {
+      "id": "tests.test_post_reviews.PostReviewTests.test_late_backfill_pins_new_observation_and_keeps_old_report",
+      "started_at": "2026-11-24T16:45:13.057080+00:00",
+      "status": "passed",
+      "seconds": 0.0456
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_paused_run_resumes_without_replaying_completed_node",
+      "started_at": "2026-11-24T16:45:13.216915+00:00",
+      "status": "passed",
+      "seconds": 0.1258
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_empty_array_reconciliation_and_forged_provenance_are_rejected",
+      "started_at": "2026-11-24T16:45:13.342757+00:00",
+      "status": "passed",
+      "seconds": 0.1079
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_reported_model_mismatch_does_not_count_as_success",
+      "started_at": "2026-11-24T16:45:13.450706+00:00",
+      "status": "passed",
+      "seconds": 0.0103
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_step_budget_stops_without_false_completion",
+      "started_at": "2026-11-24T16:45:13.626516+00:00",
+      "status": "passed",
+      "seconds": 0.0868
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_overlapping_requests_reserve_once_and_cannot_forge_ocr_or_double_apply",
+      "started_at": "2026-11-24T16:45:13.713438+00:00",
+      "status": "passed",
+      "seconds": 2.0661
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_cannot_forge_artifacts_post_receipts_or_model_probe",
+      "started_at": "2026-11-24T16:45:15.779637+00:00",
+      "status": "passed",
+      "seconds": 0.0349
+    },
+    {
+      "id": "tests.test_asset_lifecycle.AssetLifecycleTests.test_exploration_preserves_floor_and_scoped_time_limited_exceptions",
+      "started_at": "2026-11-24T16:45:15.814906+00:00",
+      "status": "passed",
+      "seconds": 1.542
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_revocation_during_first_role_prevents_later_paid_calls",
+      "started_at": "2026-11-24T16:45:17.356941+00:00",
+      "status": "passed",
+      "seconds": 0.0375
+    },
+    {
+      "id": "tests.test_render_recovery.RenderRecoveryTests.test_current_source_bytes_and_rights_and_timeline_revision_block_recovery",
+      "started_at": "2026-11-24T16:45:17.394465+00:00",
+      "status": "passed",
+      "seconds": 0.7268
+    },
+    {
+      "id": "tests.test_score_policies.ScorePolicyTests.test_freeze_activate_consume_replay_and_rollback",
+      "started_at": "2026-11-24T16:45:18.121338+00:00",
+      "status": "passed",
+      "seconds": 0.1725
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_chunk_upload_resume_duplicate_chunk_and_full_hash",
+      "started_at": "2026-11-24T16:45:18.521737+00:00",
+      "status": "passed",
+      "seconds": 0.113
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_single_shot_fork_retains_unchanged_intervals_and_replays",
+      "started_at": "2026-11-24T16:45:18.634898+00:00",
+      "status": "passed",
+      "seconds": 2.866
+    }
+  ],
+  "external_transport": "Model calls explicitly use injected responses; no live platform or provider account is contacted."
+}

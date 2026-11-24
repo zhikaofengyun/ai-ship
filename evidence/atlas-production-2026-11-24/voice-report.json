@@ -1,0 +1,116 @@
+{
+  "round": "1",
+  "browser": "chromium",
+  "checks": [
+    "Real audio extraction/playback, separately confirmed acoustic range, empty visual slot blocks adoption.",
+    "Competing explicit visual observations, quantity counterexample, measured media/frames, locked choice survives replanning.",
+    "Saved a sample-clock cut at the locked first shot boundary, inside the speech gap and 200 ms tolerance.",
+    "Adopted original speech and chosen visual, froze and rendered on the same screen, downloaded an independently decoded H.264/AAC file.",
+    "Created an English script and time-bounded voice review, played the actual synthesized WAV and opened voice alignment on that exact audio and script."
+  ],
+  "screenshots": [
+    {
+      "file": "unfilled-semantic-slot.png",
+      "sha256": "8f9e6c0c189b5e2bb129308b9a83e961bf9a6d16f297699cf0860c996a10b273"
+    },
+    {
+      "file": "locked-visual-binding.png",
+      "sha256": "cc236ba1a1843b4f8b5c400b02d6db83376c45a52db344529284789a143e6993"
+    },
+    {
+      "file": "actual-export.png",
+      "sha256": "43c8e2cdc8535ea49b72ac157ee826d3efc045d05758c30485e52c7a0802331e"
+    }
+  ],
+  "page_errors": [],
+  "passed": true,
+  "scope": "Real FastAPI, SQLite, FFmpeg and human-attested sample/visual labels. The fixture uses intelligible synthetic speech. Does not demonstrate speech recognition, automatic SKU recognition or real commercial rights.",
+  "clock": {
+    "origin": "playable_audio_start",
+    "sample_rate": 48000,
+    "samples": 98304,
+    "sha256": "621c570c833ed1d20b830b0187d5531ffdf2785a0658230ffdfe9e6bcbf79095"
+  },
+  "binding": {
+    "anchor_ids": [
+      "aec24d14-fbcf-4c56-9fcb-9d53b4a1f07d"
+    ],
+    "audio_ref": {
+      "id": "audio_035ef77d2ef44feab6bab170d14f2b45",
+      "kind": "Audio",
+      "version": 1
+    },
+    "audio_sample_range": [
+      0,
+      16320
+    ],
+    "audio_timebase": {
+      "den": 48000,
+      "num": 1
+    },
+    "clip_use_ids": [
+      "voice-1"
+    ],
+    "name": "two",
+    "output_ranges": [
+      [
+        0.0,
+        0.34
+      ]
+    ],
+    "plan_ref": {
+      "id": "plan_aef56152e48a456aa84ecf5c6bff8ad5",
+      "kind": "Plan",
+      "version": 4
+    },
+    "script_ref": {
+      "id": "script_6020a42560174d21ab01c13b181fb908",
+      "kind": "Script",
+      "version": 1
+    },
+    "selected_shot_refs": [
+      {
+        "id": "shot_c01cc5bd92fd4112b7352d112f5403dd",
+        "kind": "Shot",
+        "version": 1
+      }
+    ],
+    "semantic": {
+      "action": null,
+      "product": null,
+      "quantity": 2,
+      "subject": "蓝色方块",
+      "unit": "个"
+    },
+    "source_evidence": {
+      "at": 0.6,
+      "audio_sha256": "621c570c833ed1d20b830b0187d5531ffdf2785a0658230ffdfe9e6bcbf79095",
+      "frame_sha256": "f2c921c0cb1a4bf2913f92e63604da5591879f032981dc9f6cfbd6eaeb024617",
+      "source_range": [
+        0.43,
+        0.77
+      ],
+      "tag": {
+        "id": "tag_14622a91227742938fd6720b26e3f666",
+        "kind": "Tag",
+        "version": 1
+      }
+    },
+    "timeline_ref": {
+      "id": "timeline_7d6f05bc00a342eca3ba9750f6427f68",
+      "kind": "Timeline",
+      "version": 1
+    },
+    "validation_status": "human_verified_clip_use",
+    "voice_map_ref": {
+      "id": "voicemap_52c9b29f16694b939cfe4492a56eb049",
+      "kind": "VoiceMap",
+      "version": 1
+    }
+  },
+  "movie": {
+    "sha256": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9",
+    "bytes": 34256,
+    "artifact_hash": "2b68303d4f390d697518957f2d9748eb26dc3d3d6503666a227f220b895155f9"
+  }
+}

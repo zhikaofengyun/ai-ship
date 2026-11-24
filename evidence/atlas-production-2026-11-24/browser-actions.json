@@ -1,0 +1,66 @@
+{
+  "chromium": {
+    "Y04": {
+      "engine": "chromium",
+      "passed": true,
+      "source": "worker exited after real encode",
+      "full_decode": true,
+      "hash_verified": true,
+      "direct_rerun_decoded_streams_match": true
+    },
+    "J05": {
+      "engine": "chromium",
+      "checks": [
+        "J05-settings",
+        "reserve",
+        "handoff",
+        "publication-preflight",
+        "confirmed-unsent-release"
+      ],
+      "page_errors": []
+    },
+    "F03": {
+      "engine": "chromium",
+      "checks": [
+        "prepare",
+        "download_members",
+        "receipt",
+        "bind_creator",
+        "observe_final_post"
+      ],
+      "page_errors": []
+    }
+  },
+  "webkit": {
+    "Y04": {
+      "engine": "webkit",
+      "passed": true,
+      "source": "worker exited after real encode",
+      "full_decode": true,
+      "hash_verified": true,
+      "direct_rerun_decoded_streams_match": true
+    },
+    "J05": {
+      "engine": "webkit",
+      "checks": [
+        "J05-settings",
+        "reserve",
+        "handoff",
+        "publication-preflight",
+        "confirmed-unsent-release"
+      ],
+      "page_errors": []
+    },
+    "F03": {
+      "engine": "webkit",
+      "checks": [
+        "prepare",
+        "download_members",
+        "receipt",
+        "bind_creator",
+        "observe_final_post"
+      ],
+      "page_errors": []
+    }
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "layout_write_during_observation_before": 9,
+  "layout_write_during_observation_after": 0,
+  "fixed_container_width_css_px": 600,
+  "viewport_widths_css_px": [
+    940,
+    1120,
+    740,
+    940
+  ],
+  "observed_grid": [
+    {
+      "width_px": 600,
+      "splittable": true,
+      "left": "306px",
+      "column_gap": "18px"
+    },
+    {
+      "width_px": 600,
+      "splittable": true,
+      "left": "296px",
+      "column_gap": "36.959999px"
+    },
+    {
+      "width_px": 600,
+      "splittable": false,
+      "left": "296px",
+      "column_gap": "16px"
+    },
+    {
+      "width_px": 600,
+      "splittable": true,
+      "left": "306px",
+      "column_gap": "18px"
+    }
+  ],
+  "direct_storyboard_workflow": {
+    "passed": true,
+    "round": "1",
+    "engine": "webkit",
+    "checks": [
+      "Uploaded three audiovisual sources; built a two-shot AI plan, held its opening and returned one admissible option out of three requested, with four measured differences.",
+      "Reloaded the persisted family and opened its selected child proposal on the same page with parent version and human decision intact.",
+      "Approved and rendered the child via existing controls, decoded both video segments and the audio stream, matched their expected on-screen words and re-read the unchanged parent."
+    ],
+    "screenshots": [
+      "candidate.png",
+      "actual-export.png"
+    ],
+    "page_errors": [],
+    "scope": "Local same-project storyboard selection, locked primary interval, measured source comparisons, independent readback of decoded order/streams. No audience or platform conclusions.",
+    "candidate": {
+      "name": "固定开场并选择不同的结尾 · 变体 1",
+      "plan": {
+        "id": "plan_ad4b7e5a20db4bf6a8921e72135cb31f",
+        "kind": "Plan",
+        "version": 1
+      },
+      "score": 0.8788,
+      "shots": [
+        {
+          "asset_id": "asset_9a629c9d4782456db2039de1a9691707",
+          "name": "b.mp4",
+          "source_in": 0.0,
+          "source_out": 1.0
+        },
+        {
+          "asset_id": "asset_15727781cca0463196a758b8f7fef018",
+          "name": "c.mp4",
+          "source_in": 0.0,
+          "source_out": 1.0
+        }
+      ],
+      "vs_base": {
+        "picture": 0.5152,
+        "sound": 0.9999,
+        "structure": 1.0,
+        "text": 1.0
+      },
+      "vs_history": [],
+      "vs_siblings": []
+    },
+    "initial_plan": "plan_7bebab9336784ea991df61bb9edd624f",
+    "selected_run": "edit_109e5d9202a9d5bdb195215dc95285fd219d",
+    "output_sha256": "f7d56970e389c943314c00c2d6abb6a836987dcc3e380f16585bbd9b5b6bacfa",
+    "decoded_words": [
+      "RIVER",
+      "MOUNTAIN ||"
+    ]
+  },
+  "browsers": {
+    "chromium": {
+      "engine": "chromium",
+      "round": "1",
+      "checks": [
+        "navigation drag, keyboard steps, min/max and restore",
+        "click source viewer to play, pause and seek actual source",
+        "resize both adjacent pane splitters and timeline height",
+        "panel order, track position and pixel sizes survive reload",
+        "drag a panel heading directly onto another panel to swap",
+        "actual native-pixel, fit, fill, zoom and pan geometry",
+        "timeline playback, fullscreen and exit preserve edit version",
+        "narrow drawer width isolated from desktop, panel and preview usable",
+        "production goal and review monitor resize, persist, reset and stack on mobile",
+        "open chosen revision stream despite newer timeline, isolate both dirty drafts across navigation and reload"
+      ],
+      "measurements": {
+        "sidebar_px": 232,
+        "bin_px": 279,
+        "inspector_px": 286,
+        "upper_px": 543
+      },
+      "screenshots": [
+        {
+          "file": "fullscreen.png",
+          "sha256": "ea577b8b5e0f59ea9c0650f2187cf272461cc2af46714c700a7a86bb520b8d24"
+        },
+        {
+          "file": "arranged-workspace.png",
+          "sha256": "fd2f41937c2a9bb2777bcb830d48c225ca045569f5f9ecfbc8f8b23b6edcbfaa"
+        },
+        {
+          "file": "phone-viewer.png",
+          "sha256": "719da17049372c15fe3a8137431b1717a868d585614e3aabb8502dd9f5c82212"
+        }
+      ],
+      "page_errors": [],
+      "passed": true,
+      "browser_version": "156.0.8078.108"
+    },
+    "webkit": {
+      "engine": "webkit",
+      "round": "1",
+      "checks": [
+        "navigation drag, keyboard steps, min/max and restore",
+        "click source viewer to play, pause and seek actual source",
+        "resize both adjacent pane splitters and timeline height",
+        "panel order, track position and pixel sizes survive reload",
+        "drag a panel heading directly onto another panel to swap",
+        "actual native-pixel, fit, fill, zoom and pan geometry",
+        "timeline playback, fullscreen and exit preserve edit version",
+        "narrow drawer width isolated from desktop, panel and preview usable",
+        "production goal and review monitor resize, persist, reset and stack on mobile",
+        "open chosen revision stream despite newer timeline, isolate both dirty drafts across navigation and reload"
+      ],
+      "measurements": {
+        "sidebar_px": 232,
+        "bin_px": 279,
+        "inspector_px": 286,
+        "upper_px": 543
+      },
+      "screenshots": [
+        {
+          "file": "fullscreen.png",
+          "sha256": "ac7262c799c13ff18a31730bbb6e0c158700ac3f8cbad10cbda751e927098d5b"
+        },
+        {
+          "file": "arranged-workspace.png",
+          "sha256": "763eb29a2711e4e42f879d1a053ffc34f7e095a5d1ef1b944973f18367543617"
+        },
+        {
+          "file": "phone-viewer.png",
+          "sha256": "ab4883dce548b06dd2638da63a8a983f262871c6e328fffc937175edeaad409d"
+        }
+      ],
+      "page_errors": [],
+      "passed": true,
+      "browser_version": "26.5"
+    }
+  }
+}
