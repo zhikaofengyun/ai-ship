@@ -1,0 +1,40 @@
+diff --git a/contracts/atlas-integrity.json b/contracts/atlas-integrity.json
+index d770d1e19bcb7f753b8cd09c3a4151f9c5f59307..64da7d36027f58796e836151656c42a863d70a1e 100644
+--- a/contracts/atlas-integrity.json
++++ b/contracts/atlas-integrity.json
+@@ -26,3 +26,3 @@
+   "extractionRoundtripEquality": true,
+   "scope": "Source JSON extraction and reference checks, not implementation or runtime tests"
+-}
++}
+\ No newline at end of file
+diff --git a/contracts/atlas.json b/contracts/atlas.json
+index f4c0506ccbeece8948b02f692371328fdb6509c5..6988d3308ab228cdb45baafba87ebc1b54b867a7 100644
+--- a/contracts/atlas.json
++++ b/contracts/atlas.json
+@@ -311255,3 +311255,3 @@
+     "artifactBoundary": "引力图、参数和操作示例可离线使用；没有完成生产媒体渲染、数据库部署、模型或平台账号接入。"
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/contracts/feature-catalog.json b/contracts/feature-catalog.json
+index 43dfe6f04bc0b399afc014f338a354f658d54c75..a92e4016d10b8c31ac257c97aaba1d283ca59b9b 100644
+--- a/contracts/feature-catalog.json
++++ b/contracts/feature-catalog.json
+@@ -72468,3 +72468,3 @@
+     }
+   ]
+-}
++}
+\ No newline at end of file
+diff --git a/docs/AI_Video_Agent_Atlas.html b/docs/AI_Video_Agent_Atlas.html
+index a64a9cab370d093df6a587f1a0bc21451d4cae9f..561fa39a3d5c41b7e531aae305115097fd49bc55 100644
+--- a/docs/AI_Video_Agent_Atlas.html
++++ b/docs/AI_Video_Agent_Atlas.html
+@@ -1405,3 +1405,3 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-workbench]
+ </script>
+ </body>
+-</html>
++</html>
+\ No newline at end of file
