@@ -1,0 +1,584 @@
+{
+  "round": 5,
+  "started_at": "2026-11-24T11:15:22.836750+00:00",
+  "source_sha256": "bf9029e8f8da37cd9e1f6067fc3c7b70a38b4f43b4d67e8dcaab0d64c7e0de3a",
+  "runtime": {
+    "python": "3.12.14",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "packages": {
+      "fastapi": "0.141.1",
+      "uvicorn": "0.52.1",
+      "pydantic": "2.13.4",
+      "httpx": "0.28.1",
+      "jsonschema": "4.26.0",
+      "black": "26.10.1",
+      "opentimelineio": "0.18.1",
+      "playwright": "1.62.0"
+    },
+    "ffmpeg": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "node": "v24.22.3"
+  },
+  "checks": [
+    {
+      "name": "source-contract-integrity",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/check_contracts.py"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 4.772,
+      "log": "source-contract-integrity.log"
+    },
+    {
+      "name": "all-backend-media-cross-domain-tests",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/run_tests.py",
+        "--report",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/unit-report.json",
+        "--order-seed",
+        "5"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 98.491,
+      "log": "all-backend-media-cross-domain-tests.log"
+    },
+    {
+      "name": "all-original-feature-workflow-crosswalk",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/feature_workflow_audit.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.366,
+      "log": "all-original-feature-workflow-crosswalk.log"
+    },
+    {
+      "name": "new-module-production-forms",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_production_actions.py",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/module-forms"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 10.14,
+      "log": "new-module-production-forms.log"
+    },
+    {
+      "name": "brief-shot-selection-and-editor-handoff",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_selection.py",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/selection"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 10.479,
+      "log": "brief-shot-selection-and-editor-handoff.log"
+    },
+    {
+      "name": "single-screen-edit-session",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_edit_session.py",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/studio"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 17.397,
+      "log": "single-screen-edit-session.log"
+    },
+    {
+      "name": "workspace-route-execution-and-revisions",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_workspace_actions.py",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/workspace"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 7.854,
+      "log": "workspace-route-execution-and-revisions.log"
+    },
+    {
+      "name": "all-browser-module-syntax",
+      "command": [
+        "node",
+        "scripts/check-web.mjs"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 2.099,
+      "log": "all-browser-module-syntax.log"
+    },
+    {
+      "name": "python-formatting",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "app",
+        "tests",
+        "scripts"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 0.215,
+      "log": "python-formatting.log"
+    },
+    {
+      "name": "browser-formatting",
+      "command": [
+        "npm",
+        "run",
+        "format:check"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.983,
+      "log": "browser-formatting.log"
+    },
+    {
+      "name": "openapi-snapshot-drift",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/export_contracts.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 1.021,
+      "log": "openapi-snapshot-drift.log"
+    },
+    {
+      "name": "typed-controls-and-imported-dom-boundaries",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_typed_controls.py",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/typed-controls"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 11.958,
+      "log": "typed-controls-and-imported-dom-boundaries.log"
+    },
+    {
+      "name": "exhaustive-browser-and-real-media",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_regression.py",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/browser"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 26.116,
+      "log": "exhaustive-browser-and-real-media.log"
+    },
+    {
+      "name": "webkit-single-screen-edit-session",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_edit_session.py",
+        "--engine",
+        "webkit",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/webkit"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 22.95,
+      "log": "webkit-single-screen-edit-session.log"
+    },
+    {
+      "name": "chromium-ai-production",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_ai_production.py",
+        "--engine",
+        "chromium",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/director-chromium"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 27.554,
+      "log": "chromium-ai-production.log"
+    },
+    {
+      "name": "chromium-workspace-layout",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_workspace_layout.py",
+        "--engine",
+        "chromium",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/layout-chromium"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 10.021,
+      "log": "chromium-workspace-layout.log"
+    },
+    {
+      "name": "chromium-visual-transitions",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_clip_transitions.py",
+        "--engine",
+        "chromium",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/joins-chromium"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 8.477,
+      "log": "chromium-visual-transitions.log"
+    },
+    {
+      "name": "chromium-opening-text",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_opening_text.py",
+        "--engine",
+        "chromium",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/opening-chromium"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 16.424,
+      "log": "chromium-opening-text.log"
+    },
+    {
+      "name": "webkit-ai-production",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_ai_production.py",
+        "--engine",
+        "webkit",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/director-webkit"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 28.576,
+      "log": "webkit-ai-production.log"
+    },
+    {
+      "name": "webkit-workspace-layout",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_workspace_layout.py",
+        "--engine",
+        "webkit",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/layout-webkit"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 11.828,
+      "log": "webkit-workspace-layout.log"
+    },
+    {
+      "name": "webkit-visual-transitions",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_clip_transitions.py",
+        "--engine",
+        "webkit",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/joins-webkit"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 10.629,
+      "log": "webkit-visual-transitions.log"
+    },
+    {
+      "name": "webkit-opening-text",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/browser_opening_text.py",
+        "--engine",
+        "webkit",
+        "--round",
+        "5",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/opening-webkit"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 17.908,
+      "log": "webkit-opening-text.log"
+    },
+    {
+      "name": "actual-local-language-model",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/verify_local_director.py",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/language-model"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 8.212,
+      "log": "actual-local-language-model.log"
+    },
+    {
+      "name": "actual-local-multi-model-review",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/verify_local_team.py",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/model-team"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 45.86,
+      "log": "actual-local-multi-model-review.log"
+    },
+    {
+      "name": "actual-local-opening-text",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/verify_opening_text.py",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/opening-model"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 8.958,
+      "log": "actual-local-opening-text.log"
+    },
+    {
+      "name": "actual-local-diffusion-model",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scripts/verify_generation_worker.py",
+        "--seed",
+        "48175",
+        "--output",
+        "/workspace/scratch/7926867ed7f8/ai-ship/evidence/ai-production/round-5/diffusion-model"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "seconds": 557.612,
+      "log": "actual-local-diffusion-model.log"
+    }
+  ],
+  "scope": "完整已实现本地功能、所有测试、全部源目录合同与UI路线遍历；非178功能全部业务验收。",
+  "not_verified": [
+    "付费云端供应商、真实平台OAuth/自动发布/回执/指标",
+    "尚未实现的专用路线与外部适配器",
+    "macOS/iOS Safari、Firefox、物理 iPhone 与辅助技术组合",
+    "原生Liquid Glass逐像素一致",
+    "分布式多主机与生产负载",
+    "全部路线语义门槛、所有控件组合、专业剪辑软件和真实平台往返"
+  ],
+  "unchanged_during_round": true,
+  "passed": true,
+  "finished_at": "2026-11-24T11:28:36.428904+00:00",
+  "evidence_hashes": {
+    "actual-local-diffusion-model.log": "a59981696da397ea94099ce2b45b3e9c1142e26b82e2a75676fb78f05b631a00",
+    "actual-local-language-model.log": "140bdfb7915c272b5cd6f4c4a1204d6568d5d86bb52c298b00f2b54abaabb417",
+    "actual-local-multi-model-review.log": "b6010d1f5766027310770c3a0eadd7757b81d5992f3a54436d03cec1ae9a70ed",
+    "actual-local-opening-text.log": "cacde5b6ee4678f69208d81b6d7111e91091bf766eef63e279090662784ae7d4",
+    "all-backend-media-cross-domain-tests.log": "9e235cea961f892c5684c946f685bfd84bd27409b371bddd268217f2cc4f119c",
+    "all-browser-module-syntax.log": "47ffdb5ecddfeb1913a621f2ba80933e8f672fe9aa362d9a1c672f89ff3e3d77",
+    "all-original-feature-workflow-crosswalk.log": "15d85258bf19b92a7907c91e4a687f9d5b9084dbb4c40ccc6b46f869cb0e2763",
+    "brief-shot-selection-and-editor-handoff.log": "511d52140fe6c32cd5b81ec7bd4639ed3abc145a2c12e29a0825585079498809",
+    "browser/01-empty-workspace.png": "64bf010e90887134c451a451e3e5ac728b30bbb6af0c071e416e013b05eeb55c",
+    "browser/02-media-library.png": "a4099dd1caf327cb70c398bd15534e1eaaaee0152f6365b5c2c04512a923fe20",
+    "browser/03-real-render-result.png": "e197a219f2940d58fbe1543c243e4830c0e7550d97531ddc2632d49a24088a85",
+    "browser/04-real-workflow-result.png": "e5491c7697f874a9099bad05dee74e68e7e0371fc22044cb98a1a27fcfab0f77",
+    "browser/browser-render.mp4": "ce1eb0883dd5dc6faa4e2750826d7020b2093f4c971f1ab061f52a4c0fc954bb",
+    "browser/browser-report.json": "6777742b6aad06ad0e32185f582a635ff33ebfc8bd03ae6d5148d68a11d6ada8",
+    "browser/dark-reduced-settings.png": "a6bd42116ee9ca513f33ed96b097481f166454d9e1cc15d088d27c2134cdba39",
+    "browser/desktop-agents.png": "6b6c5ca8e84b667529eb1cb899d5aa797e2cede39ad228d4fc576df13642dc1f",
+    "browser/desktop-audit.png": "aacdbf5cf632b6070c223006b2f6cb1a9b58be653e09b52d9f6b6ba5854651e5",
+    "browser/desktop-delivery.png": "e00189e9e7d6069f302e7d25ec7bf57038336abe14b104bc9405f2294f40511d",
+    "browser/desktop-editor.png": "03d040ad16b2bba760f66fb873be52aa8e4285b5ee7257030ae1a0cba9ed6572",
+    "browser/desktop-feature-controls.png": "b754c465360982931b49af61189f53b4780ca805433db8bbd3149d2912606cfa",
+    "browser/desktop-insights.png": "922eea16be3536dc1462c76ca09613f64ec66f7792550d75d7100231621fc4b0",
+    "browser/desktop-overview.png": "99d9ef831ed895f01a847e0d13679bdb8c69c6578a4cc89ae0619be4c0774e8c",
+    "browser/desktop-settings.png": "71a2961a546f9a5041f7d8a7503b10d3a290e91421b59d5e4f9d38befc09b5e1",
+    "browser/desktop-workflow.png": "7f5f93f016b2a5fc35987ba292ef5c563073a779519edcfb1da6f61948c8ad34",
+    "browser/mobile-assets.png": "860451f99103cf5f3d242fe3532dc8385dc5b90ef2b1fb5d28adfcc0e9ccc69c",
+    "browser/mobile-delivery.png": "f6707ce99f05d3b5b25c76a59572f36f2dec19a25f446105e886e1c72daa64b0",
+    "browser/mobile-editor.png": "df792b0f1272f22d833c4ad7b41e3ef4a88a79d0cf48d076e47cf0427a0ed4cb",
+    "browser/mobile-insights.png": "961dd2087ea22ca6fd839b53b546592abb646af92d93de2cbc352817f3719a00",
+    "browser/mobile-module-project.png": "3151f618dbbdc5be20e1174dd226f2dd6a901cc253f45ad529cf29452cb2f9d1",
+    "browser/mobile-overview.png": "8e3e70a38f4d8bfa8fc9a2b220190fa8c2808ce58ffd1b9667639f5839c3fed9",
+    "browser/mobile-settings.png": "ceb79d4d3a5b2b9cfbcea5c0a53a58138b7eb402d6481d1ca74b5154ebee9eb0",
+    "browser/mobile-workflow.png": "96377bfa0cdf00dfe840667eab88daae2f3dc543bc001e49e3fc3d9ed648ab62",
+    "browser/server.log": "4eeb777f253edf3148405eb6a4bb294e243c922a7dac162bd8881c7b612e044c",
+    "browser-formatting.log": "b76939bfb25c76556f36009c5354c8a505ce23c5904b81a6a822b04f4ed1de1f",
+    "chromium-ai-production.log": "14ca7fdb7ee962108edd3243ee250c15d3341a2a1dffe7cc85bbf6440b4ec0f4",
+    "chromium-opening-text.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chromium-visual-transitions.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chromium-workspace-layout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "diffusion-model/generated-cut.mp4": "271dfc0bc3e3a2a23b1aaa70dda3b75cb23efa6b8f2dec8cec3d57bef09e978c",
+    "diffusion-model/generated-shot.framemd5": "eb44bdae56921557ae289b8a21e9500ba72a7121a5935014f4323a717d944a9a",
+    "diffusion-model/generated-shot.webm": "4817d7756e77f051c55c30790e857d85f90f1e7610a9be31de4ef480aa6df7db",
+    "diffusion-model/generated-still.png": "8ad2bc4bdd05cf943deda4b14174508c73b972241e0ca2ac9e8013220b0580ba",
+    "diffusion-model/reference-motion.framemd5": "e8c20f60e8e5b7ab034b407940b66be86be9e7fe5c3e9a46b2569f1ab7ba80c2",
+    "diffusion-model/reference-motion.webm": "2ba9b7c2145fb7c890dc0274298044852d0eff9360feae61ffc1ec88a5ebb3f3",
+    "diffusion-model/report.json": "38275f62da068be03a4a545362a32fc078d1ecd3778d07750a701447c1672a8a",
+    "diffusion-model/worker.log": "6b0579726e7c1eefe6d0e9847cb858d5928c955bfd3c80319d2b5717bae86230",
+    "director-chromium/available-models.png": "6d7bf4212d9751d6dd9e910f93cf732dc53bafdfae8802b64b2d12e15895a109",
+    "director-chromium/delivered-desktop.png": "99a2c4b3cfa4815073c5cd501b3a3957e8d0068dbdeacf1471ca01bbe33f7a65",
+    "director-chromium/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+    "director-chromium/image-reference.png": "5d8bf5def6d136a2f642d281470b273f17a1874efdb2009f5056126608fbbad5",
+    "director-chromium/report.json": "5d615bc07377a23726f527bb43c686beaed4c5ca23fd202ba676e6cf42426d55",
+    "director-chromium/review-desktop.png": "fc8c9a1399800930d69ddc00934ddac3bfaf73468f26958e436175e9e02b8a40",
+    "director-chromium/review-mobile.png": "58d4fb9b5c1fdfc7b68d1beb1546c74b5db583d3b7f79bbbda0ed2170c7bf1ad",
+    "director-chromium/server.log": "04e434ba2aa565e72cce0a1a5b47cc4056d4e7ea73c549b95a9eaa8bd18614f5",
+    "director-chromium/source-fullscreen-narrow.png": "af0a3aa86a88e3113a304d504eadaca191b8f54c5c9e3c3923a1c13960e9e0a4",
+    "director-webkit/available-models.png": "ac827edd288f12c1ea84f32e9e760fdd1cbf3824cfbdfb8ebc48e6947a667620",
+    "director-webkit/delivered-desktop.png": "864c668448e8742b55e7c22708b2db74cd71163e71d4237f569fbb7a8a8aee2f",
+    "director-webkit/directed-result.mp4": "28c8ef8c193a3ccca6b64c7335c065e6e57d6c8a11f79ef988d8f99bfdebb672",
+    "director-webkit/image-reference.png": "2e8bf273f84f4bad6710a58ad208f866b3ac6863045f152d2cdbdd487468c064",
+    "director-webkit/report.json": "18d9f04084ff853d8696ae7c929c61b01b894d674298fda42f206be2acd35fe2",
+    "director-webkit/review-desktop.png": "17b260dcd541aef74454d4440af4e1811e06fd4c84cad9dc6f469544fd40aaa5",
+    "director-webkit/review-mobile.png": "cd3bdc3321b9a4e5bb24e887f732ad6d3bee8889f25b4d46297fb946e62d910e",
+    "director-webkit/server.log": "636383422602eed423833e95b262515dcbb52bb6360d8d0848812115bef5bad0",
+    "director-webkit/source-fullscreen-narrow.png": "9ea53fbd64666e49b701decd4dce552ff4d18c39d0548392832c4b5e58820797",
+    "exhaustive-browser-and-real-media.log": "7115ef6375afee1489cf63d27cdbd2e555679616470d8727ff8d1561cc0db5d7",
+    "joins-chromium/dip_black.png": "97ebdeb6a642dac6237360bc3a4ccdfb34f31edfdd86291e918873601b091740",
+    "joins-chromium/dip_white.png": "add5525575387801be506371242e09e72703bd677b573a727ac547cc91601912",
+    "joins-chromium/dissolve.png": "6ca76db37e61521070faeb7260915c9d64d2c6e3085d1089cbb803bcda67ec85",
+    "joins-chromium/report.json": "a657817845fba63cc52b65a39070c96effa35673fe1d848fbd62b37a3b6d5780",
+    "joins-chromium/server.log": "65d10ae32fee78ac608d5ae243220ad4928719647ede3a24f4ccbdaf85791f33",
+    "joins-chromium/wipe_left.png": "1a3836e3684f3f769e507ab4c6fc7407a6bc9d4aa12be5f48ee76d7be6c8827c",
+    "joins-chromium/wipe_right.png": "874ea9e4f1a196e754f0c186d9fda5967434c239fa76fe78a19cccfd10c74e45",
+    "joins-webkit/dip_black.png": "06de618cff546bb651aeec1730684a3714861c0e98b3392cc04301b663e3cb1e",
+    "joins-webkit/dip_white.png": "07dabec32be60600843127a176903f5347b64d45b0faf622bfafd0265c91b9cc",
+    "joins-webkit/dissolve.png": "baa6378ae769fade8e5b882f33c28598d7f432354aec7aea88287041d85b0841",
+    "joins-webkit/report.json": "d2a2e3ec5d50c8c53fec8859be479ccdcce70f0e973772d2bf815c9933ce1526",
+    "joins-webkit/server.log": "37fb63789f3d496acb5d5a8536a0f017995d1091dfa364492642653e4beb4e54",
+    "joins-webkit/wipe_left.png": "9f04aca20b196ef8fa99197cd54fc96893d2e0b1c595f08ad01265350f88962f",
+    "joins-webkit/wipe_right.png": "6fae2a6b2a8d099a676ec3ee31576e55cc741df9d03da2cca20164e0ae00a24d",
+    "language-model/llama-server.log": "71374b1a3679f26410bdb774d3213b60dace89ad5551846ffb8492788a20d736",
+    "language-model/model-cut.mp4": "9769fd148cc6f6a11e9d140811bb37fd29f278ff8c85385f2e8798b8497a01ee",
+    "language-model/report.json": "0a7e600ea295b0798b3cb8f5d7844d1bdce4326e9bad10da71e091b15238ef61",
+    "layout-chromium/arranged-workspace.png": "c6f7aabed9f31fff6f936fd32e972939223fc31a25aa0e00cadaa19da4150eff",
+    "layout-chromium/fullscreen.png": "ef007973195ef0adf975d415f3720969dcfa8fb8e26e187d9060f94c7312b401",
+    "layout-chromium/phone-viewer.png": "6aee126b5e6f6c5d30b5a7b8876784f89ff507959c6c0a760d0d1340f614b468",
+    "layout-chromium/report.json": "93fe516e1d8b7ce77b4d407ec970ee8aa9ca96a05966e3f4fd2ba5791ea7b381",
+    "layout-chromium/server.log": "c4bded94d59855663b2c633e003b3b9e36c63f391d600edc902c75ac2fd71255",
+    "layout-webkit/arranged-workspace.png": "98c46d34cd1f1178c19c90a29b48795a6f28ecd7902515ca2c5dc3425d0a16a6",
+    "layout-webkit/fullscreen.png": "f209609fa4c43bf207f1550c303d2005dc147aceda710742ad0dba088b4b8835",
+    "layout-webkit/phone-viewer.png": "18ef5a4e7b3378d1bfd3d536fff182e75b0cbc8f97ef0a2342e2d806cf88d164",
+    "layout-webkit/report.json": "d4c70bc4f8b8be10d387e36f3a359bf1b61506a1601b1d0d5cb2f2b7aed6e396",
+    "layout-webkit/server.log": "77298c9ec651603b2e29a77e76fb4bcf64207cf164e8f937bf315bffc0a44c3c",
+    "media/render-evidence.json": "098048f4df28e43c3388e6467cf9e58633086f68b09647393a4bc8a4c6eb7996",
+    "media/synthetic-frame.png": "4e9b1fc298052c83a1575aa59b076722f9609e4f7113b9f83dfe3644e0a05006",
+    "media/synthetic-render.mp4": "2e5d9506ab9a716c8eded41e667a835690d2403db7fa0a8603e2a50a9a3d9c8a",
+    "media/synthetic-source.mp4": "01ea9c01b0634594a215e826e78db2d1cbc82f6b10fb696b96200eb98f9bf04d",
+    "media/transition-pixel-audio.json": "6e9caa76a06409ef1745a19b670a3f1eb3313e736e82daf89e9d9b541f42a416",
+    "model-team/api.log": "c685ff83fae9278445c1b49f3081ff885a95d0d8ebf8f4999f0607cd589b7d6d",
+    "model-team/director-llama.log": "8c852eb25b3c03e9e9d09b97fa6d06f91de3ca094f56f1ee36e1c07ede19fbbe",
+    "model-team/ensemble-cut.mp4": "ec6e06059ec23dfd391ce9fe1233236e2b5bf1960281550527eb331f6d7516c5",
+    "model-team/judge-llama.log": "4557efefe9306be18116991cf1a02a458ea0b9e334dd6a384f1df717d2f0e576",
+    "model-team/report.json": "ca536dd395e73d5fec64c1f6a37c4a8017cb11c956f96dc850e7dc4f9585670b",
+    "model-team/reviewer-llama.log": "b5eacf917af4bb649a649577a2372381b46668f068a4fdb8b08e376582e0df5e",
+    "module-forms/report.json": "407286287134276f2921992aeb554123f7a61429f3d7ddbd858526ed6d85a3c7",
+    "module-forms/search-evidence.png": "9eca2129bebd13de09f4c2b7bb61f22c08d8ffa9a85642e005c7407fce46c236",
+    "module-forms/server.log": "9845bea14f0e28c75948ca766242102f002823c79dd58fa5f7b355a9fa86dfc9",
+    "new-module-production-forms.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "openapi-snapshot-drift.log": "d939043dbe7b1623d85f1c724885e4c5c898f0ea3584bbf9d0d42c386dccc792",
+    "opening-chromium/blocked-opening.png": "e0495a6db959db534f7db56c627825b7e0dbb7e048bd5ebb6405baa71fd2d0c4",
+    "opening-chromium/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+    "opening-chromium/first-decoded-frame.png": "8062f1a8a4a2c2a13a33c17ebb8fba0e58f675c68b118f8f90cf8b3854829a68",
+    "opening-chromium/matched-candidate.png": "402057f101ea60494d53c7085516c21e62ee845597801ff2e942367adf6d5789",
+    "opening-chromium/report.json": "fef50855ce50212f60a0167deaf993e65821d91e40467d08dffbc99baa514540",
+    "opening-chromium/server.log": "d7cd310e68dfc6b19732bf18decdf200f5c5c39f926a4c06dfa1f9206a317543",
+    "opening-chromium/unverified-opening.png": "3abdff4f7b7e3de48639a560499da3b7096e244b34084390d041ca89238bbab8",
+    "opening-model/encoded-opening.png": "3f4f5de516116ea876e48a6c7a6c3e219a9f13d2fcc9d79d5e3195545c4285f5",
+    "opening-model/model-selected-first-frame.png": "2c89246c6362f120ae61d3173b50afad02ac41f55873ed97ba824cac53110a0c",
+    "opening-model/opening-export.mp4": "392bd133e8a5a3aae36ce838826bff6113514bae5b721473f320f0a1581f941a",
+    "opening-model/report.json": "bbfd21cd11307cf1bbd1fdfe4c476abfe3396b35d6787dec20633a9f2620347f",
+    "opening-webkit/blocked-opening.png": "7b98ac134ada8dbd019c07495da157747c172767d6f95b2fc5ddfd74b6c779ce",
+    "opening-webkit/corrected-opening.mp4": "5865070616520a43184c378ebe7e34c17e8da32fabbfddbf4678e30a4f75d1e6",
+    "opening-webkit/first-decoded-frame.png": "8062f1a8a4a2c2a13a33c17ebb8fba0e58f675c68b118f8f90cf8b3854829a68",
+    "opening-webkit/matched-candidate.png": "900eb45cd3a1ca68fd93c091b25cf8c2ba8895a3e6c38b787428e001b345604a",
+    "opening-webkit/report.json": "629700517abc569f433fbb502df7bdb2f49f1fee9468d14633bb7e2ba0443031",
+    "opening-webkit/server.log": "be3ec8a7829698be8cc7b94937cc57a376bf48a4ed2c01cbcef0a5f7ffb66451",
+    "opening-webkit/unverified-opening.png": "e4933c26ff951ad1a2eed50a8f176aff184af461b067a22dbff9092c22af821a",
+    "python-formatting.log": "b83fba888d425fae29f1430402a5dcdf92d5c2e82311dbbaad1c1292d591323f",
+    "selection/01-creative-review.png": "75172e5ef51394900e03a65e13dd827a8f522054f379c23e756d3052cbf36b79",
+    "selection/02-shot-selection.png": "a4a3077e37c3bbe40c3b1440ac10d1aae68d9c59b4ccf1e21c9fe03e780f42c4",
+    "selection/03-shot-in-editor.png": "e1cf4a504e70591fbf2757a455e4952d6c3a3fdfe5ea67f722ec4c9fb67b32e1",
+    "selection/04-music-timing.png": "945a0d06f0d646ef0411d14eedc39d9fca5095063d940a126f43483e19745c7c",
+    "selection/05-music-in-editor.png": "1b06f4afba230e66aabeb81100e074fd3c2eb8cfc36e7246d2cbb215f3bcce0b",
+    "selection/report.json": "2144527ffa90aca6bc879762318c9b09da991b173ef33fd842f96cb85c1fa359",
+    "selection/server.log": "996e17be625c99e24f1f4967da58ac8c1444ac98626b3ffe8f99ea5483117d04",
+    "single-screen-edit-session.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source-contract-integrity.log": "2b508f7ebd92f754a9d0e2e8fd7a91ec276450cd7a4f886fb678eb50b99a361d",
+    "source-fingerprint.json": "8ec8e1e6e19cf4514182c5d286c51643c699787ca67cba3f25fbd3dcc6f59c7f",
+    "studio/desktop-edit.png": "1cabd1274e836f38cc8bcd56a26dd6cf46db4a6f5302ab56d2b2dcd45c21a951",
+    "studio/edited.mp4": "fac2eba5180ce1208c242ceda1a8d50453220c1e888f7bdd6547ea782c155150",
+    "studio/export-complete.png": "78e8fea1e8913199f025cfd2f8d98c299bf5ecb4f3fed1f9d49e929efe1891d3",
+    "studio/mobile-edit.png": "e10fecd82b202ed41d2716b1a57f4266fe812e3826ec564b5a0c7036fe567d51",
+    "studio/phone-touch.png": "5d95f63065e07438ef12b918b3ddab3668159a0b53484a9fa189b60527e97d2c",
+    "studio/report.json": "2fd32643e105d6030201994b2dc28320e1129d4e8465f1021e7d277de9e6a413",
+    "studio/server.log": "b588851bbd62403c959d24803252325d4301bcd1432db64d18c74d9c555a7c9b",
+    "typed-controls/editor-derived-audio.png": "142fd853b2f81b9c60efc1c15aaf3bb433db13f355716fabca3612759b2435e4",
+    "typed-controls/media-chain-render.mp4": "48afe7bdc9279d6ae4317a1d461b2b98a3cbd608658fcebed4aad61159c9770a",
+    "typed-controls/media-library-derived-audio.png": "68ec8eeef4faaa9995a5d73a99c006366973fbaffa179c0c53baee8bae3aa500",
+    "typed-controls/report.json": "21c3a2d7ba2b5c766fd0e8c381a61efa274dc63ca07700e7b82f974a83ba03bc",
+    "typed-controls/server.log": "f4361f0b931d4babfac59c88fc5ab81d7cc7b1b2e7a51bd0bcf9f297bf706c9f",
+    "typed-controls/workflow-typed.png": "2fe085ed1ef45a5bbbe55108961f9969e63334a5895cb61e75bfaf5188ddefd7",
+    "typed-controls-and-imported-dom-boundaries.log": "8ffadc89b2f89324b977a5e62589cfc69e5f567ef1105180c2294b2235ae6198",
+    "unit-report.json": "e15cc7be9e9d839a29c39050ea88eff1ba6c453bb9fd48cd56535c983bc923da",
+    "webkit/desktop-edit.png": "d55944f6b1b617cedb015ead857b0599bcd6ef862c2feef8b338cf3268e7c2f4",
+    "webkit/edited.mp4": "f14af529a2caef627a923eef1862d9bb0dddee913db1007d25841d8d827a931a",
+    "webkit/export-complete.png": "b374bb99ad44734687f6ace2e3d92f5ad42e7c9980e69e96bd71959be5100457",
+    "webkit/mobile-edit.png": "ff3965e6b11d4ed70dcd63c2c6d92d9f4dcd3942fedd4b7a268506a75df4d01f",
+    "webkit/phone-touch.png": "c0dee44d4ccdaa853ddd0bfce531b0ac0f5cdd222fcf83756c5f595a81f59631",
+    "webkit/report.json": "76bee141f7764620d2e52de46ccfebcaea0aa34e94069abb91d565148dec9bc5",
+    "webkit/server.log": "ccac73d697ef56bc684065fe963fd18c48262287dfb084e49b337db7f363e1fe",
+    "webkit-ai-production.log": "212f7a3a65c34978b448b66652369723dfe53d240c5ae029f210d6250e53f91a",
+    "webkit-opening-text.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "webkit-single-screen-edit-session.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "webkit-visual-transitions.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "webkit-workspace-layout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/server.log": "305c6a117c7cebea00d75ed8e7d8231216f0dd2fe3a03e83333f5d4438b08a6b",
+    "workspace/workspace-actions.json": "5a011f45a79b5c93d5c106ffbbe2f47bb92af2596c57ae4ecc9fc0f9cf8a136f",
+    "workspace/workspace-mobile-module.png": "8498d9735c18bbe45c37d4f47668057c34d7df146885c88354c3eaac07d1fb22",
+    "workspace/workspace-project-facts.png": "6e92ba1f8f3ea07722f6b333bb910885fbbd65bd516ec4483b18df9690d4f53c",
+    "workspace-route-execution-and-revisions.log": "a0228617df2a530ebac562c1ad15ef753362f94c8f7c62d7aaed6b2e5e2660af"
+  }
+}
