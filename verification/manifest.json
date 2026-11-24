@@ -48,5 +48,12 @@
       "video": 16
     }
   ],
-  "published_qa_patches": {}
+  "published_qa_patches": {},
+  "publicly_decoded_films": {
+    "commit": "a2a61fff63fd4836cd5283b5df0fa70536aee277",
+    "file": "verification/review-films.patch",
+    "sha256": "08b35048737627e0ef0572b40d46a3921de5c06610fc90335aa83e0b91ef524d",
+    "original_movies": 9,
+    "tree": "5d1d4d28e8df34ba97b4a91e9e65874072fcaf30"
+  }
 }
