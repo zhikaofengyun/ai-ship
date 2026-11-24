@@ -845,7 +845,7 @@ export async function mountProduction(root, ctx) {
         "review-rights": () =>
           ctx.approveArtifact(detail.artifact, "rights_check"),
         publication: () => ctx.publicationForm(detail.artifact),
-        "commercial-handoff": () => commercialHandoff(ctx,detail.artifact),
+        "commercial-handoff": () => commercialHandoff(ctx, detail.artifact),
         preflight: (b) =>
           ctx.preflightPublication(
             ctx.records("Publication").find((r) => r.id === b.dataset.id),

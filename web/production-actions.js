@@ -490,7 +490,7 @@ function replay(ctx) {
   );
 }
 const actions = {
-  F03:["商品绑定与交接",commercialHandoff],
+  F03: ["商品绑定与交接", commercialHandoff],
   ...scorePolicyActions,
   M04: ["评论与洞察", feedback],
   M09: ["比较帖子与登记改版假设", postReview],

@@ -1889,11 +1889,11 @@ async function delivery() {
     pubs = records("Publication"),
     accounts = records("Account");
   $("#main").innerHTML =
-    `<div class="page">${pageHead("DELIVERY & PUBLISHING", "交付与发布", "成片、审阅、交接和平台回执分别确认。", `${btn("管理账号", "accounts", "globe", "button secondary")}${btn("商品交接","commercial-handoff","layers","button secondary")}${btn("新建发布意图", "new-publication", "plus", "button primary")}`)}<div class="section-heading" style="margin-top:0"><h2>交付产物</h2>${btn("进入剪辑室", "editor", "film", "button ghost")}</div><div class="surface">${artifacts.length ? `<div class="table-scroll"><table class="data-table"><thead><tr><th>交付文件</th><th>规格</th><th>状态</th><th>操作</th></tr></thead><tbody>${artifacts.map((a) => `<tr><td>${esc(a.data.name || a.data.filename || "渲染产物")}<small>${date(a.created_at)}</small></td><td>${esc(a.data.probe?.width ?? a.data.width ?? a.data.profile?.width ?? "—")} × ${esc(a.data.probe?.height ?? a.data.height ?? a.data.profile?.height ?? "—")}<small>${mediaDuration(a) ? time(mediaDuration(a)) : ""}</small></td><td>${badge(statusLabel(a.data.status || "content_review_required"), "amber")}</td><td><div class="heading-actions"><a class="button small secondary" href="/api/v1/media/artifacts/${encodeURIComponent(a.id)}/file" download>${icon("download")}下载</a>${btn("审阅", "approve-artifact", "eye", "button small secondary", `data-id="${a.id}"`)}${iconBtn("查看产物来源", "record", "history", `data-id="${a.id}"`)}</div></td></tr>`).join("")}</tbody></table></div>` : empty("还没有交付文件", "", "editor", "打开剪辑室", "film")}</div><div class="section-heading"><div><h2>发布意图</h2></div>${badge(`${pubs.length} 项`)}</div><div class="surface">${pubs.length ? pubs.map((p) => `<div class="list-row">${icon("send")}<div class="list-row-body"><strong>${esc(p.data.title || p.data.metadata?.title || "未命名发布")}</strong><p>${esc(accounts.find((a) => a.id === p.data.account_id)?.data.name || "账号待核对")} · ${esc(p.data.channel || "manual")}${p.data.scheduled_at ? " · " + date(p.data.scheduled_at) : ""}</p></div>${badge(statusLabel(p.data.status || "draft"), p.data.status === "receipt_recorded" ? "blue" : "")}<div class="heading-actions">${btn("预检", "preflight", "checkcircle", "button small secondary", `data-id="${p.id}"`)}${btn("回填回执", "receipt", "link", "button small secondary", `data-id="${p.id}"`)}</div></div>`).join("") : empty("暂无发布意图", "", "", "", "send")}</div></div>`;
+    `<div class="page">${pageHead("DELIVERY & PUBLISHING", "交付与发布", "成片、审阅、交接和平台回执分别确认。", `${btn("管理账号", "accounts", "globe", "button secondary")}${btn("商品交接", "commercial-handoff", "layers", "button secondary")}${btn("新建发布意图", "new-publication", "plus", "button primary")}`)}<div class="section-heading" style="margin-top:0"><h2>交付产物</h2>${btn("进入剪辑室", "editor", "film", "button ghost")}</div><div class="surface">${artifacts.length ? `<div class="table-scroll"><table class="data-table"><thead><tr><th>交付文件</th><th>规格</th><th>状态</th><th>操作</th></tr></thead><tbody>${artifacts.map((a) => `<tr><td>${esc(a.data.name || a.data.filename || "渲染产物")}<small>${date(a.created_at)}</small></td><td>${esc(a.data.probe?.width ?? a.data.width ?? a.data.profile?.width ?? "—")} × ${esc(a.data.probe?.height ?? a.data.height ?? a.data.profile?.height ?? "—")}<small>${mediaDuration(a) ? time(mediaDuration(a)) : ""}</small></td><td>${badge(statusLabel(a.data.status || "content_review_required"), "amber")}</td><td><div class="heading-actions"><a class="button small secondary" href="/api/v1/media/artifacts/${encodeURIComponent(a.id)}/file" download>${icon("download")}下载</a>${btn("审阅", "approve-artifact", "eye", "button small secondary", `data-id="${a.id}"`)}${iconBtn("查看产物来源", "record", "history", `data-id="${a.id}"`)}</div></td></tr>`).join("")}</tbody></table></div>` : empty("还没有交付文件", "", "editor", "打开剪辑室", "film")}</div><div class="section-heading"><div><h2>发布意图</h2></div>${badge(`${pubs.length} 项`)}</div><div class="surface">${pubs.length ? pubs.map((p) => `<div class="list-row">${icon("send")}<div class="list-row-body"><strong>${esc(p.data.title || p.data.metadata?.title || "未命名发布")}</strong><p>${esc(accounts.find((a) => a.id === p.data.account_id)?.data.name || "账号待核对")} · ${esc(p.data.channel || "manual")}${p.data.scheduled_at ? " · " + date(p.data.scheduled_at) : ""}</p></div>${badge(statusLabel(p.data.status || "draft"), p.data.status === "receipt_recorded" ? "blue" : "")}<div class="heading-actions">${btn("预检", "preflight", "checkcircle", "button small secondary", `data-id="${p.id}"`)}${btn("回填回执", "receipt", "link", "button small secondary", `data-id="${p.id}"`)}</div></div>`).join("") : empty("暂无发布意图", "", "", "", "send")}</div></div>`;
   bind({
     editor: () => nav("editor"),
     accounts: accountList,
-    "commercial-handoff":()=>commercialHandoff(ctx),
+    "commercial-handoff": () => commercialHandoff(ctx),
     "new-publication": publicationForm,
     preflight: (b) =>
       preflightPublication(pubs.find((p) => p.id === b.dataset.id)),
@@ -1931,11 +1931,19 @@ function accountList() {
   d.querySelector("[data-action=add]").onclick = () =>
     modal(
       "登记账号",
-      `<form data-form class="form-stack">${field("账号名称", "name", "", "text", "required")}${select("平台", "provider", ["tiktok", "youtube", "manual"])}${field("平台账号 ID", "platform_account_id", "", "text", "required")}${field("身份或主页链接", "identity", "", "text", "required")}${select("店铺身份（人工登记）","identity_namespace",[["","未登记"],["shop_creator","创作者"],["shop_seller","卖家"]])}${field("店铺市场（可留空）","identity_market")}<p class="help-text">登记账号不是平台授权。API 发布还需要有效授权、账号能力和内容检查。</p><div class="form-actions"><button class="button primary" type="submit">保存账号</button></div></form>`,
+      `<form data-form class="form-stack">${field("账号名称", "name", "", "text", "required")}${select("平台", "provider", ["tiktok", "youtube", "manual"])}${field("平台账号 ID", "platform_account_id", "", "text", "required")}${field("身份或主页链接", "identity", "", "text", "required")}${select(
+        "店铺身份（人工登记）",
+        "identity_namespace",
+        [
+          ["", "未登记"],
+          ["shop_creator", "创作者"],
+          ["shop_seller", "卖家"],
+        ],
+      )}${field("店铺市场（可留空）", "identity_market")}<p class="help-text">登记账号不是平台授权。API 发布还需要有效授权、账号能力和内容检查。</p><div class="form-actions"><button class="button primary" type="submit">保存账号</button></div></form>`,
       async (f) => {
-        const values=formData(f);
-        if(!values.identity_namespace) delete values.identity_namespace;
-        if(!values.identity_market) delete values.identity_market;
+        const values = formData(f);
+        if (!values.identity_namespace) delete values.identity_namespace;
+        if (!values.identity_market) delete values.identity_market;
         await saveRecord("Account", {
           ...values,
           status: "draft",

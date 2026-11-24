@@ -324,7 +324,9 @@ def _patch_record(record_id, body, request, actor):
         ensure_intent_editable(actor, old, body.data.get("account_id"))
     admit_manual_record(old["kind"], body.data, actor)
     data = dict(manual_asset_data(old["kind"], body.data, old))
-    if old["kind"]=="Publication" and ("commerce_binding" in data or "commerce_binding" in old["data"]):
+    if old["kind"] == "Publication" and (
+        "commerce_binding" in data or "commerce_binding" in old["data"]
+    ):
         if "commerce_binding" in data and data["commerce_binding"] != old["data"].get(
             "commerce_binding"
         ):
