@@ -82,6 +82,16 @@ def run(output, round_id, engine):
                 {"file": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
             )
 
+        def check_touch_geometry(selectors):
+            for selector in selectors:
+                control = page.locator(selector).first
+                control.scroll_into_view_if_needed()
+                box = control.bounding_box()
+                assert box and box["width"] >= 44 and box["height"] >= 44, (selector, box)
+                assert (
+                    box["x"] >= 0 and box["x"] + box["width"] <= page.viewport_size["width"] + 1
+                ), (selector, box)
+
         def check_monitor(label):
             loc = page.locator
             screen = loc(".director-monitor #viewer-screen")
@@ -155,6 +165,15 @@ def run(output, round_id, engine):
             dialog.locator("form[data-form] button[type=submit]").click()
             expect(page).to_have_url(re.compile("#production$"))
             expect(page.locator("#production-goal")).to_have_value(goal)
+            page.set_viewport_size({"width": mw, "height": mh})
+            check_touch_geometry(
+                [
+                    "#production-form button[type=submit]",
+                    "[data-action=models]",
+                    "[data-action=upload]",
+                ]
+            )
+            page.set_viewport_size({"width": dw, "height": dh})
             expect(page.locator(".nav-cluster")).to_have_count(8)
             expect(page.locator("[data-module-link]")).to_have_count(23)
             assert (
@@ -403,6 +422,19 @@ def run(output, round_id, engine):
             page.set_viewport_size({"width": mw, "height": mh})
             assert page.evaluate("document.documentElement.scrollWidth<=window.innerWidth")
             check_monitor("narrow screen selected source")
+            check_touch_geometry(
+                [
+                    "[data-view-full]",
+                    "[data-view-plus]",
+                    "[data-view-minus]",
+                    "[data-view-mode]",
+                    "[data-monitor-play]",
+                    "[data-monitor-mute]",
+                    "[data-monitor-seek]",
+                    "[data-monitor-volume]",
+                    "[data-action=approve]",
+                ]
+            )
             page.locator("[data-action=approve]").scroll_into_view_if_needed()
             snap("review-mobile")
             page.locator("[data-action=approve]").click()
@@ -629,6 +661,7 @@ def run(output, round_id, engine):
             )
             assert not report["page_errors"], report["page_errors"]
         browser.close()
+    report["passed"] = True
     (output / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(
         json.dumps(
