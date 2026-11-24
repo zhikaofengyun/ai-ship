@@ -470,6 +470,225 @@ class AutoEditTests(ProductionBase):
             [(x["asset_id"], x["in"], x["out"]) for x in chosen],
         )
 
+    def test_opening_text_conflict_freezes_original_and_rechecks_pinned_human_replacement(self):
+        raw = {
+            "title": "导演选案",
+            "approach": "FRESH LIME appears first",
+            "shots": [
+                {
+                    "asset_id": self.assets[1]["id"],
+                    "source_in": 0.0,
+                    "source_out": 1.0,
+                    "reason": "FRESH LIME appears first",
+                }
+            ],
+        }
+        seen, b = self.endpoint([raw])
+        b = {k: v for k, v in b.items() if k not in {"reviewer_profile_id", "judge_profile_id"}}
+        d = self.post("", {**b, "mode": "model", "opening_text": "FRESH LIME"})
+        run = d["session"]
+        check = d["plan"]["data"]["opening_check"]
+        self.assertEqual(run["data"]["issue"]["code"], "OPENING_TEXT_CONFLICT")
+        self.assertEqual(check["status"], "conflict")
+        self.assertEqual([w["text"] for w in check["observation"]["words"]], ["SAMPLE"])
+        self.assertEqual(check["observation"]["at"], 0.0)
+        self.assertEqual(len(check["observation"]["frame_sha256"]), 64)
+        self.assertEqual(d["plan"]["data"]["approach"], raw["approach"])
+        self.post("/" + run["id"] + "/approve", {"expected_revision": run["version"]}, 409)
+        candidate = check["alternatives"][0]
+        request = {
+            "expected_revision": run["version"],
+            "shot_index": 0,
+            "reason": "采用实帧文字匹配的候选",
+            **{k: candidate[k] for k in ("asset_id", "source_in", "source_out")},
+            "expected_asset_version": candidate["asset_version"],
+        }
+        url = "/" + run["id"] + "/replace-shot"
+        self.post(url, {**request, "expected_asset_version": 99}, 409)
+        wrong = self.post(url, {**request, "asset_id": self.assets[1]["id"]})
+        self.assertEqual(wrong["session"]["data"]["stage"], "blocked")
+        fork = self.post(url, request)
+        self.assertEqual(fork["plan"]["data"]["opening_check"]["status"], "matched")
+        self.assertEqual(fork["session"]["data"]["base_session_ref"]["id"], run["id"])
+        self.assertEqual(self.post(url, request)["plan"]["id"], fork["plan"]["id"])
+        self.assertEqual(
+            self.client.get(self.base + "/" + run["id"]).json()["data"]["session"], run
+        )
+        self.assertEqual(len(seen), 1)
+        child = fork["session"]
+        path = "/" + child["id"]
+        draft = self.post(path + "/approve", {"expected_revision": child["version"]})
+        movie = self.post(
+            path + "/render",
+            {
+                "expected_revision": draft["session"]["version"],
+                "timeline_revision": draft["timeline"]["version"],
+            },
+        )
+        self.assertEqual(
+            movie["session"]["data"]["stage"], "rendered", movie["session"]["data"].get("issue")
+        )
+        qc = movie["artifact"]["data"]["qc"]["opening_check"]
+        self.assertEqual(qc["timeline_version"], movie["timeline"]["version"])
+        self.assertEqual(qc["encoded_first_frame"]["at"], 0)
+        self.assertTrue(
+            qc["preflight"]["frame_sha256"] and qc["encoded_first_frame"]["frame_sha256"]
+        )
+
+    def test_edited_timeline_renders_current_opening_including_origin_and_actual_composition(self):
+        plan = self.post("", {**self.body, "goal": "剪辑\n首镜文字：FRESH LIME"})
+        self.assertEqual(plan["plan"]["data"]["opening_check"]["status"], "matched")
+        run = plan["session"]
+        draft = self.post("/" + run["id"] + "/approve", {"expected_revision": run["version"]})
+        timeline = draft["timeline"]
+        original = timeline["data"]
+        first, second = original["clips"]
+        base = {**original, "locked": True}
+        base.pop(
+            "opening_text"
+        )  # Latest editor data cannot clear the accepted first revision's requirement.
+        for clips, captions, expected in (
+            ([{**first, "asset_id": second["asset_id"]}, second], [], "原片首帧"),
+            ([first, second, {**first, "id": "over", "track": 1}], [], "叠层"),
+            ([first, second], [{"text": "FRESH LIME", "start": 0, "end": 0.3}], "字幕"),
+            ([first, second], [{"text": "FR3SH L1ME", "start": 0, "end": 0.3}], "字幕"),
+            ([{**first, "x": 1000}, second], [], "输出画面"),
+        ):
+            timeline = self.store.update(
+                timeline["id"],
+                {**base, "clips": clips, "captions": captions},
+                tenant_id="local",
+                expected_revision=timeline["version"],
+                actor_id="editor",
+            )
+            resp = self.client.post(
+                "/api/v1/media/render",
+                json={
+                    "project_id": self.pid,
+                    "timeline_id": timeline["id"],
+                    "expected_revision": timeline["version"],
+                },
+            )
+            self.assertEqual(resp.status_code, 409, resp.text)
+            e = resp.json()["error"]
+            self.assertEqual(e["code"], "OPENING_TEXT_UNVERIFIED")
+            self.assertIn(expected, e["message"])
+            self.assertEqual(self.store.list("local", kind="Artifact"), [])
+
+        independent = self.store.update(
+            timeline["id"],
+            {
+                **base,
+                "clips": [first, second],
+                "captions": [{"text": "Bonus edition", "font_size": 10, "start": 0, "end": 0.3}],
+            },
+            tenant_id="local",
+            expected_revision=timeline["version"],
+            actor_id="editor",
+        )
+        result = self.client.post(
+            "/api/v1/media/render",
+            json={
+                "project_id": self.pid,
+                "timeline_id": timeline["id"],
+                "expected_revision": independent["version"],
+            },
+        )
+        self.assertEqual(result.status_code, 200, result.text)
+        qc = result.json()["data"]["qc"]["opening_check"]
+        self.assertEqual(qc["timeline_version"], independent["version"])
+        self.assertEqual(qc["encoded_first_frame"]["at"], 0)
+        self.assertEqual(qc["status"], "matched")
+
+    def test_literal_opening_observation_requires_order_confidence_and_an_explicit_constraint(self):
+        from app.opening_check import matched_reading, opening_requirement
+
+        self.assertIsNone(opening_requirement("优先考虑 FRESH LIME，开头不限定。", None))
+        self.assertEqual(
+            opening_requirement("Edit freely.\nOpening text: FRESH LIME", None), "FRESH LIME"
+        )
+        for bad in ("Opening text:", "Opening text: X\n首镜文字：Y", "Opening text: " + "a" * 121):
+            with self.assertRaises(ValueError):
+                opening_requirement(bad, None)
+        with self.assertRaises(ValueError):
+            opening_requirement("首镜文字：A", "B")
+
+        def reading(words):
+            return {
+                "status": "read",
+                "words": [{"text": t, "line": [1, 1, l], "confidence": c} for t, l, c in words],
+            }
+
+        for pairs in (
+            [("REFRESH", 1, 0.95), ("LIME", 1, 0.99)],
+            [("LIME", 1, 0.92), ("FRESH", 1, 0.92)],
+            [("FRESH", 1, 0.99), ("LIME", 2, 0.96)],
+            [("FRESH", 1, 0.99), ("SECRET", 1, 0.12), ("LIME", 1, 0.98)],
+            [("FRESH", 1, 0.99), ("LIME", 1, 0.60)],
+        ):
+            self.assertFalse(matched_reading(reading(pairs), "FRESH LIME"))
+        self.assertTrue(
+            matched_reading(reading([("FRESH", 1, 0.99), ("LIME", 1, 0.96)]), "ＦＲＥＳＨ lime")
+        )
+        self.assertTrue(matched_reading(reading([("青", 1, 0.99), ("柠", 1, 0.97)]), "青柠"))
+        unknown = self.post("", {**self.body, "opening_text": "A word missing from both cards"})
+        self.assertEqual(unknown["session"]["data"]["issue"]["code"], "OPENING_TEXT_UNVERIFIED")
+        self.assertEqual(unknown["plan"]["data"]["opening_check"]["alternatives"], [])
+        free = self.post("", {**self.body, "idempotency_key": uuid4().hex})
+        self.assertNotIn("opening_check", free["plan"]["data"])
+        self.assertEqual(free["session"]["data"]["stage"], "review")
+
+    def test_opening_checks_exact_trim_and_returns_later_verified_candidate_in_same_asset(self):
+        from app.opening_check import frame_observation
+
+        path = Path(self.temp.name) / "FRESH LIME on opening.mp4"
+        src = [Path(self.temp.name) / name for name in ("SAMPLE.mp4", "FRESH LIME.mp4")]
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                str(src[0]),
+                "-i",
+                str(src[1]),
+                "-filter_complex",
+                "[0:v][1:v]concat=n=2:v=1:a=0[out]",
+                "-map",
+                "[out]",
+                "-threads",
+                "1",
+                str(path),
+            ],
+            check=True,
+        )
+        source = import_saved_file(self.store, LOCAL_ACTOR, self.pid, path.name, path)["asset"]
+        answer = {
+            "title": "选案",
+            "approach": "以青柠字样开场",
+            "shots": [
+                {
+                    "asset_id": source["id"],
+                    "source_in": 0.021,
+                    "source_out": 1.021,
+                    "reason": "用户要求",
+                }
+            ],
+        }
+        _, b = self.endpoint([answer])
+        b = {k: v for k, v in b.items() if k not in {"reviewer_profile_id", "judge_profile_id"}}
+        out = self.post(
+            "", {**b, "mode": "model", "asset_ids": [source["id"]], "opening_text": "FRESH LIME"}
+        )
+        check = out["plan"]["data"]["opening_check"]
+        self.assertEqual(check["status"], "conflict")
+        self.assertAlmostEqual(check["observation"]["at"], 0.04)
+        self.assertEqual([w["text"] for w in check["observation"]["words"]], ["SAMPLE"])
+        later = check["alternatives"][0]
+        self.assertEqual(later["asset_id"], source["id"])
+        self.assertGreaterEqual(later["at"], 1.6)
+        self.assertEqual(frame_observation(path, 0.021, 0.039)["status"], "unavailable")
+
     def test_loopback_transport_never_admits_bare_remote_or_untrusted_credentials(self):
         env = {"transport": "loopback_chat", "models": ["x"], "base_url": "http://0.0.0.0:11434/v1"}
         p = self.create("ModelProfile", {"provider": "local", "model_id": "x"})
