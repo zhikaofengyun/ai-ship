@@ -748,15 +748,49 @@
   font-size: 12px;
   padding: 6px 10px;
 }
-@media (max-width: 750px) {
-  .director-transport button,
-  .director-monitor .room-view-tools button {
-    min-width: 36px;
-    height: 36px;
+@media (max-width: 750px), (pointer: coarse) {
+  .director-page :is(button, a.button, select),
+  .director-monitor .room-view-tools :is(button, select),
+  .director-transport input[type="range"] {
+    min-width: 44px;
+    min-height: 44px;
   }
-  .director-monitor .room-view-tools select {
-    height: 36px;
+  .director-monitor {
+    container-type: inline-size;
   }
+  .director-monitor .room-view-tools,
+  .director-transport {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+  .director-monitor .room-monitor-head {
+    flex-wrap: wrap;
+  }
+  .director-monitor .room-monitor-head > span {
+    flex: 1 1 70px;
+  }
+  .director-monitor .room-view-tools {
+    margin-inline-start: auto;
+  }
+  @container (max-width: 305px) {
+    .director-transport {
+      display: grid;
+      grid-template-columns: 44px minmax(44px, 1fr) auto;
+      row-gap: 0;
+    }
+    .director-transport [data-monitor-seek] {
+      width: 100%;
+    }
+    .director-transport [data-monitor-volume] {
+      grid-column: 2 / -1;
+      width: 100%;
+      max-width: 100px;
+    }
+  }
+}
+
+[data-theme="light"] .director-page .button.ghost {
+  color: var(--accent-strong);
 }
 
 .director-model-button {
