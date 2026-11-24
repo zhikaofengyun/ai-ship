@@ -1,0 +1,121 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "command_id": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Command Id",
+      "type": "string"
+    },
+    "command_type": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Command Type",
+      "type": "string"
+    },
+    "project_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Project Id"
+    },
+    "actor_id": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Actor Id",
+      "type": "string"
+    },
+    "actor_role": {
+      "title": "Actor Role",
+      "type": "string"
+    },
+    "target_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Target Id"
+    },
+    "expected_revision": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Expected Revision"
+    },
+    "input_version_refs": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Input Version Refs",
+      "type": "array"
+    },
+    "parameters": {
+      "additionalProperties": true,
+      "title": "Parameters",
+      "type": "object"
+    },
+    "policy_version": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Policy Version"
+    },
+    "idempotency_key": {
+      "maxLength": 240,
+      "minLength": 1,
+      "title": "Idempotency Key",
+      "type": "string"
+    },
+    "trace_id": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Trace Id",
+      "type": "string"
+    },
+    "reason": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "required": [
+    "command_id",
+    "command_type",
+    "project_id",
+    "actor_id",
+    "actor_role",
+    "target_id",
+    "expected_revision",
+    "input_version_refs",
+    "parameters",
+    "policy_version",
+    "idempotency_key",
+    "trace_id",
+    "reason"
+  ],
+  "title": "CommandEnvelope",
+  "type": "object"
+}
