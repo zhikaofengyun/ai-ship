@@ -1,0 +1,1539 @@
+{
+  "round": 2,
+  "round_report": "../evidence/ai-production/round-2/round-report.json",
+  "source_sha256": "bf9029e8f8da37cd9e1f6067fc3c7b70a38b4f43b4d67e8dcaab0d64c7e0de3a",
+  "started_at": "2026-11-24T10:36:08.291670+00:00",
+  "finished_at": "2026-11-24T10:49:34.412313+00:00",
+  "complete_registered_checks": [
+    {
+      "name": "source-contract-integrity",
+      "seconds": 3.423,
+      "exit_code": 0
+    },
+    {
+      "name": "all-backend-media-cross-domain-tests",
+      "seconds": 97.659,
+      "exit_code": 0
+    },
+    {
+      "name": "all-original-feature-workflow-crosswalk",
+      "seconds": 1.236,
+      "exit_code": 0
+    },
+    {
+      "name": "new-module-production-forms",
+      "seconds": 8.247,
+      "exit_code": 0
+    },
+    {
+      "name": "brief-shot-selection-and-editor-handoff",
+      "seconds": 11.148,
+      "exit_code": 0
+    },
+    {
+      "name": "single-screen-edit-session",
+      "seconds": 17.197,
+      "exit_code": 0
+    },
+    {
+      "name": "workspace-route-execution-and-revisions",
+      "seconds": 7.339,
+      "exit_code": 0
+    },
+    {
+      "name": "all-browser-module-syntax",
+      "seconds": 2.077,
+      "exit_code": 0
+    },
+    {
+      "name": "python-formatting",
+      "seconds": 0.215,
+      "exit_code": 0
+    },
+    {
+      "name": "browser-formatting",
+      "seconds": 1.884,
+      "exit_code": 0
+    },
+    {
+      "name": "openapi-snapshot-drift",
+      "seconds": 0.972,
+      "exit_code": 0
+    },
+    {
+      "name": "typed-controls-and-imported-dom-boundaries",
+      "seconds": 11.887,
+      "exit_code": 0
+    },
+    {
+      "name": "exhaustive-browser-and-real-media",
+      "seconds": 25.838,
+      "exit_code": 0
+    },
+    {
+      "name": "webkit-single-screen-edit-session",
+      "seconds": 21.954,
+      "exit_code": 0
+    },
+    {
+      "name": "chromium-ai-production",
+      "seconds": 27.848,
+      "exit_code": 0
+    },
+    {
+      "name": "chromium-workspace-layout",
+      "seconds": 10.522,
+      "exit_code": 0
+    },
+    {
+      "name": "chromium-visual-transitions",
+      "seconds": 8.248,
+      "exit_code": 0
+    },
+    {
+      "name": "chromium-opening-text",
+      "seconds": 17.557,
+      "exit_code": 0
+    },
+    {
+      "name": "webkit-ai-production",
+      "seconds": 29.549,
+      "exit_code": 0
+    },
+    {
+      "name": "webkit-workspace-layout",
+      "seconds": 12.051,
+      "exit_code": 0
+    },
+    {
+      "name": "webkit-visual-transitions",
+      "seconds": 11.048,
+      "exit_code": 0
+    },
+    {
+      "name": "webkit-opening-text",
+      "seconds": 20.435,
+      "exit_code": 0
+    },
+    {
+      "name": "actual-local-language-model",
+      "seconds": 8.805,
+      "exit_code": 0
+    },
+    {
+      "name": "actual-local-multi-model-review",
+      "seconds": 48.785,
+      "exit_code": 0
+    },
+    {
+      "name": "actual-local-opening-text",
+      "seconds": 9.551,
+      "exit_code": 0
+    },
+    {
+      "name": "actual-local-diffusion-model",
+      "seconds": 565.442,
+      "exit_code": 0
+    }
+  ],
+  "unit_test_order_seed": 2,
+  "unit_test_results": [
+    {
+      "id": "tests.test_core.CoreApiTests.test_http_only_session_supports_media_identity_and_revocation",
+      "status": "passed",
+      "seconds": 0.0323
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_bad_json_does_not_complete_and_no_credentials_no_call",
+      "status": "passed",
+      "seconds": 0.01
+    },
+    {
+      "id": "tests.test_clip_transitions.ClipTransitionTests.test_pair_constraints_and_unsupported_effects",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_unknown_wire_request_cannot_retry_by_changing_non_wire_metadata",
+      "status": "passed",
+      "seconds": 0.0154
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_resume_rejects_changed_input_version_and_keeps_completed_nodes",
+      "status": "passed",
+      "seconds": 0.7167
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_fencing_token_prevents_old_worker_release",
+      "status": "passed",
+      "seconds": 0.0048
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_real_waveform_and_audio_extract",
+      "status": "passed",
+      "seconds": 0.5483
+    },
+    {
+      "id": "tests.test_captions.CaptionExchangeTests.test_multiline_overlapping_cues_keep_actual_millisecond_and_language",
+      "status": "passed",
+      "seconds": 0.0273
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_invalid_path_invalid_bytes_and_cross_tenant",
+      "status": "passed",
+      "seconds": 0.1621
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_step_budget_stops_without_false_completion",
+      "status": "passed",
+      "seconds": 0.0853
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_create_edit_reload_history_and_error_envelope",
+      "status": "passed",
+      "seconds": 0.0164
+    },
+    {
+      "id": "tests.test_production.RealMediaCrossDomainTests.test_real_probe_bounds_tags_search_and_audio_anchors",
+      "status": "passed",
+      "seconds": 0.426
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_revoked_worker_credential_cannot_commit_new_output",
+      "status": "passed",
+      "seconds": 0.2554
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_measured_model_cost_cannot_release_and_reduces_manual_capacity",
+      "status": "passed",
+      "seconds": 0.0261
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_cross_tenant_references_never_resolve",
+      "status": "passed",
+      "seconds": 0.0088
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_metric_zero_null_duplicates_and_scope_groups",
+      "status": "passed",
+      "seconds": 0.4403
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_delete_override_restores_parent_and_missing_value_is_rejected",
+      "status": "passed",
+      "seconds": 0.0002
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_navigation_edges_and_unbounded_loops_not_execution",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_experiment_latest_missing_or_immature_does_not_reuse_old_values",
+      "status": "passed",
+      "seconds": 0.0413
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_cancel_finishes_current_node_and_preserves_checkpoint",
+      "status": "passed",
+      "seconds": 0.0975
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_cannot_forge_artifacts_post_receipts_or_model_probe",
+      "status": "passed",
+      "seconds": 0.0128
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_model_success_idempotency_and_config_price_not_bill",
+      "status": "passed",
+      "seconds": 0.0109
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_committed_orphan_output_can_be_reconciled_without_reexecution",
+      "status": "passed",
+      "seconds": 0.1184
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_actual_multitrack_render_manifest_package_and_qc_boundary",
+      "status": "passed",
+      "seconds": 0.8271
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_manual_reservation_blocks_model_before_network_then_releases_exact_hold",
+      "status": "passed",
+      "seconds": 0.0396
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_rights_withdrawn_during_provider_inference_cannot_become_a_proposal",
+      "status": "passed",
+      "seconds": 2.9305
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_bounded_menu_freezes_actual_range_options_and_json_schema",
+      "status": "passed",
+      "seconds": 2.2716
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_unpriced_local_telemetry_is_explicit_but_unknown_monetary_liability_blocks",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_manual_field_lock_blocks_changes_and_removal",
+      "status": "passed",
+      "seconds": 0.0027
+    },
+    {
+      "id": "tests.test_selection.SelectionTests.test_missing_bytes_out_of_range_or_unavailable_version_never_creates_plan",
+      "status": "passed",
+      "seconds": 0.2985
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_team_viewer_cannot_start_or_forge_owner_role",
+      "status": "passed",
+      "seconds": 0.2143
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_real_analysis_approval_render_decode_replay_and_listing",
+      "status": "passed",
+      "seconds": 2.8554
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_cross_project_media_stays_offline_and_never_attaches_original",
+      "status": "passed",
+      "seconds": 0.2018
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_concurrent_reservations_admit_only_one_under_shared_cap",
+      "status": "passed",
+      "seconds": 0.0068
+    },
+    {
+      "id": "tests.test_production.RealMediaCrossDomainTests.test_actual_render_timemap_and_replay_resolve_immutable_bytes",
+      "status": "passed",
+      "seconds": 0.485
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_distinct_wire_payload_remains_an_explicit_new_request",
+      "status": "passed",
+      "seconds": 0.0144
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_concurrent_cas_allows_only_one_winner",
+      "status": "passed",
+      "seconds": 0.0049
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_single_node_cannot_commit_after_deadline",
+      "status": "passed",
+      "seconds": 1.2515
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_literal_opening_observation_requires_order_confidence_and_an_explicit_constraint",
+      "status": "passed",
+      "seconds": 4.2546
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_empty_array_reconciliation_and_forged_provenance_are_rejected",
+      "status": "passed",
+      "seconds": 0.3289
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_loopback_transport_never_admits_bare_remote_or_untrusted_credentials",
+      "status": "passed",
+      "seconds": 0.4119
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_chunk_upload_resume_duplicate_chunk_and_full_hash",
+      "status": "passed",
+      "seconds": 0.0981
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_corrupt_missing_or_unavailable_orphan_delivery_zip_stays_unknown",
+      "status": "passed",
+      "seconds": 0.4371
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_real_http_contract_three_roles_cost_replay_and_independent_judge",
+      "status": "passed",
+      "seconds": 2.5487
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_injected_qc_failure_does_not_create_deliverable",
+      "status": "passed",
+      "seconds": 0.3762
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_unsupported_transitions_and_invalid_document_leave_draft_untouched",
+      "status": "passed",
+      "seconds": 0.2636
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_database_triggers_prevent_rewriting_facts_and_events",
+      "status": "passed",
+      "seconds": 0.0108
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_evidence_mismatch_blocks_even_when_real_protocol_roles_vote_accept",
+      "status": "passed",
+      "seconds": 3.4981
+    },
+    {
+      "id": "tests.test_selection.SelectionTests.test_creative_choice_retains_alternatives_and_exact_approval",
+      "status": "passed",
+      "seconds": 0.0263
+    },
+    {
+      "id": "tests.test_captions.CaptionExchangeTests.test_vtt_literal_text_escapes_and_time_order",
+      "status": "passed",
+      "seconds": 0.0153
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_invalid_unknown_shortfall_and_unconfigured_model",
+      "status": "passed",
+      "seconds": 2.0156
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_http_start_and_resume_contracts",
+      "status": "passed",
+      "seconds": 0.1019
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_actual_calculated_and_estimated_are_not_added_twice_or_erased_by_old_release",
+      "status": "passed",
+      "seconds": 0.0057
+    },
+    {
+      "id": "tests.test_rhythm.ManualRhythmTests.test_invalid_project_time_revision_duplicates_and_no_inferred_hits",
+      "status": "passed",
+      "seconds": 0.7628
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_out_of_bounds_and_invented_model_asset_never_become_a_timeline",
+      "status": "passed",
+      "seconds": 3.7549
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_cross_origin_and_dns_rebinding_blocked",
+      "status": "passed",
+      "seconds": 0.0115
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_configure_feature_never_fakes_domain_completion",
+      "status": "passed",
+      "seconds": 0.0029
+    },
+    {
+      "id": "tests.test_maintenance.MaintenanceTests.test_corrupt_and_path_traversal_archives_do_not_commit",
+      "status": "passed",
+      "seconds": 0.053
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_missing_metric_differs_from_zero",
+      "status": "passed",
+      "seconds": 0.0022
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_timeout_preserves_reservation_and_cannot_change_key",
+      "status": "passed",
+      "seconds": 0.0112
+    },
+    {
+      "id": "tests.test_workspace_catalog.WorkspaceCatalogTests.test_interactive_projection_matches_every_control_route_and_workflow_port",
+      "status": "passed",
+      "seconds": 0.0028
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_invalid_project_and_forged_tenant_body_rejected",
+      "status": "passed",
+      "seconds": 0.0079
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_decimal_boundary_and_idempotent_reservation_do_not_double_spend",
+      "status": "passed",
+      "seconds": 0.0062
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_trend_source_window_and_atomicity",
+      "status": "passed",
+      "seconds": 0.0146
+    },
+    {
+      "id": "tests.test_selection.SelectionTests.test_real_shot_selection_then_locked_change_gap_and_lineage",
+      "status": "passed",
+      "seconds": 0.2936
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_single_shot_fork_retains_unchanged_intervals_and_replays",
+      "status": "passed",
+      "seconds": 2.3528
+    },
+    {
+      "id": "tests.test_captions.CaptionExchangeTests.test_limits_and_no_silent_loss_on_export",
+      "status": "passed",
+      "seconds": 0.0265
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_edited_timeline_renders_current_opening_including_origin_and_actual_composition",
+      "status": "passed",
+      "seconds": 5.5524
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_legacy_unversioned_asset_and_fractional_fps_roundtrip",
+      "status": "passed",
+      "seconds": 0.2759
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_three_role_team_persists_checkpoints_and_independent_proposals",
+      "status": "passed",
+      "seconds": 0.0441
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_revocation_during_render_rechecked_before_fact_commit",
+      "status": "passed",
+      "seconds": 0.4991
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_transform_real_bytes_trim_scale_color_loudness",
+      "status": "passed",
+      "seconds": 0.4927
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_unsupported_route_blocks_only_its_dependants",
+      "status": "passed",
+      "seconds": 0.1593
+    },
+    {
+      "id": "tests.test_captions.CaptionExchangeTests.test_team_credentials_required_for_exchange",
+      "status": "passed",
+      "seconds": 0.0064
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_paused_run_resumes_without_replaying_completed_node",
+      "status": "passed",
+      "seconds": 0.1273
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_event_recovery_reads_ascending_page_without_skipping",
+      "status": "passed",
+      "seconds": 0.0548
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_provider_display_labels_cannot_fake_heterogeneous_models",
+      "status": "passed",
+      "seconds": 0.0115
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_node_binding_cannot_read_nonancestor_layout_node",
+      "status": "passed",
+      "seconds": 0.1006
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_ancestor_lock_yields_proposal_and_keeps_captured_value",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_reported_model_mismatch_does_not_count_as_success",
+      "status": "passed",
+      "seconds": 0.0108
+    },
+    {
+      "id": "tests.test_maintenance.MaintenanceTests.test_backup_restore_checks_database_and_real_object_bytes",
+      "status": "passed",
+      "seconds": 0.0484
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_remote_session_requires_https_and_sets_secure_cookie",
+      "status": "passed",
+      "seconds": 0.0174
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_schema_errors_do_not_echo_supplied_secrets",
+      "status": "passed",
+      "seconds": 0.0078
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_secret_values_rejected_but_voice_token_allowed",
+      "status": "passed",
+      "seconds": 0.0022
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_schedule_dst_gap_ambiguity_and_utc",
+      "status": "passed",
+      "seconds": 0.0038
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_foreign_metadata_disclosed_and_needs_explicit_consent",
+      "status": "passed",
+      "seconds": 0.5009
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_unknown_custom_disabled_or_insufficient_transition_handles_are_atomic",
+      "status": "passed",
+      "seconds": 0.5255
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_team_identity_isolation_and_read_only_role",
+      "status": "passed",
+      "seconds": 0.0142
+    },
+    {
+      "id": "tests.test_clip_transitions.ClipTransitionTests.test_decoded_five_transitions_audio_mix_and_lineage",
+      "status": "passed",
+      "seconds": 4.5172
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_running_cancel_preserves_actual_terminal_and_rejects_unverified_video",
+      "status": "passed",
+      "seconds": 0.6738
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_artifact_traces_current_grant_through_frozen_deep_inputs",
+      "status": "passed",
+      "seconds": 1.4577
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_reference_uploaded_read_back_bound_to_graph_and_generated_lineage",
+      "status": "passed",
+      "seconds": 1.3794
+    },
+    {
+      "id": "tests.test_selection.SelectionTests.test_invalid_claims_expired_foreign_and_stale_approvals_are_atomic",
+      "status": "passed",
+      "seconds": 0.0246
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_six_layers_orientation_and_explicit_null",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_replay_and_tenant_scope_are_not_fabricated",
+      "status": "passed",
+      "seconds": 0.0144
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_valid_typed_workflow_and_bounds",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_budget_and_homogeneous_team_fail_before_network",
+      "status": "passed",
+      "seconds": 0.0082
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_experiment_unit_data_and_honest_effect_boundary",
+      "status": "passed",
+      "seconds": 0.0279
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_nested_failure_savepoint_does_not_commit_partial_operation",
+      "status": "passed",
+      "seconds": 0.0046
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_real_transform_then_extract_audio_and_idempotent_replay",
+      "status": "passed",
+      "seconds": 0.765
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_rights_graph_is_bounded_and_keeps_pinned_creative_dependencies",
+      "status": "passed",
+      "seconds": 0.4773
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_unknown_side_effect_is_not_cancelled_or_retried",
+      "status": "passed",
+      "seconds": 0.0042
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_external_address_requires_user_binding_and_unresolved_never_creates",
+      "status": "passed",
+      "seconds": 0.2643
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_unavailable_command_and_spoofed_actor_are_rejected",
+      "status": "passed",
+      "seconds": 0.0025
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_health_catalog_and_openapi_are_real",
+      "status": "passed",
+      "seconds": 0.8574
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_timeline_integrity_and_untimed_anchor",
+      "status": "passed",
+      "seconds": 0.0022
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_cookie_session_does_not_bypass_origin_guard",
+      "status": "passed",
+      "seconds": 0.0105
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_metric_duplicate_detection_covers_more_than_recent_500",
+      "status": "passed",
+      "seconds": 0.1036
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_search_excludes_current_revoked_source",
+      "status": "passed",
+      "seconds": 0.016
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_unstructured_validity_is_a_reported_blocker_not_a_server_error",
+      "status": "passed",
+      "seconds": 0.0251
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_metric_timezones_choose_actual_latest_and_canonical_windows",
+      "status": "passed",
+      "seconds": 0.0202
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_worker_unknown_cannot_be_retried_without_reconciliation",
+      "status": "passed",
+      "seconds": 0.1998
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_dependency_invalidation_uses_fields_and_half_open_ranges",
+      "status": "passed",
+      "seconds": 0.0045
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_reference_scope_wrong_kind_stale_missing_disconnected_and_unsupported",
+      "status": "passed",
+      "seconds": 1.0955
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_project_limit_cannot_be_expanded_or_reused_in_another_currency",
+      "status": "passed",
+      "seconds": 0.011
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_money_exact_decimal_and_currency",
+      "status": "passed",
+      "seconds": 0.0022
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_http_range_bytes_and_filename_security",
+      "status": "passed",
+      "seconds": 0.0958
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_transform_rejects_unknown_effect_and_bad_parameters",
+      "status": "passed",
+      "seconds": 0.6361
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_tag_range_and_versioned_manual_evidence",
+      "status": "passed",
+      "seconds": 0.0235
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_concurrent_resume_does_not_mark_live_worker_unknown",
+      "status": "passed",
+      "seconds": 0.1093
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_verified_generated_image_stays_distinct_from_explicit_timed_still_and_is_reusable",
+      "status": "passed",
+      "seconds": 1.3978
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_product_csv_money_exact_and_bad_rows_isolated",
+      "status": "passed",
+      "seconds": 0.0099
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_legacy_unsettled_request_remains_blocked_after_hash_upgrade",
+      "status": "passed",
+      "seconds": 0.0101
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_half_open_multi_contributor_reverse_time_map",
+      "status": "passed",
+      "seconds": 0.0159
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_render_rejects_unlocked_stale_version_and_unsupported_keyframes",
+      "status": "passed",
+      "seconds": 0.0905
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_controls_validate_declared_enum_types_and_unknown_fields",
+      "status": "passed",
+      "seconds": 0.002
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_reference_lost_prompt_ack_reconciles_existing_exact_graph",
+      "status": "passed",
+      "seconds": 1.3982
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_audio_commit_rechecks_expiry_after_real_decode",
+      "status": "passed",
+      "seconds": 0.3699
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_real_scene_candidates_frame_and_onsets_are_not_semantic_claims",
+      "status": "passed",
+      "seconds": 0.7373
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_command_idempotent_replay_without_duplicate_writes",
+      "status": "passed",
+      "seconds": 0.0044
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_official_serializer_cuts_gap_captions_pinned_refs_and_idempotent_import",
+      "status": "passed",
+      "seconds": 0.3589
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_replay_checks_bytes_and_current_rights_and_bidirectional_lineage",
+      "status": "passed",
+      "seconds": 0.0405
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_asymmetric_external_dissolve_preserves_nominal_cut_on_reexport",
+      "status": "passed",
+      "seconds": 0.5466
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_exact_four_mib_upload_chunk_and_one_byte_over_limit",
+      "status": "passed",
+      "seconds": 0.0372
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_catalog_exact_counts_and_schema_for_every_entity",
+      "status": "passed",
+      "seconds": 0.0024
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_real_orphan_delivery_zip_recovers_without_repackaging",
+      "status": "passed",
+      "seconds": 0.6128
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_voice_alignment_untimed_range_and_script_versions",
+      "status": "passed",
+      "seconds": 0.0466
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_opening_checks_exact_trim_and_returns_later_verified_candidate_in_same_asset",
+      "status": "passed",
+      "seconds": 3.2174
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_patch_preserves_unrelated_fields_and_rejects_stale_revision",
+      "status": "passed",
+      "seconds": 0.0044
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_same_project_transaction_references",
+      "status": "passed",
+      "seconds": 0.0027
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_clips_lock_and_edit_clear_locked_flag",
+      "status": "passed",
+      "seconds": 0.005
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_batch_failure_rolls_back_all_records_and_events",
+      "status": "passed",
+      "seconds": 0.0028
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_score_missing_dimensions_not_zero",
+      "status": "passed",
+      "seconds": 0.0093
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_derivative_chain_keeps_original_identity_and_revocation_blocks_all",
+      "status": "passed",
+      "seconds": 1.3015
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_reference_upload_failures_never_submit_or_charge",
+      "status": "passed",
+      "seconds": 1.5205
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_orphan_delivery_zip_recovery_rechecks_current_artifact_rights",
+      "status": "passed",
+      "seconds": 0.5902
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_source_expiry_is_timezone_aware_and_inspection_never_grants_rights",
+      "status": "passed",
+      "seconds": 0.1136
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_queue_download_probe_generated_origin_and_deduplicated_adoption",
+      "status": "passed",
+      "seconds": 1.1632
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_opening_text_conflict_freezes_original_and_rechecks_pinned_human_replacement",
+      "status": "passed",
+      "seconds": 6.7048
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_all_five_renderable_transitions_restore_full_ranges_and_source_link",
+      "status": "passed",
+      "seconds": 1.6893
+    },
+    {
+      "id": "tests.test_core.GraphAndParameterTests.test_cycle_dangling_and_wrong_route",
+      "status": "passed",
+      "seconds": 0.0001
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_preflight_rechecks_grant_attached_after_artifact_was_frozen",
+      "status": "passed",
+      "seconds": 0.0318
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_keyframe_render_changes_actual_frame_pixels",
+      "status": "passed",
+      "seconds": 1.137
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_usage_reservation_conflict_release_and_history",
+      "status": "passed",
+      "seconds": 0.0502
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_reference_revocation_between_upload_submit_and_adoption",
+      "status": "passed",
+      "seconds": 1.3809
+    },
+    {
+      "id": "tests.test_production.ProductionIntegrationTests.test_publication_reviews_current_rights_and_manual_receipt",
+      "status": "passed",
+      "seconds": 0.0772
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_unregistered_config_changed_and_output_path_bounds",
+      "status": "passed",
+      "seconds": 0.64
+    },
+    {
+      "id": "tests.test_media.MediaIntegrationTests.test_import_probe_original_dedup_and_relative_path",
+      "status": "passed",
+      "seconds": 0.2359
+    },
+    {
+      "id": "tests.test_core.CoreApiTests.test_streamed_json_without_content_length_is_still_limited",
+      "status": "passed",
+      "seconds": 0.007
+    },
+    {
+      "id": "tests.test_production.ProviderLedgerTests.test_revocation_during_first_role_prevents_later_paid_calls",
+      "status": "passed",
+      "seconds": 0.0256
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_overlapping_requests_reserve_once_and_cannot_forge_ocr_or_double_apply",
+      "status": "passed",
+      "seconds": 2.0004
+    },
+    {
+      "id": "tests.test_timeline_exchange.TimelineExchangeTests.test_export_refuses_silent_retime_loss_and_overlaps",
+      "status": "passed",
+      "seconds": 0.2453
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_immutable_history_and_cas_conflict",
+      "status": "passed",
+      "seconds": 0.0053
+    },
+    {
+      "id": "tests.test_rhythm.ManualRhythmTests.test_manual_audio_marks_independent_clock_disable_and_versions",
+      "status": "passed",
+      "seconds": 0.8022
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_union_reference_type_and_pinned_version",
+      "status": "passed",
+      "seconds": 0.0426
+    },
+    {
+      "id": "tests.test_execution.ExecutionTests.test_expired_fence_rejects_output_and_orphan_attempt_requires_reconciliation",
+      "status": "passed",
+      "seconds": 0.1107
+    },
+    {
+      "id": "tests.test_core.CoreStoreTests.test_budget_reservation_and_actual_cost_not_released",
+      "status": "passed",
+      "seconds": 0.0096
+    },
+    {
+      "id": "tests.test_generation.GenerationTests.test_lost_ack_reconciles_original_queue_and_never_interrupts_other_jobs",
+      "status": "passed",
+      "seconds": 0.6835
+    },
+    {
+      "id": "tests.test_budget.BudgetIntegrationTests.test_unknown_model_outcome_retains_reservation_and_cannot_be_released",
+      "status": "passed",
+      "seconds": 0.0162
+    },
+    {
+      "id": "tests.test_captions.CaptionExchangeTests.test_invalid_files_return_original_line_and_no_partial_result",
+      "status": "passed",
+      "seconds": 0.0283
+    },
+    {
+      "id": "tests.test_auto_edits.AutoEditTests.test_source_revision_after_proposal_blocks_approval_and_other_project_is_rejected",
+      "status": "passed",
+      "seconds": 2.5965
+    }
+  ],
+  "browser": {
+    "browser": "Chromium",
+    "browser_version": "156.0.8078.108",
+    "viewport_variant": {
+      "desktop": [
+        1536,
+        960
+      ],
+      "mobile": [
+        414,
+        896
+      ]
+    },
+    "page_errors": [],
+    "console_errors": [],
+    "unexpected_failed_requests": [],
+    "limitations": [
+      "未访问真实模型或平台账号",
+      "未测试Safari/WebKit/Firefox与实际iPhone硬件",
+      "UI遍历不等于178功能的全部业务实现",
+      "屏幕截图不能证明苹果原生光学渲染逐像素一致"
+    ]
+  },
+  "screen_samples": 81,
+  "movies": 16,
+  "local_director": {
+    "engine": "version: 1.0.0-dev (build 12671, commit ab789a246)\nbuilt with GNU 11.4.0 for Linux x86_64",
+    "checks": [
+      "workbench launcher starts authenticated GGUF; registered model is available to a new project",
+      "llama.cpp GGUF CPU inference through production API / validated source IDs and real intervals",
+      "same request recovers the same proposal without repeating the model call",
+      "version approval / frozen render / decoded H.264 + AAC / persisted technical QC"
+    ],
+    "artifact_sha256": "392bd133e8a5a3aae36ce838826bff6113514bae5b721473f320f0a1581f941a",
+    "bytes": 11004
+  },
+  "literal_opening": {
+    "model": "qwen2.5-0.5b.gguf",
+    "weights_sha256": "c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515",
+    "required_opening": "FRESH LIME",
+    "human_replacement": false,
+    "independent_selected_source": {
+      "asset_id": "asset_b76f21e5dbd048fdb23775b989b1409b",
+      "source_in": 0.0,
+      "source_bytes_sha256": "9ab47e1efdc57050fdd596b588cb6b3563085bce7d942e0ec601cbbfe4e88559",
+      "frame_sha256": "2c89246c6362f120ae61d3173b50afad02ac41f55873ed97ba824cac53110a0c",
+      "ocr": "FRESH LIME"
+    },
+    "download": {
+      "sha256": "392bd133e8a5a3aae36ce838826bff6113514bae5b721473f320f0a1581f941a",
+      "bytes": 11004,
+      "encoded_frame_sha256": "3f4f5de516116ea876e48a6c7a6c3e219a9f13d2fcc9d79d5e3195545c4285f5",
+      "frame_index": 0,
+      "ocr_roi_xywh": [
+        0,
+        30,
+        320,
+        120
+      ],
+      "independent_tesseract": "FRESH LIME",
+      "qc": {
+        "encoded_first_frame": {
+          "analysis_size": [
+            320,
+            180
+          ],
+          "at": 0.0,
+          "coordinate_space": "analysis_frame_pixels",
+          "engine": "tesseract_lstm",
+          "engine_version": "tesseract 5.5.0",
+          "frame_sha256": "3f4f5de516116ea876e48a6c7a6c3e219a9f13d2fcc9d79d5e3195545c4285f5",
+          "languages": [
+            "eng"
+          ],
+          "model_sha256": {
+            "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+          },
+          "status": "read",
+          "words": [
+            {
+              "box_px": [
+                0,
+                0,
+                320,
+                30
+              ],
+              "confidence": 0.153,
+              "line": [
+                1,
+                1,
+                1
+              ],
+              "text": "ee"
+            },
+            {
+              "box_px": [
+                50,
+                76,
+                118,
+                28
+              ],
+              "confidence": 0.965,
+              "line": [
+                2,
+                1,
+                1
+              ],
+              "text": "FRESH"
+            },
+            {
+              "box_px": [
+                187,
+                76,
+                84,
+                28
+              ],
+              "confidence": 0.958,
+              "line": [
+                2,
+                1,
+                1
+              ],
+              "text": "LIME"
+            },
+            {
+              "box_px": [
+                0,
+                150,
+                320,
+                30
+              ],
+              "confidence": 0.177,
+              "line": [
+                3,
+                1,
+                1
+              ],
+              "text": "ne"
+            }
+          ]
+        },
+        "expected_text": "FRESH LIME",
+        "origin": {
+          "asset_id": "asset_b76f21e5dbd048fdb23775b989b1409b",
+          "asset_version": 1,
+          "observation": {
+            "analysis_size": [
+              640,
+              240
+            ],
+            "at": 0.0,
+            "coordinate_space": "analysis_frame_pixels",
+            "engine": "tesseract_lstm",
+            "engine_version": "tesseract 5.5.0",
+            "frame_sha256": "2c89246c6362f120ae61d3173b50afad02ac41f55873ed97ba824cac53110a0c",
+            "languages": [
+              "eng"
+            ],
+            "model_sha256": {
+              "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+            },
+            "status": "read",
+            "words": [
+              {
+                "box_px": [
+                  101,
+                  92,
+                  235,
+                  57
+                ],
+                "confidence": 0.967,
+                "line": [
+                  1,
+                  1,
+                  1
+                ],
+                "text": "FRESH"
+              },
+              {
+                "box_px": [
+                  375,
+                  92,
+                  166,
+                  56
+                ],
+                "confidence": 0.969,
+                "line": [
+                  1,
+                  1,
+                  1
+                ],
+                "text": "LIME"
+              }
+            ]
+          },
+          "source_in": 0.0,
+          "source_out": 1.6
+        },
+        "preflight": {
+          "analysis_size": [
+            320,
+            180
+          ],
+          "at": 0.0,
+          "coordinate_space": "analysis_frame_pixels",
+          "engine": "tesseract_lstm",
+          "engine_version": "tesseract 5.5.0",
+          "frame_sha256": "41e7dd31d5e17c733eb294551b870a459243df13f1f48751fb95e060458fd166",
+          "languages": [
+            "eng"
+          ],
+          "model_sha256": {
+            "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+          },
+          "status": "read",
+          "words": [
+            {
+              "box_px": [
+                0,
+                0,
+                320,
+                30
+              ],
+              "confidence": 0.157,
+              "line": [
+                1,
+                1,
+                1
+              ],
+              "text": "ee"
+            },
+            {
+              "box_px": [
+                50,
+                76,
+                118,
+                28
+              ],
+              "confidence": 0.962,
+              "line": [
+                2,
+                1,
+                1
+              ],
+              "text": "FRESH"
+            },
+            {
+              "box_px": [
+                187,
+                76,
+                84,
+                28
+              ],
+              "confidence": 0.967,
+              "line": [
+                2,
+                1,
+                1
+              ],
+              "text": "LIME"
+            },
+            {
+              "box_px": [
+                0,
+                150,
+                320,
+                30
+              ],
+              "confidence": 0.216,
+              "line": [
+                3,
+                1,
+                1
+              ],
+              "text": "ne"
+            }
+          ]
+        },
+        "status": "matched",
+        "timeline_id": "timeline_2f5b04b144694565bc58bccb164b7eab",
+        "timeline_version": 2
+      },
+      "ffprobe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 320,
+            "height": 180,
+            "r_frame_rate": "25/1"
+          },
+          {
+            "codec_name": "aac",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "3.200000"
+        }
+      }
+    },
+    "checks": [
+      "One authenticated local GGUF director completed an actual model call; original order and rationale preserved.",
+      "Compared the selected interval's opening frame to a separate decode and OCR of downloaded original bytes.",
+      "Approved only an evidence-matched proposal; an independently decoded first frame of the actual downloaded H.264 export reads FRESH LIME."
+    ]
+  },
+  "multi_model": {
+    "models": {
+      "director": {
+        "model": "qwen2.5-1.5b",
+        "weights": "qwen2.5-1.5b.gguf",
+        "sha256": "183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4",
+        "bytes": 986048512,
+        "unauthenticated_completion_http": 401,
+        "device": "CPU",
+        "idle_unload_seconds": 2
+      },
+      "reviewer": {
+        "model": "qwen2.5-0.5b",
+        "weights": "qwen2.5-0.5b.gguf",
+        "sha256": "c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515",
+        "bytes": 397807936,
+        "unauthenticated_completion_http": 401,
+        "device": "CPU",
+        "idle_unload_seconds": 2
+      },
+      "judge": {
+        "model": "smollm2-360m",
+        "weights": "smollm2-360m.gguf",
+        "sha256": "2fa3f013dcdd7b99f9b237717fa0b12d75bbb89984cc1274be1471a465bac9c2",
+        "bytes": 270590880,
+        "unauthenticated_completion_http": 401,
+        "device": "CPU",
+        "idle_unload_seconds": 2
+      }
+    },
+    "stage": "blocked",
+    "issue": {
+      "code": "TEAM_EVIDENCE_REQUIRED",
+      "message": "模型复核与原片观测未匹配，方案保留供局部修改。"
+    },
+    "checks": [
+      "three distinct pinned model files, authenticated localhost model endpoints",
+      "authenticated Atlas viewer denied production write; project owner request reached all three real GGUF models",
+      "source OCR plus scoped evidence, measured token usage, provider identities; no external billing",
+      "repeated run request has the same run and exactly three recorded model calls",
+      "independent verdict or measured evidence gate blocked adoption of the original proposal",
+      "authenticated test reviewer adopted the eligible proposal; owner rendered, downloaded video/audio fully decoded"
+    ],
+    "manual_recovery": {
+      "original_blocked": "edit_cd55a6764cd24f7bc28e0dbf80a277b5c603",
+      "new_proposal": "edit_a54c39c6860001a10c69504c7f1647a604c1",
+      "changed_shot": 0,
+      "at": 0.8,
+      "observed_ocr": [
+        {
+          "box_px": [
+            101,
+            92,
+            235,
+            57
+          ],
+          "confidence": 0.967,
+          "text": "FRESH"
+        },
+        {
+          "box_px": [
+            375,
+            92,
+            166,
+            56
+          ],
+          "confidence": 0.968,
+          "text": "LIME"
+        }
+      ]
+    },
+    "review_findings": [
+      {
+        "call_ref": {
+          "id": "toolcall_97eb6dad69ee4156a76daac35e907d9f",
+          "kind": "ToolCall",
+          "reported_model": "qwen2.5-0.5b",
+          "role": "reviewer",
+          "version": 2
+        },
+        "decision": "accept",
+        "evidence_id": "D1",
+        "evidence_problem": null,
+        "observed_value": "1.6",
+        "reason": "The evidence ID 'D1' indicates that the source with the asset ID 'asset_232243bb1eb34b4387b8b450c0156a04' has a duration of 1.6 seconds. This evidence supports the goal of creating a short shot list for FRESH LIME, as it suggests that the source is visible and relevant to the task.",
+        "role": "reviewer",
+        "verified_observation": {
+          "asset_id": "asset_232243bb1eb34b4387b8b450c0156a04",
+          "kind": "duration_seconds",
+          "observed_value": "1.6",
+          "source": "SAMPLE.mp4"
+        }
+      },
+      {
+        "call_ref": {
+          "id": "toolcall_dfdb3a8859a74ed1a730a9820af6128a",
+          "kind": "ToolCall",
+          "reported_model": "smollm2-360m",
+          "role": "judge",
+          "version": 2
+        },
+        "decision": "accept",
+        "evidence_id": "D1",
+        "evidence_problem": "复核原样重复已有模型理由，未提供独立判断。",
+        "observed_value": "1.6",
+        "reason": "The evidence ID 'D1' indicates that the source with the asset ID 'asset_232243bb1eb34b4387b8b450c0156a04' has a duration of 1.6 seconds. This evidence supports the goal of creating a short shot list for FRESH LIME, as it suggests that the source is visible and relevant to the task.",
+        "role": "judge",
+        "verified_observation": null
+      }
+    ],
+    "movie_sha256": "ec6e06059ec23dfd391ce9fe1233236e2b5bf1960281550527eb331f6d7516c5"
+  },
+  "real_diffusion": {
+    "checks": [
+      "SD1.5 text-to-image inference / PNG original / human-specified hold into a separate 24-frame asset",
+      "actual text-to-video graph, deduplicated task and eight decoded, non-identical frames",
+      "actual reference image, pinned project revision, uploaded before inference, eight distinct-time decoded video frames, source retained",
+      "generated source → versioned rough-cut → approval → full audio/video decode"
+    ],
+    "source_sha256": "b22e70e3081967a0c270cbc86c7f1bd7d9ed107c6db8ff6a93a90000826ad4aa",
+    "conditioned_sha256": "d026cc5b99e69d5265cf7290b4d5e21e62952524fc70d74744a3fdab317aeef6",
+    "reference_frame_comparison": {
+      "generated-shot.webm": {
+        "0": 96.06,
+        "0.5": 92.575,
+        "0.875": 104.037
+      },
+      "reference-motion.webm": {
+        "0": 12.107,
+        "0.5": 12.261,
+        "0.875": 23.319
+      }
+    }
+  },
+  "untested": [
+    "付费云端供应商、真实平台OAuth/自动发布/回执/指标",
+    "尚未实现的专用路线与外部适配器",
+    "macOS/iOS Safari、Firefox、物理 iPhone 与辅助技术组合",
+    "原生Liquid Glass逐像素一致",
+    "分布式多主机与生产负载",
+    "全部路线语义门槛、所有控件组合、专业剪辑软件和真实平台往返"
+  ],
+  "chromium_opening": {
+    "checks": [
+      "Two real videos; OCR observed RED TEST BOX first, explicit FRESH LIME conflicts; UI exposes the actual observation and withholds adoption/render.",
+      "Clicked the measured suggested alternative, verified its source revision/range, submitted a new candidate and retained the old plan and other shots.",
+      "Adopted and rendered through the browser, downloaded the MP4, decoded all streams and independently read FRESH LIME from the actual first presentation frame.",
+      "Free-text legacy task with no literal constraint still returns an editable proposal and exposes adoption.",
+      "No source shows ORANGE PEEL. The UI reports unverified, offers no unmeasured alternative, and withholds approval and rendering."
+    ],
+    "page_errors": [],
+    "passed": true
+  },
+  "chromium_layout": {
+    "checks": [
+      "navigation drag, keyboard steps, min/max and restore",
+      "click source viewer to play, pause and seek actual source",
+      "resize both adjacent pane splitters and timeline height",
+      "panel order, track position and pixel sizes survive reload",
+      "drag a panel heading directly onto another panel to swap",
+      "actual native-pixel, fit, fill, zoom and pan geometry",
+      "timeline playback, fullscreen and exit preserve edit version",
+      "narrow drawer width isolated from desktop, panel and preview usable",
+      "production goal and review monitor resize, persist, reset and stack on mobile",
+      "open chosen revision stream despite newer timeline, isolate both dirty drafts across navigation and reload"
+    ],
+    "measurements": {
+      "sidebar_px": 232,
+      "bin_px": 299,
+      "inspector_px": 302,
+      "upper_px": 543
+    },
+    "page_errors": [],
+    "passed": true
+  },
+  "chromium_transitions": {
+    "checks": [
+      "dissolve overlap edited through inspector, composited pixels match",
+      "wipe_left overlap edited through inspector, composited pixels match",
+      "wipe_right overlap edited through inspector, composited pixels match",
+      "dip_black overlap edited through inspector, composited pixels match",
+      "dip_white overlap edited through inspector, composited pixels match",
+      "server saved actual source pair and overlap",
+      "remove / undo / reject impossible duration atomically"
+    ],
+    "page_errors": [],
+    "passed": true
+  },
+  "webkit_opening": {
+    "checks": [
+      "Two real videos; OCR observed RED TEST BOX first, explicit FRESH LIME conflicts; UI exposes the actual observation and withholds adoption/render.",
+      "Clicked the measured suggested alternative, verified its source revision/range, submitted a new candidate and retained the old plan and other shots.",
+      "Adopted and rendered through the browser, downloaded the MP4, decoded all streams and independently read FRESH LIME from the actual first presentation frame.",
+      "Free-text legacy task with no literal constraint still returns an editable proposal and exposes adoption.",
+      "No source shows ORANGE PEEL. The UI reports unverified, offers no unmeasured alternative, and withholds approval and rendering."
+    ],
+    "page_errors": [],
+    "passed": true
+  },
+  "webkit_layout": {
+    "checks": [
+      "navigation drag, keyboard steps, min/max and restore",
+      "click source viewer to play, pause and seek actual source",
+      "resize both adjacent pane splitters and timeline height",
+      "panel order, track position and pixel sizes survive reload",
+      "drag a panel heading directly onto another panel to swap",
+      "actual native-pixel, fit, fill, zoom and pan geometry",
+      "timeline playback, fullscreen and exit preserve edit version",
+      "narrow drawer width isolated from desktop, panel and preview usable",
+      "production goal and review monitor resize, persist, reset and stack on mobile",
+      "open chosen revision stream despite newer timeline, isolate both dirty drafts across navigation and reload"
+    ],
+    "measurements": {
+      "sidebar_px": 232,
+      "bin_px": 299,
+      "inspector_px": 302,
+      "upper_px": 543
+    },
+    "page_errors": [],
+    "passed": true
+  },
+  "webkit_transitions": {
+    "checks": [
+      "dissolve overlap edited through inspector, composited pixels match",
+      "wipe_left overlap edited through inspector, composited pixels match",
+      "wipe_right overlap edited through inspector, composited pixels match",
+      "dip_black overlap edited through inspector, composited pixels match",
+      "dip_white overlap edited through inspector, composited pixels match",
+      "server saved actual source pair and overlap",
+      "remove / undo / reject impossible duration atomically"
+    ],
+    "page_errors": [],
+    "passed": true
+  }
+}
