@@ -340,9 +340,43 @@ export async function mountProduction(root, ctx) {
   }
   function composeMarkup() {
     return `<form class="director-compose" id="production-form"><label for="production-goal">制作目标</label><textarea id="production-goal" name="goal" required maxlength="3000" rows="3" placeholder="要为谁制作什么视频？哪些画面需要保留？">${esc(draft.goal ?? initialGoals)}</textarea>
+      <details class="director-format" ${draft.opening_text ? "open" : ""}><summary>首镜文字要求</summary>${field("首镜原片必须可见的文字", "opening_text", draft.opening_text || "", "text", 'maxlength="120" autocomplete="off" placeholder="可选"')}</details>
       ${sourcesMarkup()}${settingsFields()}
       ${draft.pending ? `<div class="director-warning" role="status">上次提交尚待核对。${btn("核对原请求", "reconcile", "history", "button small secondary")}</div>` : ""}
       <div class="director-submit"><button type="submit" class="button primary" ${busy ? "disabled" : ""}>${icon("spark")}生成剪辑方案</button></div></form>`;
+  }
+  function openingReview(check, output = false) {
+    if (!check?.expected_text) return "";
+    const labels = {
+      matched: "已核实",
+      conflict: "与要求不符",
+      unverified: "待核验",
+    };
+    const observation =
+      (output ? check.encoded_first_frame : check.observation) || {};
+    const words = arr(observation.words)
+      .map((w) => w.text)
+      .filter(Boolean)
+      .join(" ");
+    const options =
+      !output && check.status !== "matched" ? arr(check.alternatives) : [];
+    return `<details class="director-decisions" ${output ? "data-export-opening" : "data-opening-check"}="${esc(check.status)}" ${check.status === "matched" ? "" : "open"}><summary>${output ? "成片首帧" : "方案首帧"} · ${esc(labels[check.status] || "待核验")}</summary>
+      <p>要求 · ${esc(check.expected_text)}</p>
+      ${words ? `<p>画面文字 · ${esc(words)}</p>` : ""}
+      ${Number.isFinite(observation.at) ? `<p>${output ? "成片位置" : "原片位置"} · ${esc(at(observation.at))}</p>` : ""}
+      ${options
+        .map((option, i) => {
+          const file = sourceById(option.asset_id);
+          const name = file?.data?.name || file?.data?.filename || "已核实片段";
+          return btn(
+            "选用 " + name + " · " + at(option.source_in),
+            "replace-opening",
+            "layers",
+            "button small secondary",
+            `data-alternative="${i}"`,
+          );
+        })
+        .join("")}</details>`;
   }
   function handoffMarkup(artifact) {
     const approvals = ctx
@@ -377,22 +411,25 @@ export async function mountProduction(root, ctx) {
       qc = detail.qc?.data || {},
       missing = arr(plan.missing);
     const timeline = detail.timeline;
+    const heading = plan.title || s.data.goal || "制作任务";
+    const timelineName = timeline?.data.name;
     const editedAfterRender =
       stage === "rendered" &&
       timeline &&
       timeline.version !== s.data.timeline_ref?.version;
     return `<section class="director-review"><div class="director-stage"><span class="director-status" data-stage="${esc(stage)}">${esc(reviewStage(stage))}</span><small>${esc(date(s.updated_at || s.created_at))}</small></div>
-      <h2 tabindex="-1">${esc(plan.title || s.data.goal || "制作任务")}</h2>
+      <h2 tabindex="-1">${esc(heading)}</h2>
       ${plan.approach ? `<p class="director-approach">${esc(plan.approach)}</p>` : ""}
       ${s.data.issue ? `<p class="director-warning" role="alert">${esc(s.data.issue.message || s.data.issue.code)}</p>` : ""}
+      ${viewingTimeline() ? "" : openingReview(plan.opening_check)}
       ${timeline ? `<div class="director-views" role="group" aria-label="核对剪辑版本"><button type="button" data-action="shot-view" data-view="current" aria-pressed="${viewingTimeline()}">当前时间线 · v${esc(timeline.version)}</button><button type="button" data-action="shot-view" data-view="proposal" aria-pressed="${!viewingTimeline()}">原始方案</button></div>` : ""}
       ${shots.length ? `<ol class="director-shots" aria-label="${viewingTimeline() ? "当前时间线镜头" : "镜头方案"}">${shots.map((shot, i) => `<li><button type="button" data-action="preview-shot" data-shot="${i}" aria-pressed="${i === shotIndex && !highlighted}"><span class="director-shot-index">${String(i + 1).padStart(2, "0")}</span><span><strong>${esc(shot.name || mediaName(sourceById(shot.asset_id)))}</strong><small>源 ${at(shot.source_in)} – ${at(shot.source_out)} · 时间线 ${at(shot.timeline_start)}</small>${shot.reason ? `<span class="director-reason">${esc(shot.reason)}</span>` : ""}</span>${icon("play")}</button></li>`).join("")}</ol>` : ""}
       ${missing.length ? `<details class="director-gaps" open><summary>待核对的内容 · ${missing.length}</summary><ul>${missing.map((m, i) => `<li>${esc(m)} ${btn("拟定补镜", "generate-gap", "spark", "button ghost small", `data-gap="${i}"`)}</li>`).join("")}</ul></details>` : ""}
       ${shots.length && !viewingTimeline() ? `<div class="director-shot-actions">${btn("替换选中镜头", "replace-shot", "layers", "button ghost small")}${btn("为选段生成候选", "generate-shot", "spark", "button ghost small")}</div>` : ""}
       ${showDecisions(plan, s.data)}
       ${stage === "review" ? `<div class="director-actions">${btn("采用方案并建立时间线", "approve", "check", "button primary")}</div>` : ""}
-      ${timeline ? `<div class="director-timeline"><span>${icon("film")}${esc(timeline.data.name || "剪辑工程")} <small>v${esc(timeline.version)}</small></span><div>${link("接管这条时间线", "editor/project-timeline/" + timeline.id, "takeover")}${stage === "draft" || editedAfterRender ? btn(editedAfterRender ? "渲染最新修改" : "锁版并渲染", "render", "play", "button primary") : ""}</div></div>` : ""}
-      ${detail.artifact ? `<div class="director-output"><h3>导出结果</h3><span>${qc.publish_ready === true ? "已通过当前发布检查" : "已生成成片 · 发布资格需单独审阅"}</span><div>${btn("播放成片", "watch", "play", "button secondary")}<a class="button primary" href="${artifactUrl(detail.artifact)}?download=true" download>${icon("download")}下载 MP4</a></div>${renderQC(qc)}${handoffMarkup(detail.artifact)}</div>` : ""}
+      ${timeline ? `<div class="director-timeline"><span>${icon("film")}${esc(timelineName && timelineName !== heading && timelineName !== s.data.goal ? timelineName : "时间线")} <small>v${esc(timeline.version)}</small></span><div>${link("接管这条时间线", "editor/project-timeline/" + timeline.id, "takeover")}${stage === "draft" || editedAfterRender ? btn(editedAfterRender ? "渲染最新修改" : "锁版并渲染", "render", "play", "button primary") : ""}</div></div>` : ""}
+      ${detail.artifact ? `<div class="director-output"><h3>导出结果</h3><span>${qc.publish_ready === true ? "已通过当前发布检查" : "已生成成片 · 发布资格需单独审阅"}</span><div>${btn("播放成片", "watch", "play", "button secondary")}<a class="button primary" href="${artifactUrl(detail.artifact)}?download=true" download>${icon("download")}下载 MP4</a></div>${openingReview(detail.artifact.data?.qc?.opening_check, true)}${renderQC(qc)}${handoffMarkup(detail.artifact)}</div>` : ""}
       <div class="director-review-foot">${btn("刷新任务", "reload", "history", "button small ghost")}${stage === "planning" && draft.pending ? btn("核对原请求", "reconcile", "history", "button small secondary") : ""}${stage === "rendering" && s.data.render_request ? btn("核对本次渲染", "recover-render", "history", "button small secondary") : ""}${stage === "blocked" ? btn("调整后重新编排", "new-task", "edit", "button small secondary") : ""}</div>
       </section>`;
   }
@@ -512,6 +549,8 @@ export async function mountProduction(root, ctx) {
       height: Number(data.height),
       fps: Number(data.fps),
     };
+    const openingText = String(data.opening_text || "").trim();
+    if (openingText) request.opening_text = openingText;
     if (!request.goal) {
       form.elements.goal.focus();
       return;
@@ -612,18 +651,23 @@ export async function mountProduction(root, ctx) {
       if (errors.length) throw new Error(errors.join(" / "));
     });
   }
-  function replaceShot() {
-    const shot = cuts()[shotIndex];
+  function replaceShot(index = shotIndex, verified = null) {
+    const shot = cuts()[index];
     if (!shot) throw new Error("先点选要替换的镜头。");
     const candidates = sources();
     if (!candidates.length) throw new Error("没有可用的视频来源。");
-    const original = detail.session,
-      index = shotIndex;
+    const original = detail.session;
     const duration = shot.source_out - shot.source_in;
-    const preferred =
-      candidates.find((r) => r.id === draft.lastGenerated) ||
-      candidates.find((r) => r.id === shot.asset_id) ||
-      candidates[0];
+    const preferred = verified
+      ? candidates.find((r) => r.id === verified.asset_id)
+      : candidates.find((r) => r.id === draft.lastGenerated) ||
+        candidates.find((r) => r.id === shot.asset_id) ||
+        candidates[0];
+    if (
+      !preferred ||
+      (verified && preferred.version !== verified.asset_version)
+    )
+      throw new Error("候选来源已更新，请刷新制作任务后重新选取。");
     const old = preferred.id === shot.asset_id;
     const d = modal(
       "替换第 " + (index + 1) + " 个镜头",
@@ -634,8 +678,8 @@ export async function mountProduction(root, ctx) {
         preferred.id,
         "required",
       )}
-      <div class="form-grid">${field("源入点（秒）", "source_in", old ? shot.source_in : 0, "number", 'step="any" min="0" required')}${field("源出点（秒）", "source_out", old ? shot.source_out : Math.min(duration, mediaDuration(preferred)), "number", 'step="any" min="0.04" required')}</div>
-      ${field("替换理由", "reason", "", "text", 'required maxlength="1000"')}<div class="form-actions"><button type="submit" class="button primary">保留原案并创建候选</button></div></form>`,
+      <div class="form-grid">${field("源入点（秒）", "source_in", verified?.source_in ?? (old ? shot.source_in : 0), "number", 'step="any" min="0" required')}${field("源出点（秒）", "source_out", verified?.source_out ?? (old ? shot.source_out : Math.min(duration, mediaDuration(preferred))), "number", 'step="any" min="0.04" required')}</div>
+      ${field("替换理由", "reason", verified ? "按首镜文字要求替换开场" : "", "text", 'required maxlength="1000"')}<div class="form-actions"><button type="submit" class="button primary">保留原案并创建候选</button></div></form>`,
       async (form) => {
         if (!active()) throw new Error("项目已切换，请重新打开镜头。");
         const v = Object.fromEntries(new FormData(form));
@@ -647,6 +691,9 @@ export async function mountProduction(root, ctx) {
               expected_revision: original.version,
               shot_index: index,
               asset_id: v.asset_id,
+              ...(verified?.asset_id === v.asset_id
+                ? { expected_asset_version: verified.asset_version }
+                : {}),
               source_in: Number(v.source_in),
               source_out: Number(v.source_out),
               reason: v.reason.trim(),
@@ -733,7 +780,14 @@ export async function mountProduction(root, ctx) {
           highlighted = "";
           draw();
         },
-        "replace-shot": replaceShot,
+        "replace-shot": () => replaceShot(),
+        "replace-opening": (b) => {
+          const option =
+            detail?.plan?.data?.opening_check?.alternatives?.[
+              Number(b.dataset.alternative)
+            ];
+          if (option) replaceShot(0, option);
+        },
         "review-content": () =>
           ctx.approveArtifact(detail.artifact, "content_check"),
         "review-rights": () =>
