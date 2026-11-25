@@ -316,7 +316,7 @@ def _patch_record(record_id, body, request, actor):
 
     from .comment_feedback import PREFIX as COMMENT_PREFIX
 
-    if record_id.startswith((SCORE_RELEASE_PREFIX, COMMENT_PREFIX)):
+    if record_id.startswith((SCORE_RELEASE_PREFIX, COMMENT_PREFIX, "edit_pref_", "edit_memory_")):
         raise DomainError("DEDICATED_ENDPOINT_REQUIRED", "该记录仅由其专用流程写入。", 403)
     if old["kind"] == "Publication":
         from .account_quota import ensure_intent_editable

@@ -23,8 +23,10 @@ logger = logging.getLogger("ai_ship")
 
 @asynccontextmanager
 async def lifespan(app):
-    get_store()
-    yield
+    from .batches import batch_workers
+
+    with batch_workers():
+        yield
 
 
 app = FastAPI(
@@ -201,18 +203,24 @@ for module_name in (
     "asset_lifecycle",
     "asset_families",
     "creative",
+    "trend_feeds",
+    "tiktok_metrics",
     "source_changes",
+    "source_media",
     "rhythm",
     "providers",
     "production",
     "account_quota",
     "commercial_handoff",
+    "publication_lifecycle",
     "score_policies",
     "comment_feedback",
     "post_reviews",
     "auto_edits",
+    "batches",
     "generation",
     "execution",
+    "harness_qualification",
     "context_pack",
     "timeline_exchange",
     "asset_index",

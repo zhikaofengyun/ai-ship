@@ -203,7 +203,7 @@ export function createVariantPanel(ctx, onSelect) {
       if (host) host.replaceChildren();
       return;
     }
-    host.innerHTML = `<details class="director-gaps" data-variant-group ${opened ? "open" : ""}><summary>${icon("layers")} 镜头变体</summary><div>${inputs()}<p role="status" ${message || pending ? "" : "hidden"}>${esc(message || "正在比较镜头…")}</p>${results()}</div></details>`;
+    host.innerHTML = `<details class="director-gaps" data-variant-group ${opened ? "open" : ""}><summary>${icon("layers")} 镜头变体</summary><div>${inputs()}<p role="status" ${message || pending ? "" : "hidden"}>${esc(message || "正在比较镜头…")}</p><div data-variant-results>${results()}</div></div></details>`;
     const group = host.querySelector("[data-variant-group]");
     group.ontoggle = () => {
       if (!group.isConnected) return;
@@ -254,6 +254,7 @@ export function createVariantPanel(ctx, onSelect) {
         requestId = key();
       }
       const issued = bound;
+      loadingSerial++;
       pending = true;
       message = "正在解码选段并比较…";
       draw();
@@ -275,6 +276,9 @@ export function createVariantPanel(ctx, onSelect) {
         }
       }
     };
+    bindChoices();
+  }
+  function bindChoices() {
     for (const choice of host.querySelectorAll("form[data-plan]")) {
       const id = choice.dataset.plan;
       choice.oninput = () =>
@@ -321,12 +325,20 @@ export function createVariantPanel(ctx, onSelect) {
       const v = await ctx.api(baseRoute());
       if (issued === bound && serial === loadingSerial) {
         families = v.families;
-        draw();
+        const target = host?.querySelector("[data-variant-results]");
+        if (target) {
+          target.innerHTML = results();
+          bindChoices();
+        }
       }
     } catch (e) {
       if (issued === bound && serial === loadingSerial) {
         message = e.message;
-        draw();
+        const status = host?.querySelector('[role="status"]');
+        if (status) {
+          status.hidden = false;
+          status.textContent = message;
+        }
       }
     }
   }

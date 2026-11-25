@@ -13,6 +13,8 @@ import os
 from pathlib import Path, PurePosixPath
 import shutil
 import sqlite3
+import sys
+from contextlib import closing, nullcontext
 import tempfile
 import zipfile
 
@@ -79,7 +81,212 @@ def validate_blob_locations(database, root, *, recovery_budget=None):
                 raise ValueError("媒体对象与数据库登记的摘要不一致。")
 
 
-def restore(archive_path: Path, destination: Path, max_bytes: int = 100_000_000_000) -> dict:
+def isolate_changed_media(archive, authority):
+    """Compare actual rights-bearing records, including grants attached below a source."""
+    rights = {
+        "status",
+        "rights_status",
+        "revoked_at",
+        "deleted_at",
+        "expires_at",
+        "valid_until",
+        "valid_from",
+        "validity",
+        "processing_scope",
+        "storage_tier",
+        "blob_location_id",
+        "source_id",
+        "grant_id",
+        "grant_ids",
+        "rights_grant_ref",
+        "rights_grant_ids",
+        "provenance_sources",
+        "parent_asset_version_ids",
+    }
+    held = 0
+    rows = archive.execute(
+        """SELECT r.id,r.kind,r.tenant_id,v.content_hash,v.data_json,v.refs_json FROM records r
+        JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version
+        WHERE r.kind IN ('Grant','Asset','AssetVersion','Audio','Artifact','BlobLocation')"""
+    )
+    for rid, kind, tenant, old_hash, old_json, old_refs in rows:
+        current = (
+            authority.execute(
+                """SELECT v.content_hash,v.data_json,v.refs_json FROM records r
+            JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version
+            WHERE r.tenant_id=? AND r.id=? AND r.kind=?""",
+                (tenant, rid, kind),
+            ).fetchone()
+            if authority is not None
+            else None
+        )
+        if current and current[0] == old_hash:
+            continue
+        if current and kind != "Grant":
+            old, live = json.loads(old_json), json.loads(current[1])
+            if all(old.get(k) == live.get(k) for k in rights) and json.loads(
+                old_refs
+            ) == json.loads(current[2]):
+                continue
+        archive.execute(
+            """INSERT OR REPLACE INTO media_restore_restrictions
+                  VALUES(?,?,?,?,?,?)""",
+            (
+                tenant,
+                rid,
+                kind,
+                old_hash,
+                current[0] if current else None,
+                "rights_changed" if current else "current_object_unverified",
+            ),
+        )
+        held += 1
+    return held
+
+
+def apply_current_governance(database_path: Path, authority_path: Path | None):
+    # The runner is also invoked as "python scripts/restore.py" outside an installed package.
+    if str(Path(__file__).resolve().parents[1]) not in sys.path:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from app.store import Store
+
+    restored = Store(database_path)
+    authority = (
+        closing(sqlite3.connect(authority_path.resolve().as_uri() + "?mode=ro", uri=True))
+        if authority_path
+        else nullcontext(None)
+    )
+    result = {
+        "sources_checked": 0,
+        "sources_isolated": 0,
+        "leases_fenced": 0,
+        "authority_available": bool(authority_path),
+    }
+    with authority as current, restored.transaction(), restored.connection() as db:
+        authority_has_admission = False
+        if current is not None:
+            current.row_factory = sqlite3.Row
+            current.execute("BEGIN")
+            authority_has_admission = bool(
+                current.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name='media_admission_log'"
+                ).fetchone()
+            )
+        # A restored worker must reacquire a fresh token even when the backup captured a live lease.
+        for lease in db.execute(
+            "SELECT tenant_id,resource_id,fencing_token FROM leases"
+        ).fetchall():
+            newest = (
+                current.execute(
+                    "SELECT fencing_token FROM leases WHERE tenant_id=? AND resource_id=?",
+                    lease[:2],
+                ).fetchone()
+                if current is not None
+                else None
+            )
+            token = max(lease[2], newest[0] if newest else 0) + 1
+            db.execute(
+                "UPDATE leases SET fencing_token=?,expires_at='1970-01-01T00:00:00+00:00' WHERE tenant_id=? AND resource_id=?",
+                (token, *lease[:2]),
+            )
+            result["leases_fenced"] += 1
+        if current is not None:
+            # A lease issued only after the backup also fences a future resource of the same name.
+            for tenant, rid, token in current.execute(
+                "SELECT tenant_id,resource_id,fencing_token FROM leases"
+            ):
+                if db.execute(
+                    """INSERT OR IGNORE INTO leases VALUES(?,?,?,?,'1970-01-01T00:00:00+00:00')""",
+                    (tenant, rid, "backup-restore", token + 1),
+                ).rowcount:
+                    result["leases_fenced"] += 1
+        result["media_or_grants_held"] = isolate_changed_media(db, current)
+        sources = db.execute("""SELECT r.id,r.project_id,r.tenant_id,v.content_hash,r.latest_version
+            FROM records r JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version
+            WHERE r.kind='Source'""")
+        for sid, project, tenant, source_hash, version in sources:
+            result["sources_checked"] += 1
+            local = db.execute(
+                """SELECT revision,decision_id FROM media_admission_log
+                WHERE tenant=? AND project=? AND source=? ORDER BY revision DESC LIMIT 1""",
+                (tenant, project or "", sid),
+            ).fetchone()
+            latest = (
+                current.execute(
+                    """SELECT v.content_hash,v.data_json FROM records r JOIN revisions v
+                ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version
+                WHERE r.tenant_id=? AND r.project_id IS ? AND r.id=? AND r.kind='Source'""",
+                    (tenant, project, sid),
+                ).fetchone()
+                if current is not None
+                else None
+            )
+            latest_decision = (
+                current.execute(
+                    """SELECT a.decision_id,v.content_hash,v.data_json FROM media_admission_log a
+                JOIN revisions v ON v.tenant_id=a.tenant AND v.record_id=a.decision_id AND v.version=1
+                WHERE a.tenant=? AND a.project=? AND a.source=? ORDER BY a.revision DESC LIMIT 1""",
+                    (tenant, project or "", sid),
+                ).fetchone()
+                if authority_has_admission
+                else None
+            )
+            if (
+                latest
+                and latest["content_hash"] == source_hash
+                and (latest_decision[0] if latest_decision else None)
+                == (local[1] if local else None)
+            ):
+                continue
+            info = json.loads(latest_decision["data_json"]) if latest_decision else {}
+            action = "reconciled" if info.get("action") == "reconciled" else "quarantine"
+            revision = (local[0] if local else 0) + 1
+            reason = "恢复时重核当前来源与墓碑，缺失或不一致的授权隔离待对账。"
+            refs = [{"id": sid, "version": version}]
+            if local:
+                refs.append({"id": local[1], "version": 1})
+            item = restored.create(
+                "Approval",
+                {
+                    "feature_id": "D06",
+                    "route_id": "D06-R3",
+                    "kind": "rights_check",
+                    "status": "revoked",
+                    "action": action,
+                    "allowed_purposes": [],
+                    "subject_kind": "Source",
+                    "subject_id": sid,
+                    "subject_version": version,
+                    "subject_hash": source_hash,
+                    "admission_revision": revision,
+                    "principal": "backup-restore",
+                    "reason": reason,
+                    "retention_restore_hold": True,
+                    "current_source_hash": latest["content_hash"] if latest else None,
+                    "current_decision_id": latest_decision[0] if latest_decision else None,
+                    "current_decision_hash": latest_decision[1] if latest_decision else None,
+                },
+                tenant_id=tenant,
+                project_id=project,
+                actor_id="backup-restore",
+                refs=refs,
+                reason=reason,
+            )
+            db.execute(
+                "INSERT INTO media_admission_log VALUES(?,?,?,?,?)",
+                (tenant, project or "", sid, revision, item["id"]),
+            )
+            result["sources_isolated"] += 1
+    return result
+
+
+def restore(
+    archive_path: Path,
+    destination: Path,
+    max_bytes: int = 100_000_000_000,
+    *,
+    current_db: Path | None = None,
+) -> dict:
     destination = destination.resolve()
     if destination.exists():
         raise ValueError("目标已存在；恢复必须使用全新目录，禁止覆盖工作区。")
@@ -144,6 +351,15 @@ def restore(archive_path: Path, destination: Path, max_bytes: int = 100_000_000_
                     temporary,
                     recovery_budget=max_bytes - sum(m.file_size for m in members),
                 )
+        if current_db is not None and not current_db.is_file():
+            raise ValueError("指定的现行授权数据库不存在。")
+        if current_db is None:
+            configured = os.getenv("AI_SHIP_DB")
+            if not configured and os.getenv("AI_SHIP_DATA_DIR"):
+                configured = str(Path(os.environ["AI_SHIP_DATA_DIR"]) / "ai-ship.sqlite3")
+            if configured and Path(configured).is_file():
+                current_db = Path(configured)
+        governance = apply_current_governance(temporary / "ai-ship.sqlite3", current_db)
         # A competing restore may have created destination; never replace it.
         if destination.exists():
             raise ValueError("恢复过程中目标目录已出现，请选择新目录。")
@@ -153,6 +369,7 @@ def restore(archive_path: Path, destination: Path, max_bytes: int = 100_000_000_
             "files": len(items),
             "database_integrity": "ok",
             "byte_hashes_verified": True,
+            "governance": governance,
         }
     finally:
         if temporary.exists():
@@ -164,10 +381,16 @@ def main():
     parser.add_argument("archive", type=Path)
     parser.add_argument("--destination", required=True, type=Path)
     parser.add_argument("--max-bytes", type=int, default=100_000_000_000)
+    parser.add_argument(
+        "--current-db", type=Path, help="可信现行数据库，用于在恢复时重放来源隔离和失效租约。"
+    )
     args = parser.parse_args()
     try:
         print(
-            json.dumps(restore(args.archive, args.destination, args.max_bytes), ensure_ascii=False)
+            json.dumps(
+                restore(args.archive, args.destination, args.max_bytes, current_db=args.current_db),
+                ensure_ascii=False,
+            )
         )
     except (ValueError, KeyError, OSError, zipfile.BadZipFile, sqlite3.DatabaseError) as error:
         parser.exit(1, f"恢复未完成：{error}\n")

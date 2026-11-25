@@ -1,3 +1,6 @@
+import { managePublication } from "./publication-lifecycle.js";
+import { harnessRuntime } from "./harness-runtime.js";
+import { syncTikTok, tiktokAccountConnection } from "./post-reviews.js";
 import { accountQuota } from "./account-quota.js";
 import { commercialHandoff } from "./commercial-handoff.js";
 import {
@@ -29,6 +32,7 @@ import {
   setBusy,
   parseJSON,
 } from "./ui.js";
+import { mountBatches } from "./batch-workspace.js";
 import { mountProduction } from "./project-production.js";
 import { installSidebarResize } from "./workspace-layout.js";
 import { openRenderRecovery } from "./render-recovery.js";
@@ -542,7 +546,9 @@ async function renderRoute() {
       ctx.editorTimelineId = route[1] === "project-timeline" ? route[2] : null;
       await mountEditor(main, ctx);
     } else if (route[0] === "production") {
-      if (project()) await mountProduction(main, ctx);
+      if (project() && route[1] === "batches")
+        await mountBatches(main, ctx, route[2]);
+      else if (project()) await mountProduction(main, ctx);
       else await overview();
     } else if (route[0] === "workflow") await mountWorkflow(main, ctx);
     else if (route[0] === "module") await modulePage(route[1], route[2]);
@@ -896,10 +902,11 @@ function featureAction(id) {
     H06: pick("查看执行记录", ["Run", "ToolCall"]),
     H12: ["验证模型", modelTryForm],
     J01: ["管理账号", accountList],
+    J02: ["核验账号连接", accountList],
     J03: ["新建发布意图", publicationForm],
     J04: ["安排发布", publicationForm],
     J05: ["账号配额与人工交接", () => accountQuota(ctx)],
-    J07: pick("核对账号记录", ["Account"]),
+    J07: ["核对账号与连接状态", accountList],
     F01: ["选择发布通道", publicationForm],
     F02: pick("预检发布意图", ["Publication"], preflightPublication),
     F06: pick("记录平台可见性", ["Publication"], receiptForm),
@@ -1530,7 +1537,7 @@ async function agents() {
     roles = records("AgentRole"),
     catalogRoles = arr(state.catalog.agentSystem?.roles);
   $("#main").innerHTML =
-    `<div class="page">${pageHead("AGENT WORKSPACE", "Agent 团队", "按职责组合模型与工具。配置、能力验证和实际运行各自保留状态。", `${btn("模型配置", "model-list", "sliders", "button secondary")}${btn("添加模型", "new-model", "plus", "button secondary")}${btn("运行团队", "run-team", "play", "button primary")}`)}<div class="section-heading"><div><h2>团队角色</h2></div>${btn("团队部署", "deployment", "agents", "button secondary")}</div><div class="role-grid">${catalogRoles
+    `<div class="page">${pageHead("AGENT WORKSPACE", "Agent 团队", "按职责组合模型与工具。配置、能力验证和实际运行各自保留状态。", `${btn("运行环境与配方", "harness-runtime", "flow", "button secondary")}${btn("模型配置", "model-list", "sliders", "button secondary")}${btn("添加模型", "new-model", "plus", "button secondary")}${btn("运行团队", "run-team", "play", "button primary")}`)}<div class="section-heading"><div><h2>团队角色</h2></div>${btn("团队部署", "deployment", "agents", "button secondary")}</div><div class="role-grid">${catalogRoles
       .map((r, i) => {
         const configured = roles.find((x) => x.data.catalog_role_id === r.id),
           profile = profiles.find(
@@ -1540,6 +1547,7 @@ async function agents() {
       })
       .join("")}</div></div>`;
   bind({
+    "harness-runtime": () => harnessRuntime(ctx),
     "new-model": () => modelForm(),
     "model-list": modelList,
     role: (b) => roleForm(catalogRoles.find((r) => r.id === b.dataset.id)),
@@ -1889,7 +1897,7 @@ async function delivery() {
     pubs = records("Publication"),
     accounts = records("Account");
   $("#main").innerHTML =
-    `<div class="page">${pageHead("DELIVERY & PUBLISHING", "交付与发布", "成片、审阅、交接和平台回执分别确认。", `${btn("管理账号", "accounts", "globe", "button secondary")}${btn("商品交接", "commercial-handoff", "layers", "button secondary")}${btn("新建发布意图", "new-publication", "plus", "button primary")}`)}<div class="section-heading" style="margin-top:0"><h2>交付产物</h2>${btn("进入剪辑室", "editor", "film", "button ghost")}</div><div class="surface">${artifacts.length ? `<div class="table-scroll"><table class="data-table"><thead><tr><th>交付文件</th><th>规格</th><th>状态</th><th>操作</th></tr></thead><tbody>${artifacts.map((a) => `<tr><td>${esc(a.data.name || a.data.filename || "渲染产物")}<small>${date(a.created_at)}</small></td><td>${esc(a.data.probe?.width ?? a.data.width ?? a.data.profile?.width ?? "—")} × ${esc(a.data.probe?.height ?? a.data.height ?? a.data.profile?.height ?? "—")}<small>${mediaDuration(a) ? time(mediaDuration(a)) : ""}</small></td><td>${badge(statusLabel(a.data.status || "content_review_required"), "amber")}</td><td><div class="heading-actions"><a class="button small secondary" href="/api/v1/media/artifacts/${encodeURIComponent(a.id)}/file" download>${icon("download")}下载</a>${btn("审阅", "approve-artifact", "eye", "button small secondary", `data-id="${a.id}"`)}${iconBtn("查看产物来源", "record", "history", `data-id="${a.id}"`)}</div></td></tr>`).join("")}</tbody></table></div>` : empty("还没有交付文件", "", "editor", "打开剪辑室", "film")}</div><div class="section-heading"><div><h2>发布意图</h2></div>${badge(`${pubs.length} 项`)}</div><div class="surface">${pubs.length ? pubs.map((p) => `<div class="list-row">${icon("send")}<div class="list-row-body"><strong>${esc(p.data.title || p.data.metadata?.title || "未命名发布")}</strong><p>${esc(accounts.find((a) => a.id === p.data.account_id)?.data.name || "账号待核对")} · ${esc(p.data.channel || "manual")}${p.data.scheduled_at ? " · " + date(p.data.scheduled_at) : ""}</p></div>${badge(statusLabel(p.data.status || "draft"), p.data.status === "receipt_recorded" ? "blue" : "")}<div class="heading-actions">${btn("预检", "preflight", "checkcircle", "button small secondary", `data-id="${p.id}"`)}${btn("回填回执", "receipt", "link", "button small secondary", `data-id="${p.id}"`)}</div></div>`).join("") : empty("暂无发布意图", "", "", "", "send")}</div></div>`;
+    `<div class="page">${pageHead("DELIVERY & PUBLISHING", "交付与发布", "成片、审阅、交接和平台回执分别确认。", `${btn("管理账号", "accounts", "globe", "button secondary")}${btn("商品交接", "commercial-handoff", "layers", "button secondary")}${btn("新建发布意图", "new-publication", "plus", "button primary")}`)}<div class="section-heading" style="margin-top:0"><h2>交付产物</h2>${btn("进入剪辑室", "editor", "film", "button ghost")}</div><div class="surface">${artifacts.length ? `<div class="table-scroll"><table class="data-table"><thead><tr><th>交付文件</th><th>规格</th><th>状态</th><th>操作</th></tr></thead><tbody>${artifacts.map((a) => `<tr><td>${esc(a.data.name || a.data.filename || "渲染产物")}<small>${date(a.created_at)}</small></td><td>${esc(a.data.probe?.width ?? a.data.width ?? a.data.profile?.width ?? "—")} × ${esc(a.data.probe?.height ?? a.data.height ?? a.data.profile?.height ?? "—")}<small>${mediaDuration(a) ? time(mediaDuration(a)) : ""}</small></td><td>${badge(statusLabel(a.data.status || "content_review_required"), "amber")}</td><td><div class="heading-actions"><a class="button small secondary" href="/api/v1/media/artifacts/${encodeURIComponent(a.id)}/file" download>${icon("download")}下载</a>${btn("审阅", "approve-artifact", "eye", "button small secondary", `data-id="${a.id}"`)}${iconBtn("查看产物来源", "record", "history", `data-id="${a.id}"`)}</div></td></tr>`).join("")}</tbody></table></div>` : empty("还没有交付文件", "", "editor", "打开剪辑室", "film")}</div><div class="section-heading"><div><h2>发布意图</h2></div>${badge(`${pubs.length} 项`)}</div><div class="surface">${pubs.length ? pubs.map((p) => `<div class="list-row">${icon("send")}<div class="list-row-body"><strong>${esc(p.data.title || p.data.metadata?.title || "未命名发布")}</strong><p>${esc(accounts.find((a) => a.id === p.data.account_id)?.data.name || "账号待核对")} · ${esc(p.data.channel || "manual")}${p.data.scheduled_at ? " · " + date(p.data.scheduled_at) : ""}</p></div>${badge(statusLabel(p.data.status || "draft"), p.data.status === "receipt_recorded" ? "blue" : "")}<div class="heading-actions">${btn("预检", "preflight", "checkcircle", "button small secondary", `data-id="${p.id}"`)}${btn("回填回执", "receipt", "link", "button small secondary", `data-id="${p.id}"`)}${btn("管理意图", "manage-pub", "sliders", "button small ghost", `data-id="${p.id}"`)}</div></div>`).join("") : empty("暂无发布意图", "", "", "", "send")}</div></div>`;
   bind({
     editor: () => nav("editor"),
     accounts: accountList,
@@ -1897,6 +1905,11 @@ async function delivery() {
     "new-publication": publicationForm,
     preflight: (b) =>
       preflightPublication(pubs.find((p) => p.id === b.dataset.id)),
+    "manage-pub": (b) =>
+      managePublication(
+        ctx,
+        pubs.find((p) => p.id === b.dataset.id),
+      ),
     receipt: (b) => receiptForm(pubs.find((p) => p.id === b.dataset.id)),
     record: (b) => openRecord(artifacts.find((p) => p.id === b.dataset.id)),
     "approve-artifact": (b) =>
@@ -1911,7 +1924,7 @@ function accountList() {
       records("Account")
         .map(
           (a) =>
-            `<button class="list-row" data-account="${a.id}">${icon("globe")}<span class="list-row-body"><strong>${esc(a.data.name || "账号")}</strong><p>${esc(a.data.provider || a.data.platform || "manual")} · ${esc(a.data.identity || "未验证身份")}</p></span>${badge(statusLabel(a.data.status || "draft"))}</button>`,
+            `<button class="list-row" data-account="${a.id}">${icon("globe")}<span class="list-row-body"><strong>${esc(a.data.name || "账号")}</strong><p>${esc(a.data.provider || a.data.platform || "manual")} · ${esc(a.data.identity || "未验证身份")}</p></span>${badge(statusLabel(a.data.status || "draft"))}</button>${a.data.provider?.toLowerCase() === "tiktok" ? btn("只读连接", "tiktok-connection", "link", "button small ghost", 'data-id="' + esc(a.id) + '"') : ""}`,
         )
         .join("") ||
       empty(
@@ -1922,6 +1935,9 @@ function accountList() {
         "globe",
       )
     }<div class="dialog-actions">${btn("登记账号", "add", "plus", "button primary")}</div>`,
+  );
+  d.querySelectorAll('[data-action="tiktok-connection"]').forEach(
+    (b) => (b.onclick = () => tiktokAccountConnection(ctx, b.dataset.id)),
   );
   d.querySelectorAll("[data-account]").forEach(
     (b) =>
@@ -2087,9 +2103,9 @@ function metricForm() {
     accountList();
     return;
   }
-  modal(
+  const d = modal(
     "导入真实指标",
-    `<form data-form class="form-stack">${select(
+    `<button type="button" class="button secondary" data-sync-tiktok>同步 TikTok 官方指标</button><form data-form class="form-stack">${select(
       "账号",
       "account_id",
       records("Account").map((r) => [r.id, recordLabel(r)]),
@@ -2124,6 +2140,7 @@ function metricForm() {
       await renderRoute();
     },
   );
+  d.querySelector("[data-sync-tiktok]").onclick = () => syncTikTok(ctx);
 }
 function experimentForm() {
   requireProject();

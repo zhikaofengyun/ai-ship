@@ -63,6 +63,18 @@ CREATE TABLE IF NOT EXISTS events(
  event_type TEXT NOT NULL,payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),
  actor_id TEXT NOT NULL,trace_id TEXT NOT NULL,created_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS ix_events_scope ON events(tenant_id,project_id,seq);
+CREATE TABLE IF NOT EXISTS media_text_vectors(
+ tenant TEXT NOT NULL,project TEXT NOT NULL,space TEXT NOT NULL,version_id TEXT NOT NULL,pin TEXT NOT NULL,
+ embedding BLOB NOT NULL,PRIMARY KEY(tenant,project,space,version_id));
+CREATE TABLE IF NOT EXISTS qualified_workflows(
+ tenant TEXT NOT NULL,project TEXT NOT NULL,skill TEXT NOT NULL,version INTEGER NOT NULL,
+ record_hash TEXT NOT NULL,PRIMARY KEY(tenant,project,skill,version));
+CREATE TABLE IF NOT EXISTS tiktok_connections(
+ tenant TEXT NOT NULL,project TEXT NOT NULL,account TEXT NOT NULL,revision INTEGER NOT NULL,
+ state TEXT NOT NULL,observed_at TEXT NOT NULL,capabilities TEXT NOT NULL,PRIMARY KEY(tenant,project,account));
+CREATE TABLE IF NOT EXISTS source_media_settings(
+ tenant TEXT NOT NULL,project TEXT NOT NULL,revision INTEGER NOT NULL,enabled INTEGER NOT NULL,
+ PRIMARY KEY(tenant,project));
 CREATE TABLE IF NOT EXISTS command_results(
  tenant_id TEXT NOT NULL,idempotency_key TEXT NOT NULL,command_id TEXT NOT NULL,
  payload_hash TEXT NOT NULL,response_json TEXT NOT NULL CHECK(json_valid(response_json)),

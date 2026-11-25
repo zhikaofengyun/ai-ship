@@ -192,3 +192,17 @@ class AssetIndexTests(ProductionBase):
         )
         self.assertEqual(legacy.status_code, 200, legacy.text)
         self.assertFalse(legacy.json()["data"]["items"])
+
+    def test_missing_semantic_runtime_keeps_existing_literal_workflow(self):
+        from unittest.mock import patch
+        from app.errors import DomainError
+
+        with patch(
+            "app.text_vectors.local_model",
+            side_effect=DomainError("TEXT_MODEL_UNAVAILABLE", "语义运行时不可用", 503),
+        ):
+            self.assertEqual(self.call("embed", 503)["code"], "TEXT_MODEL_UNAVAILABLE")
+            result = self.search("blue", channel="semantic")
+        self.assertFalse(result["vector_available"])
+        self.assertEqual(result["items"][0]["version_id"], self.version["id"])
+        self.assertIn("不可用", result["fallback"])

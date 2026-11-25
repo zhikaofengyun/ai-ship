@@ -22,6 +22,24 @@ from .workflow import validate_workflow
 
 router = APIRouter(prefix="/execution", tags=["Bounded local workflows"])
 HANDLERS = {
+    "G02-R2": {
+        "operation": "generate_media",
+        "feature_id": "G02",
+        "outputs": {"asset": "Asset", "job": "ToolCall"},
+        "boundary": "本地生成图片，核对原任务并解码文件后交给下游；商品一致性由审阅环节确认。",
+    },
+    "G03-R2": {
+        "operation": "generate_media",
+        "feature_id": "G03",
+        "outputs": {"asset": "Asset", "job": "ToolCall"},
+        "boundary": "本地文生或参考图生视频，以解码后的实际视频和任务凭据继续。",
+    },
+    "E01-R3": {
+        "operation": "import_otio",
+        "feature_id": "E01",
+        "outputs": {"timeline": "Timeline"},
+        "boundary": "导入手剪 OTIO 清单，保留来源关系，损失项必须经确认。",
+    },
     "I03-R2": {
         "operation": "transform",
         "feature_id": "I03",
@@ -116,6 +134,44 @@ _RECIPE_PROPERTIES = {
 }
 _COMMON_ARGS = {"project_id": _REF_INPUT, "expected_revision": {"type": "integer", "minimum": 1}}
 OPERATION_SCHEMAS = {
+    "generate_media": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["profile_id", "prompt", "seed"],
+        "properties": {
+            "project_id": _REF_INPUT,
+            "profile_id": {"type": "string", "minLength": 1, "title": "本地生成配置"},
+            "prompt": {"type": "string", "minLength": 1, "maxLength": 6000, "title": "镜头提示词"},
+            "seed": {"type": "integer", "minimum": 0, "maximum": 2147483647, "title": "种子"},
+            "reference": {
+                "type": "object",
+                "required": ["id", "version"],
+                "properties": {"id": _REF_INPUT, "version": {"type": "integer", "minimum": 1}},
+                "title": "参考原图版本",
+            },
+        },
+    },
+    "import_otio": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["content"],
+        "properties": {
+            "project_id": _REF_INPUT,
+            "content": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1500000,
+                "title": "OTIO 剪辑清单",
+            },
+            "bindings": {
+                "type": "object",
+                "maxProperties": 80,
+                "additionalProperties": {"type": "string"},
+                "title": "媒体来源绑定",
+            },
+            "acknowledge_metadata": {"type": "boolean", "title": "已核对元数据损失"},
+        },
+    },
     "narration": {
         "type": "object",
         "required": ["script", "approval"],
@@ -251,6 +307,8 @@ OPERATION_SCHEMAS = {
     },
 }
 INPUT_SCHEMAS = {
+    "generate_media": {"reference": {"kinds": ["Asset"], "value": "ref"}},
+    "import_otio": {},
     "narration": {
         "script": {"kinds": ["Script"], "value": "ref"},
         "approval": {"kinds": ["Approval"], "value": "ref"},
@@ -356,7 +414,7 @@ def _validate_execution(spec):
     return report, seconds
 
 
-def start_workflow(store, actor, body):
+def start_workflow(store, actor, body, *, prepare_only=False):
     require_write(actor)
     payload = body.model_dump() if isinstance(body, BaseModel) else body
     key = "execution:" + payload["idempotency_key"]
@@ -436,18 +494,25 @@ def start_workflow(store, actor, body):
 
     prepared = store.idempotent(actor.tenant_id, key, "start:" + digest(key), payload, prepare)
     run = store.get(prepared["run_id"], actor.tenant_id)
-    if prepared.get("idempotent_replay"):
+    if prepare_only or prepared.get("idempotent_replay"):
         return {
             "run": run,
             "status": run["data"]["status"],
-            "replayed": True,
+            "replayed": bool(prepared.get("idempotent_replay")),
             "boundary": "返回既有执行；不会因重发 HTTP 请求重复节点。",
         }
     return execute_run(store, actor, run["id"])
 
 
-def _lease(store, actor, run_id, seconds):
+def _lease(store, actor, run_id, seconds, *, expected_revision=None):
     with store.transaction():
+        if (
+            expected_revision is not None
+            and store.get(run_id, actor.tenant_id)["version"] != expected_revision
+        ):
+            raise DomainError(
+                "REVISION_CONFLICT", "检查点在获取工作租约前已变化，请重新读取。", 409
+            )
         row = store._local.conn.execute(
             "SELECT * FROM leases WHERE tenant_id=? AND resource_id=?", (actor.tenant_id, run_id)
         ).fetchone()
@@ -594,7 +659,49 @@ def _call_handler(store, actor, run, node, args, input_refs):
                 {"path": ".".join(map(str, e.path)), "message": e.message} for e in errors[:20]
             ],
         )
-    if op == "transform":
+    if op == "generate_media":
+        from . import generation
+
+        expected_kind = "image" if node["feature_id"] == "G02" else "video"
+        if generation.profile(args["profile_id"]).get("output_kind", "video") != expected_kind:
+            raise DomainError("GENERATOR_KIND_MISMATCH", "配置输出类型与所选生成路线不同。")
+        reference = args.get("reference") or {}
+        body = generation.Generate(
+            project_id=run["project_id"],
+            profile_id=args["profile_id"],
+            prompt=args["prompt"],
+            seed=args["seed"],
+            idempotency_key="dag:" + digest([run["id"], node["id"]]),
+            reference_asset_id=reference.get("id"),
+            reference_asset_version=reference.get("version"),
+        )
+        result = generation.generate(body, None, actor)["data"]
+        job = result["job"]
+        if job["data"]["stage"] not in generation.FINAL:
+            result = generation.refresh(job["id"], None, actor)["data"]
+            job = result["job"]
+        if job["data"]["stage"] not in generation.FINAL:
+            raise DomainError(
+                "GENERATION_WAITING",
+                "等待原生成任务的可核验产物。",
+                409,
+                {"job": ref(job), "stage": job["data"]["stage"]},
+            )
+        if job["data"]["stage"] != "ready" or not result.get("asset"):
+            raise DomainError(
+                "GENERATION_INCOMPLETE",
+                "生成任务未交付可用素材。",
+                409,
+                {"job": ref(job), "issue": job["data"].get("issue")},
+            )
+        media.resolve_media(store, actor, result["asset"]["id"], project_id=run["project_id"])
+    elif op == "import_otio":
+        from .timeline_exchange import ImportInput, import_timeline
+
+        arguments = {k: v for k, v in args.items() if k != "project_id"}
+        body = ImportInput(**arguments, request_id="dag:" + digest([run["id"], node["id"]]))
+        result = {"timeline": import_timeline(run["project_id"], body, None, actor)["data"]}
+    elif op == "transform":
         if not args.get("asset_id"):
             raise DomainError("INPUT_REQUIRED", "变换节点需要 asset_id 版本绑定。")
         source = store.get(args["asset_id"], actor.tenant_id)
@@ -745,7 +852,7 @@ def execute_run(store, actor, run_id):
         raise DomainError(
             "DEADLINE_EXCEEDED", "本次冻结运行时限已到；请保留成果并修订新任务。", 409
         )
-    owner, token = _lease(store, actor, run_id, remaining)
+    owner, token = _lease(store, actor, run_id, remaining, expected_revision=run["version"])
     try:
         run = _mutate(
             store,
@@ -785,14 +892,15 @@ def execute_run(store, actor, run_id):
                 break
             if step["status"] == "completed":
                 continue
+            polling = step["status"] == "waiting_receipt"
             problem = None
             if not actor_still_authorized(actor):
                 problem = {"code": "AUTHORIZATION_REVOKED"}
             elif datetime.now(timezone.utc) >= deadline:
                 problem = {"code": "DEADLINE_EXCEEDED"}
-            elif checkpoint["steps_started"] >= state["max_steps"]:
+            elif not polling and checkpoint["steps_started"] >= state["max_steps"]:
                 problem = {"code": "STEP_LIMIT"}
-            elif step["attempts"] >= state["max_attempts"]:
+            elif not polling and step["attempts"] >= state["max_attempts"]:
                 problem = {"code": "ATTEMPT_LIMIT"}
             elif any(checkpoint["nodes"][up]["status"] != "completed" for up in incoming[nid]):
                 problem = {"code": "UPSTREAM_UNAVAILABLE"}
@@ -822,7 +930,7 @@ def execute_run(store, actor, run_id):
                 s.update(
                     {
                         "status": "running",
-                        "attempts": s["attempts"] + 1,
+                        "attempts": s["attempts"] + (0 if polling else 1),
                         "started_at": now(),
                         "input_refs": input_refs,
                         "arguments_hash": digest(args),
@@ -830,7 +938,7 @@ def execute_run(store, actor, run_id):
                         "error": None,
                     }
                 )
-                d["checkpoint"]["steps_started"] += 1
+                d["checkpoint"]["steps_started"] += 0 if polling else 1
 
             run = _mutate(store, actor, run_id, token, start, "节点开始前持久保存检查点")
             try:
@@ -862,13 +970,28 @@ def execute_run(store, actor, run_id):
 
                 _mutate(store, actor, run_id, token, complete, "节点真实产物通过本地输出合同", refs)
             except DomainError as exc:
+                if exc.code == "GENERATION_WAITING":
+
+                    def park(d):
+                        d["checkpoint"]["nodes"][nid].update(
+                            status="waiting_receipt", error=None, provider_receipt=exc.details
+                        )
+
+                    _mutate(
+                        store, actor, run_id, token, park, "生成任务已记录，下次恢复仅核对原任务"
+                    )
+                    continue
                 unknown = exc.code in ("STALE_FENCE", "OUTPUT_CONTRACT")
 
                 def fail(d):
                     d["checkpoint"]["nodes"][nid].update(
                         {
                             "status": "unknown" if unknown else "failed",
-                            "error": {"code": exc.code, "message": exc.message},
+                            "error": {
+                                "code": exc.code,
+                                "message": exc.message,
+                                "details": exc.details,
+                            },
                             "finished_at": now(),
                         }
                     )
@@ -911,6 +1034,9 @@ def execute_run(store, actor, run_id):
                 return
             if d.get("control_request") == "SuspendTask":
                 d.update({"state": "暂停", "status": "paused", "stopped_at": now()})
+                return
+            if any(n["status"] == "waiting_receipt" for n in d["checkpoint"]["nodes"].values()):
+                d.update({"state": "待核对", "status": "waiting_receipt"})
                 return
             complete = all(n["status"] == "completed" for n in d["checkpoint"]["nodes"].values())
             d.update(

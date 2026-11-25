@@ -1,0 +1,62 @@
+{
+  "trend": {
+    "provider": "google_trends",
+    "region": "US",
+    "fetched_at": "2026-11-25T14:22:16.494475+00:00",
+    "feed_sha256": "34a9761f1418cdc2d8f000276fd32cb3843f1f35873b7595cb8bc40091b5b00b",
+    "skipped": 0,
+    "count": 5
+  },
+  "commons_search": {
+    "count": 3
+  },
+  "commons_import": {
+    "file": "File:Traditional Ethiopian Coffee Roasting Ceremony.webm",
+    "page": "https://commons.wikimedia.org/wiki/File:Traditional_Ethiopian_Coffee_Roasting_Ceremony.webm",
+    "license": "CC BY-SA 4.0",
+    "size_bytes": 6112712,
+    "sha1": "0a8930d4fe50dcc98bc792819540b0c4f9e2e850",
+    "sha256": "d2e7783750d688838e83e79a24b865e2e7789d2357353ce9b749467d52a9af2d",
+    "media": {
+      "audio_codec": "opus",
+      "duration": 30.066,
+      "format_name": "matroska,webm",
+      "fps": "30/1",
+      "has_audio": true,
+      "has_video": true,
+      "height": 1024,
+      "is_still": false,
+      "probe_version": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+      "source_time_base": "1/1000",
+      "streams": [
+        {
+          "avg_frame_rate": "30/1",
+          "codec_name": "vp9",
+          "codec_type": "video",
+          "height": 1024,
+          "index": 0,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1",
+          "start_time": "0.000000",
+          "time_base": "1/1000",
+          "width": 576
+        },
+        {
+          "avg_frame_rate": "0/0",
+          "channel_layout": "stereo",
+          "channels": 2,
+          "codec_name": "opus",
+          "codec_type": "audio",
+          "index": 1,
+          "r_frame_rate": "0/0",
+          "sample_rate": "48000",
+          "start_time": "-0.007000",
+          "time_base": "1/1000"
+        }
+      ],
+      "video_codec": "vp9",
+      "width": 576
+    },
+    "rights": "unverified"
+  }
+}

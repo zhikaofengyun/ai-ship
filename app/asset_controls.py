@@ -59,6 +59,7 @@ def manual_asset_data(kind, data, old=None):
     protected = set()
     if kind in {"Asset", "AssetVersion"}:
         protected.update(TIER_FIELDS)
+        protected.add("admission_projection")
         if "storage_tier" in previous:
             protected.update(MATERIAL_FIELDS)
     old_projection = projection(kind, previous)

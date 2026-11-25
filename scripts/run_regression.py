@@ -34,6 +34,7 @@ def fingerprint():
         for p in (
             "requirements.txt",
             "requirements-dev.txt",
+            "requirements-semantic.txt",
             "constraints.txt",
             "pyproject.toml",
             "package.json",
@@ -192,6 +193,7 @@ def main():
         ),
     ]
     for name, script in [
+        ("batch-workbench", "browser_batch_workbench.py"),
         ("scoring-policy-release", "browser_score_policies.py"),
         ("comment-feedback", "browser_comment_feedback.py"),
     ]:

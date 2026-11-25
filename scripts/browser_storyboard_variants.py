@@ -129,9 +129,16 @@ def run(output, round_id, engine):
             shots = initial["plan"]["data"]["shots"]
             assert len(shots) == 2
             vurl = "/production/variants/" + run_id
+            # Hold the initial history request while a person opens the source picker.
+            pending_history = []
+            page.route(base + "/api/v1" + vurl, lambda route: pending_history.append(route))
             page.locator("[data-variant-group] > summary").click()
             page.get_by_text("可替换素材", exact=True).click()
             page.locator("[name=variant_pool]").filter(visible=True).last.wait_for()
+            assert pending_history
+            with page.expect_response(lambda r: r.url == base + "/api/v1" + vurl):
+                pending_history[0].continue_()
+            page.unroute(base + "/api/v1" + vurl)
             page.locator("[data-variant-form]").get_by_role(
                 "checkbox", name="c.mp4", exact=True
             ).check()

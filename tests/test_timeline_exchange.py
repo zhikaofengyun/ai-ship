@@ -289,3 +289,37 @@ class TimelineExchangeTests(ProductionBase):
                 ),
             )
         )
+
+    def test_hand_edited_otio_is_a_dag_input(self):
+        node = {
+            "id": "handcut",
+            "feature_id": "E01",
+            "route_id": "E01-R3",
+            "parameters": {},
+            "operation_args": {"content": self.exported()["content"]},
+        }
+        flow = self.create(
+            "Workflow",
+            {
+                "name": "参考剪辑",
+                "DAG": {
+                    "nodes": [node],
+                    "edges": [],
+                    "max_steps": 1,
+                    "max_attempts": 1,
+                    "budget": 0,
+                },
+            },
+        )
+        result = self.post(
+            "/execution/start",
+            {
+                "workflow_id": flow["id"],
+                "expected_revision": 1,
+                "idempotency_key": "reference-cut-import",
+            },
+        )
+        self.assertEqual(result["status"], "completed", result["run"]["data"])
+        imported = self.store.get(result["outputs"][0]["id"], "local")
+        self.assertEqual(imported["data"]["clips"][0]["source_in"], self.clip["source_in"])
+        self.assertEqual(imported["data"]["captions"], self.t["data"]["captions"])

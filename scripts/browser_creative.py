@@ -30,7 +30,8 @@ def run(output):
             page.goto(base + "/#module/trend/" + fid)
             page.get_by_role("button", name=label, exact=True).click()
 
-        open_feature("T01", "记录热点来源")
+        open_feature("T01", "同步或记录热点")
+        dialog.get_by_role("button", name="手动记录来源").click()
         for key, value in {
             "title": "通勤观察",
             "canonical_url": "https://example.test/news",

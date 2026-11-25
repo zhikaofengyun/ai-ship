@@ -20,7 +20,7 @@ from typing import Any, Literal
 from urllib.parse import urlparse
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from .auth import Actor, current_actor, require_write, require_approval
@@ -402,83 +402,93 @@ def search_assets(
     q: str = "",
     min_duration: float = 0,
     max_duration: float = 86400,
+    offset: int = Query(0, ge=0),
+    limit: int = Query(500, ge=1, le=2000),
     actor: Actor = Depends(current_actor),
 ):
     record(actor, project_id, "Project")
     if min_duration < 0 or max_duration < min_duration or not math.isfinite(max_duration):
         raise DomainError("INVALID_RANGE", "检索时长范围无效。")
     store = get_store()
-    versions = store.list(actor.tenant_id, kind="AssetVersion", project_id=project_id, limit=500)
-    tags = store.list(actor.tenant_id, kind="Tag", project_id=project_id, limit=500)
-    by_version = defaultdict(list)
-    for tag in tags:
-        for link in tag.get("refs", []):
-            if link.get("kind") == "AssetVersion":
-                by_version[link["id"]].append(tag)
-    hits = []
-    for item in versions:
-        d = item["data"]
-        if d.get("storage_tier") in {"local_cold", "quarantine"}:
-            continue
-        if d.get("status") in {"revoked", "archived", "rejected", "unavailable"}:
-            continue
-        asset_id = d.get("asset_id")
-        asset = record(actor, asset_id, "Asset") if asset_id else None
-        if asset and asset["data"].get("status") in {"revoked", "archived"}:
-            continue
-        if asset and asset["data"].get("source_id"):
-            source = record(actor, asset["data"]["source_id"], "Source")
-            sd = source["data"]
-            if (
-                sd.get("status") == "revoked"
-                or sd.get("revoked_at")
-                or (
-                    sd.get("expires_at")
-                    and timestamp(sd["expires_at"]) <= datetime.now(timezone.utc)
-                )
-            ):
-                continue
-        from .media import check_current_media_rights
+    from .media import check_current_media_rights
 
-        try:
-            check_current_media_rights(store, actor, item)
-        except DomainError:
-            continue
-        duration = media_duration(d)
-        if duration is None and asset:
-            duration = media_duration(asset["data"])
-        if duration is None and (min_duration > 0 or max_duration < 86400):
-            continue
-        if duration is not None and not min_duration <= float(duration) <= max_duration:
-            continue
-        text = json.dumps(
-            [
-                d,
-                (asset or {}).get("data", {}).get("filename"),
-                [t["data"] for t in by_version[item["id"]]],
-            ],
-            ensure_ascii=False,
-        ).lower()
-        if q.strip() and not all(token in text for token in q.lower().split()):
-            continue
-        hits.append(
-            {
-                "version": item,
-                "asset": asset,
-                "tags": by_version[item["id"]],
-                "method": "structured_and_text",
-                "reason": "关键词与真实标签/元数据匹配" if q else "符合结构化筛选",
-            }
+    hits, skipped = [], 0
+    tokens = q.lower().split()
+    with store.read_snapshot() as conn:
+        candidates = conn.execute(
+            """SELECT r.id,r.kind,r.project_id,r.tenant_id,v.*
+            FROM records r JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version
+            WHERE r.tenant_id=? AND r.project_id=? AND r.kind='AssetVersion'
+            ORDER BY CASE WHEN json_extract(v.data_json,'$.storage_tier')='low_priority' THEN 1 ELSE 0 END,r.created_at DESC,r.id""",
+            (actor.tenant_id, project_id),
         )
-    hits.sort(key=lambda h: h["version"]["data"].get("storage_tier") == "low_priority")
+        for row in candidates:
+            item = store._row_record(row)
+            d = item["data"]
+            if d.get("storage_tier") in {"local_cold", "quarantine"} or d.get("status") in {
+                "revoked",
+                "archived",
+                "rejected",
+                "unavailable",
+            }:
+                continue
+            asset = record(actor, d["asset_id"], "Asset") if d.get("asset_id") else None
+            if asset and asset["data"].get("status") in {"revoked", "archived"}:
+                continue
+            duration = media_duration(d)
+            if duration is None and asset:
+                duration = media_duration(asset["data"])
+            if duration is None and (min_duration > 0 or max_duration < 86400):
+                continue
+            if duration is not None and not min_duration <= duration <= max_duration:
+                continue
+            # Only load the matching version's tags using the reverse reference index.
+            tags = [
+                store._row_record(r)
+                for r in conn.execute(
+                    """SELECT DISTINCT r.id,r.kind,r.project_id,r.tenant_id,v.*
+                FROM reference_index x JOIN records r ON r.tenant_id=x.tenant_id AND r.id=x.source_id AND r.latest_version=x.source_version
+                JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=x.source_version
+                WHERE x.tenant_id=? AND x.target_id=? AND r.project_id=? AND r.kind='Tag'
+                ORDER BY v.created_at DESC,r.id""",
+                    (actor.tenant_id, item["id"], project_id),
+                )
+            ]
+            if tokens:
+                text = json.dumps(
+                    [d, (asset or {}).get("data", {}).get("filename"), [t["data"] for t in tags]],
+                    ensure_ascii=False,
+                ).lower()
+                if not all(token in text for token in tokens):
+                    continue
+            try:
+                check_current_media_rights(store, actor, item)
+            except DomainError:
+                continue
+            if skipped < offset:
+                skipped += 1
+                continue
+            hits.append(
+                {
+                    "version": item,
+                    "asset": asset,
+                    "tags": tags,
+                    "method": "structured_and_text",
+                    "reason": "关键词与真实标签/元数据匹配" if tokens else "符合结构化筛选",
+                }
+            )
+            if len(hits) > limit:
+                break
+    more = len(hits) > limit
     return ok(
         {
-            "items": hits,
-            "count": len(hits),
+            "items": hits[:limit],
+            "count": min(limit, len(hits)),
             "method": "structured_and_text",
             "semantic_search": "not_connected",
-            "limit": 500,
-            "may_be_truncated": len(versions) == 500 or len(tags) == 500,
+            "limit": limit,
+            "may_be_truncated": more,
+            "next_offset": offset + limit if more else None,
         },
         request,
     )
@@ -501,27 +511,31 @@ def reserve_usage(body: ReservationInput, request: Request, actor: Actor = Depen
         for key, kind in (("asset_version_id", "AssetVersion"), ("asset_id", "Asset")):
             if shot["data"].get(key):
                 source = record(actor, shot["data"][key], kind, project=body.project_id)
+                from .media import check_current_media_rights
+
+                check_current_media_rights(get_store(), actor, source)
                 if source["data"].get("storage_tier") in {"local_cold", "quarantine"} and (
                     kind == "AssetVersion" or not shot["data"].get("asset_version_id")
                 ):
                     raise DomainError("ASSET_OFFLINE", "不可预留已冷藏或隔离的素材。", 409)
-        existing = get_store().list(
-            actor.tenant_id, kind="Usage", project_id=body.project_id, limit=500
+        store = get_store()
+        rows = store._local.conn.execute(
+            """SELECT r.id,r.kind,r.project_id,r.tenant_id,v.* FROM revisions v JOIN records r
+            ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version
+            WHERE r.tenant_id=? AND r.project_id=? AND r.kind='Usage'
+            AND json_extract(v.data_json,'$.reservation_status')='reserved'
+            AND json_extract(v.data_json,'$.shot_id')=?""",
+            (actor.tenant_id, body.project_id, shot["id"]),
         )
-        active = [
-            u
-            for u in existing
-            if u["data"].get("shot_id") == shot["id"]
-            and u["data"].get("reservation_status") == "reserved"
-            and timestamp(u["data"].get("expires_at", "")) > datetime.now(timezone.utc)
-        ]
+        checked_at = datetime.now(timezone.utc)
+        active = []
+        for row in rows:
+            usage = store._row_record(row)
+            if timestamp(usage["data"].get("expires_at", "")) > checked_at:
+                active.append(usage)
         same = next((u for u in active if u["data"].get("owner_ref") == owner["id"]), None)
         if same:
             return ok(same, request)
-        if len(existing) == 500:
-            raise DomainError(
-                "RESERVATION_SCAN_LIMIT", "预留账本超过本机检查界限，需要分区后重试。", 409
-            )
         if len(active) >= body.max_concurrent:
             raise DomainError(
                 "USAGE_RESERVED",
@@ -947,7 +961,11 @@ def create_publication(
 
 
 def publication_preflight(actor: Actor, publication: dict, *, check_quota=True) -> dict:
+    from .publication_lifecycle import lifecycle_block
+
     data, problems, checks = publication["data"], [], []
+    if issue := lifecycle_block(actor, publication):
+        problems.append(issue)
     artifact = record(actor, data["artifact_id"], "Artifact", version=data.get("artifact_version"))
     account = record(actor, data["account_id"], "Account")
     from .media import check_current_media_rights
@@ -1312,67 +1330,110 @@ def store_metric_rows(body, actor, archive=None):
 
 
 @router.get("/analytics")
-def analytics(request: Request, project_id: str, actor: Actor = Depends(current_actor)):
+def analytics(
+    request: Request,
+    project_id: str,
+    account_id: str | None = None,
+    post_record_id: str | None = None,
+    actor: Actor = Depends(current_actor),
+):
     record(actor, project_id, "Project")
-    items = get_store().list(actor.tenant_id, kind="Metric", project_id=project_id, limit=500)
-    latest = {}
-    for item in items:
-        d = item["data"]
-        key = (
-            d.get("scope_kind"),
-            d.get("scope_subject_ref") or d.get("post_record_id") or d.get("account_id"),
-            d.get("metric_name"),
-            d.get("unit"),
-            d.get("currency"),
-            json.dumps(normalized_window(d["window"]), sort_keys=True),
-            d.get("paid_or_organic"),
-            d.get("source"),
+    filters = ["r.tenant_id=?", "r.kind='Metric'", "r.project_id=?"]
+    args = [actor.tenant_id, project_id]
+    for key, kind, value in (
+        ("account_id", "Account", account_id),
+        ("post_record_id", "Post", post_record_id),
+    ):
+        if value:
+            record(actor, value, kind, project=project_id)
+            filters.append(f"json_extract(v.data_json,'$.{key}')=?")
+            args.append(value)
+    # SQLite ranks immutable snapshots by the same subject and measurement window.
+    # Only the latest observation contributes, even with late imports or timezone offsets.
+    fields = (
+        "scope_kind",
+        "metric_name",
+        "unit",
+        "currency",
+        "window_start",
+        "window_end",
+        "paid_or_organic",
+        "source",
+        "counting_mode",
+    )
+    dimensions = ", ".join(fields)
+    query = f"""
+        WITH scoped AS (
+          SELECT r.id, r.created_at,
+            json_extract(data_json,'$.scope_kind') scope_kind,
+            coalesce(json_extract(data_json,'$.scope_subject_ref'),json_extract(data_json,'$.post_record_id'),json_extract(data_json,'$.account_id')) subject,
+            json_extract(data_json,'$.metric_name') metric_name,
+            json_extract(data_json,'$.unit') unit, json_extract(data_json,'$.currency') currency,
+            metric_time(json_extract(data_json,'$.window.start')) window_start,
+            metric_time(json_extract(data_json,'$.window.end')) window_end,
+            json_extract(data_json,'$.paid_or_organic') paid_or_organic,
+            json_extract(data_json,'$.source') source, json_extract(data_json,'$.counting_mode') counting_mode,
+            metric_time(json_extract(data_json,'$.observed_at')) observed_at,
+            metric_time(json_extract(data_json,'$.data_mature_after')) mature_after,
+            json_extract(data_json,'$.value_or_null') value
+          FROM records r JOIN revisions v ON (r.tenant_id,r.id,r.latest_version)=(v.tenant_id,v.record_id,v.version)
+          WHERE {" AND ".join(filters)}
+        ), measured AS (
+          SELECT *, (subject IS NOT NULL AND scope_kind IS NOT NULL AND metric_name IS NOT NULL
+              AND unit IS NOT NULL AND window_start<window_end AND observed_at>=window_end
+              AND (value IS NULL OR typeof(value) IN ('integer','real'))) comparable FROM scoped
+        ), ranked AS (
+          SELECT *,row_number() OVER(PARTITION BY comparable,subject,{dimensions} ORDER BY observed_at DESC,created_at DESC,id DESC) rk,
+            count(*) OVER(PARTITION BY comparable,subject,{dimensions}) snapshots FROM measured
         )
-        if key not in latest or timestamp(d["observed_at"]) > timestamp(
-            latest[key]["data"]["observed_at"]
-        ):
-            latest[key] = item
-    grouped = defaultdict(list)
-    for key, item in latest.items():
-        grouped[(key[0], *key[2:])].append(item)
+        SELECT comparable, {dimensions}, count(value) observations, count(*)-count(value) missing,
+            avg(value) mean,min(value) min,max(value) max,
+            min(CASE WHEN mature_after IS NULL OR mature_after<=? THEN 1 ELSE 0 END) mature,
+            sum(snapshots) snapshots,json_group_array(id) metric_refs
+        FROM ranked WHERE rk=1 GROUP BY comparable,{dimensions} ORDER BY {dimensions}
+    """
     groups = []
-    for key, rows in grouped.items():
-        values = [
-            r["data"].get("value_or_null")
-            for r in rows
-            if r["data"].get("value_or_null") is not None
-        ]
-        mature = all(
-            not r["data"].get("data_mature_after")
-            or timestamp(r["data"]["data_mature_after"]) <= datetime.now(timezone.utc)
-            for r in rows
+    snapshot_count = 0
+    deduplicated = 0
+    excluded = 0
+
+    def canonical_time(value):
+        try:
+            return timestamp(value).isoformat(timespec="microseconds") if value else None
+        except DomainError:
+            return None
+
+    with get_store().connection() as db:
+        db.create_function(
+            "metric_time",
+            1,
+            canonical_time,
         )
-        groups.append(
-            {
-                "scope_kind": key[0],
-                "metric_name": key[1],
-                "unit": key[2],
-                "currency": key[3],
-                "window": json.loads(key[4]),
-                "paid_or_organic": key[5],
-                "source": key[6],
-                "observations": len(values),
-                "missing": len(rows) - len(values),
-                "mean": statistics.mean(values) if values else None,
-                "min": min(values) if values else None,
-                "max": max(values) if values else None,
-                "mature": mature,
-                "metric_refs": [r["id"] for r in rows],
+        for row in db.execute(
+            query, [*args, datetime.now(timezone.utc).isoformat(timespec="microseconds")]
+        ):
+            group = dict(row)
+            snapshots = group.pop("snapshots")
+            snapshot_count += snapshots
+            if not group.pop("comparable"):
+                excluded += snapshots
+                continue
+            deduplicated += group["observations"] + group["missing"]
+            group["metric_refs"] = json.loads(group["metric_refs"])
+            group["mature"] = bool(group["mature"])
+            group["window"] = {
+                k: timestamp(group.pop("window_" + k)).isoformat() for k in ("start", "end")
             }
-        )
+            groups.append(group)
     return ok(
         {
             "groups": groups,
-            "snapshot_count": len(items),
-            "deduplicated_observations": len(latest),
+            "snapshot_count": snapshot_count,
+            "deduplicated_observations": deduplicated,
             "causal_claim": False,
             "cross_scope_totals": "not_computed_to_avoid_double_counting",
-            "may_be_truncated": len(items) == 500,
+            "may_be_truncated": False,
+            "incomplete_snapshots": excluded,
         },
         request,
     )

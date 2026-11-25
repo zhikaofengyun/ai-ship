@@ -125,6 +125,8 @@ export function mountExecutionControls(container, capability, node, ctx) {
         ? `<label class="field"><span>${requiredLabel(label, required)}</span><textarea ${attr} rows="5" placeholder="填写已经确认的脚本内容">${esc(value ?? "")}</textarea></label>`
         : `<label class="field"><span>${requiredLabel(label, required)}</span><input ${attr} type="text" value="${esc(value ?? "")}" placeholder="未指定" ${schema.pattern ? `pattern="${esc(schema.pattern)}"` : ""}></label>`;
     }
+    if (ctx.inline)
+      return `<label class="field"><span>${requiredLabel(label, required)}</span><textarea data-inline-structure="${index}" rows="4" class="code-input">${esc(value === undefined ? "" : pretty(value))}</textarea></label>`;
     return `<section class="advanced-control"><span><span class="control-label">${requiredLabel(label, required)}</span><small class="control-help" data-json-summary="${index}">${value === undefined ? "未指定" : `已保存 ${Array.isArray(value) ? value.length : Object.keys(value || {}).length} 项`}</small></span><button type="button" class="button small secondary" data-execution-json="${index}">编辑结构化数据</button></section>`;
   }
   const schema = capability.operation_schema,
@@ -147,6 +149,13 @@ export function mountExecutionControls(container, capability, node, ctx) {
     readers.push(() => {
       if (input.value !== "" && !input.checkValidity())
         throw new Error(`${f.label} 不符合执行器的明确范围或格式`);
+    });
+  });
+  $$("[data-inline-structure]", container).forEach((input) => {
+    const f = fields[Number(input.dataset.inlineStructure)];
+    readers.push(() => {
+      const raw = input.value.trim();
+      writePath(f.path, raw ? parseJSON(raw, f.label) : undefined);
     });
   });
   $$("[data-execution-binding]", container).forEach((select) => {
@@ -198,6 +207,27 @@ export function mountExecutionControls(container, capability, node, ctx) {
         "先绑定已保存且版本仍一致的时间线。动态上游必须生成后实际审阅。",
         "error",
       );
+      return;
+    }
+    if (ctx.inline) {
+      const bindingBox = $("[data-review-lock]", container).parentElement;
+      bindingBox.querySelector("[data-inline-review]")?.remove();
+      const review = document.createElement("details");
+      review.dataset.inlineReview = "";
+      review.open = true;
+      review.innerHTML = `<summary>查看 ${esc(recordName(record))} · v${esc(record.version)}</summary><pre>${esc(pretty(record.data))}</pre><button type="button" class="button secondary">确认此版本</button>`;
+      review.querySelector("button").onclick = () => {
+        if (
+          bindings.timeline_id?.record_id !== record.id ||
+          bindings.timeline_id?.version !== record.version
+        ) {
+          review.remove();
+          return;
+        }
+        writePath("confirmed_hash", record.hash);
+        review.remove();
+      };
+      bindingBox.append(review);
       return;
     }
     modal(

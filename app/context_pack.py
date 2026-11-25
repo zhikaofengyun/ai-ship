@@ -9,8 +9,12 @@ from .errors import DomainError
 from .production import current_dependency_problem, record, ref, revise, save
 from .selection import ChosenVersion, Label, Note, SelectionBody, on_request
 from .store import canonical, get_store
+from .edit_memory import router as memory_router
+from .graph_revision import router as graph_revision_router
 
 router = APIRouter(prefix="/execution", tags=["context"])
+router.include_router(memory_router)
+router.include_router(graph_revision_router)
 EVIDENCE_FIELDS = {
     "Product": ("SKU", "quantity", "price", "currency", "market", "validity"),
     "DecisionRecord": ("name", "decision", "reason"),

@@ -23,6 +23,7 @@ import {
 } from "./ui.js";
 
 import { renderControls, mountControls, readControls } from "./controls.js";
+import { installInspectorLayout } from "./workspace-layout.js";
 import { mountExecutionControls } from "./execution-controls.js";
 
 const drafts = new Map(),
@@ -137,8 +138,17 @@ export async function mountWorkflow(container, ctx) {
       el.className = "edit-status dirty";
     }
   };
+  let releaseLayout = () => {};
+  ctx.state.cleanup.push(() => releaseLayout());
   function draw() {
-    container.innerHTML = `<div class="page">${pageHead("WORKFLOW STUDIO", "自由编排工作流", "从任意合格入口开始。选择方式、连接数据，再保存可复用的流程。", `${btn("流程", "workflow-list", "folder", "button secondary")}${btn("添加节点", "add-node", "plus", "button primary")}${btn("保存", "save-workflow", "check", "button secondary")}`)}<div class="toolbar"><span id="workflow-status" class="edit-status ${w.dirty ? "dirty" : ""}">${w.dirty ? "有未保存修改" : w.record ? "已保存 · v" + w.record.version : "空白草稿"}</span><span class="toolbar-spacer"></span>${btn("校验流程", "validate-workflow", "checkcircle", "button secondary")}${btn("发起运行", "run-workflow", "play", "button secondary", w.running ? "disabled" : "")}</div><div class="workflow-layout"><div class="workflow-canvas" id="workflow-canvas" aria-label="工作流画布"><div class="workflow-world" id="workflow-world" style="transform:scale(${Number(w.zoom) || 1})"><svg class="workflow-edges" id="workflow-edges" aria-hidden="true"></svg><div id="workflow-nodes"></div></div>${!w.data.nodes.length ? `<div class="canvas-hint"><div class="empty-state" style="align-items:flex-start;text-align:left;padding:32px 14px"><div class="empty-symbol">${icon("flow")}</div><h3>空白流程</h3>${btn("添加第一个节点", "add-node", "plus", "button secondary")}</div></div>` : ""}<div class="canvas-controls">${iconBtn("缩小画布", "zoom-out", "search")}<span id="workflow-zoom">${Math.round(w.zoom * 100)}%</span>${iconBtn("放大画布", "zoom-in", "plus")}${iconBtn("回到画布起点", "canvas-home", "home")}${iconBtn("整理布局", "auto-layout", "grid")}</div></div><aside class="inspector workflow-inspector" id="workflow-inspector" aria-label="工作流参数"></aside></div><div id="workflow-validation"></div></div>`;
+    releaseLayout();
+    container.innerHTML = `<div class="page">${pageHead("WORKFLOW STUDIO", "自由编排工作流", "从任意合格入口开始。选择方式、连接数据，再保存可复用的流程。", `${btn("流程", "workflow-list", "folder", "button secondary")}${btn("添加节点", "add-node", "plus", "button primary")}${btn("保存", "save-workflow", "check", "button secondary")}`)}<div class="toolbar"><span id="workflow-status" class="edit-status ${w.dirty ? "dirty" : ""}">${w.dirty ? "有未保存修改" : w.record ? "已保存 · v" + w.record.version : "空白草稿"}</span><span class="toolbar-spacer"></span><button class="button small ghost" type="button" data-pane-toggle aria-controls="workflow-inspector">收起参数</button><button class="button small ghost" type="button" data-pane-move>移至左侧</button>${btn("校验流程", "validate-workflow", "checkcircle", "button secondary")}${btn("批量运行", "batch-flow", "layers", "button secondary")}${btn("发起运行", "run-workflow", "play", "button secondary", w.running ? "disabled" : "")}</div><div class="workflow-layout adjustable-layout"><div class="workflow-canvas" id="workflow-canvas" aria-label="工作流画布"><div class="workflow-world" id="workflow-world" style="transform:scale(${Number(w.zoom) || 1})"><svg class="workflow-edges" id="workflow-edges" aria-hidden="true"></svg><div id="workflow-nodes"></div></div>${!w.data.nodes.length ? `<div class="canvas-hint"><div class="empty-state" style="align-items:flex-start;text-align:left;padding:32px 14px"><div class="empty-symbol">${icon("flow")}</div><h3>空白流程</h3>${btn("添加第一个节点", "add-node", "plus", "button secondary")}</div></div>` : ""}<div class="canvas-controls">${iconBtn("缩小画布", "zoom-out", "search")}<span id="workflow-zoom">${Math.round(w.zoom * 100)}%</span>${iconBtn("放大画布", "zoom-in", "plus")}${iconBtn("回到画布起点", "canvas-home", "home")}${iconBtn("整理布局", "auto-layout", "grid")}</div></div><aside class="inspector workflow-inspector" id="workflow-inspector" data-inspector aria-label="工作流参数"></aside></div><div id="workflow-validation"></div></div>`;
+    releaseLayout = installInspectorLayout(
+      $(".workflow-layout", container),
+      $(".toolbar", container),
+      "ship-workflow-inspector-v1",
+      "参数",
+    );
     drawNodes();
     drawInspector();
     drawValidation();
@@ -676,6 +686,15 @@ export async function mountWorkflow(container, ctx) {
         }
       },
       "workflow-list": listFlows,
+      "batch-flow": async (b) => {
+        setBusy(b, true, "保存流程");
+        try {
+          const record = await save();
+          ctx.nav("production/batches/" + encodeURIComponent(record.id));
+        } finally {
+          setBusy(b, false);
+        }
+      },
       "validate-workflow": async (b) => {
         setBusy(b, true, "校验中");
         try {

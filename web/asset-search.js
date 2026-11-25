@@ -60,7 +60,7 @@ export async function openAssetSearch(ctx, choose) {
       ctx.state.health?.actor?.role,
     );
     $("[data-index-history]", dlg).innerHTML =
-      `<div class="director-actions">${canWrite ? `<button type="button" class="button small" data-build="shadow">构建新索引</button>${v.head.generation ? '<button type="button" class="button small" data-build="incremental">同步变化</button>' : ""}` : ""}</div>${v.snapshots.map((r, i) => `<div class="director-index-version"><span>${esc(new Date(r.stamp).toLocaleString())} · ${r.checked} 份素材${r.reused ? " · 复用 " + r.reused : ""}</span>${r.id === v.head.generation ? "<strong>正在使用</strong>" : canWrite ? `<button type="button" class="button ghost small" data-switch="${i}">${r.previously_active ? "回退到此版本" : "启用此版本"}</button>` : ""}</div>`).join("")}`;
+      `<div class="director-actions">${canWrite ? `<button type="button" class="button small" data-build="shadow">构建新索引</button><button type="button" class="button small" data-embed>构建语义索引</button>${v.head.generation ? '<button type="button" class="button small" data-build="incremental">同步变化</button>' : ""}` : ""}</div>${v.snapshots.map((r, i) => `<div class="director-index-version"><span>${esc(new Date(r.stamp).toLocaleString())} · ${r.checked} 份素材${r.reused ? " · 复用 " + r.reused : ""}</span>${r.id === v.head.generation ? "<strong>正在使用</strong>" : canWrite ? `<button type="button" class="button ghost small" data-switch="${i}">${r.previously_active ? "回退到此版本" : "启用此版本"}</button>` : ""}</div>`).join("")}`;
   }
   async function search(offset = 0) {
     const ticket = ++serial;
@@ -102,7 +102,7 @@ export async function openAssetSearch(ctx, choose) {
     $("[data-hits]", dlg).innerHTML = v.items
       .map(
         (r, i) =>
-          `<li><div><strong>${esc(r.name)}</strong><small>${r.seconds != null ? Number(r.seconds).toFixed(2) + " 秒 · " : ""}${esc(r.tags.map((t) => t.label).join("、") || "原片")}</small></div>${typeof choose === "function" && r.media_type === "video" ? `<button type="button" class="button secondary small" data-choose="${i}">加入制作</button>` : ""}</li>`,
+          `<li><div><strong>${esc(r.name)}</strong><small>${r.seconds != null ? Number(r.seconds).toFixed(2) + " 秒 · " : ""}${esc(r.tags.map((t) => t.label).join("、") || "原片")}${Number.isFinite(r.semantic_score) && v.vector_available ? " · 语义相似度 " + r.semantic_score.toFixed(3) : ""}</small></div>${typeof choose === "function" && r.media_type === "video" ? `<button type="button" class="button secondary small" data-choose="${i}">加入制作</button>` : ""}</li>`,
       )
       .join("");
   }
@@ -136,6 +136,14 @@ export async function openAssetSearch(ctx, choose) {
         if (!item) return;
         await choose(item);
         if (valid()) dlg.close();
+        return;
+      }
+      if (b.hasAttribute("data-embed")) {
+        busy = true;
+        b.disabled = true;
+        const result = await post("/embed", { limit: 128 });
+        if (valid())
+          status.textContent = `本次编码 ${result.processed} 条，剩余 ${result.remaining} 条 · ${result.space}`;
         return;
       }
       if (!b.hasAttribute("data-build") && !b.hasAttribute("data-switch"))

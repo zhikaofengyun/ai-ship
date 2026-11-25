@@ -94,6 +94,7 @@ def main():
             page.keyboard.press("Escape")
             clean()
             f = operate("trend", "T01")
+            f.get_by_role("button", name="手动记录来源").click()
             for name, val in {
                 "title": "杯具摄影",
                 "canonical_url": "https://example.test/observation",

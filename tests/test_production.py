@@ -162,6 +162,9 @@ class ProductionIntegrationTests(ProductionBase):
             "ttl_seconds": 60,
         }
         lease = self.post("/production/usage/reserve", body)
+        with self.store.transaction():
+            for i in range(501):
+                self.create("Usage", {"clip_use_id": f"unrelated-{i}", "status": "rendered"})
         duplicate = self.post("/production/usage/reserve", body)
         self.assertEqual(duplicate["id"], lease["id"])
         self.post("/production/usage/reserve", {**body, "owner_ref": owner2["id"]}, 409)
@@ -501,6 +504,36 @@ class ProductionIntegrationTests(ProductionBase):
         )
         self.assertEqual(repeated["count"], 0)
         self.assertEqual(len(repeated["duplicates"]), 1)
+
+    def test_analytics_keeps_old_snapshots_and_separates_measurement_modes(self):
+        first = self.post(
+            "/production/metrics/import",
+            {
+                "project_id": self.pid,
+                "rows": [
+                    self.metric(value=10, counting_mode="interval"),
+                    self.metric(value=90, counting_mode="cumulative"),
+                ],
+            },
+        )
+        with self.store.transaction():
+            for _ in range(503):
+                self.create("Metric", {"metric_name": "Unverified draft", "value_or_null": 1})
+        result = self.client.get(
+            "/api/v1/production/analytics", params={"project_id": self.pid}
+        ).json()["data"]
+        self.assertEqual(result["snapshot_count"], 505)
+        self.assertEqual(result["incomplete_snapshots"], 503)
+        self.assertEqual(result["deduplicated_observations"], 2)
+        self.assertFalse(result["may_be_truncated"])
+        self.assertEqual(
+            {g["counting_mode"]: g["mean"] for g in result["groups"]},
+            {"interval": 10, "cumulative": 90},
+        )
+        self.assertEqual(
+            {a for g in result["groups"] for a in g["metric_refs"]},
+            {r["id"] for r in first["records"]},
+        )
 
     def test_replay_and_tenant_scope_are_not_fabricated(self):
         self.post(

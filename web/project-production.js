@@ -45,8 +45,17 @@ const at = (seconds) =>
 const roleName = { director: "导演", reviewer: "镜头复核", judge: "独立裁决" };
 function showDecisions(plan, run) {
   const checks = arr(plan.reviews || run.issue?.details?.verdicts);
-  if (!checks.length) return "";
-  return `<details class="director-decisions" open><summary>制作复核</summary>${checks.map((r) => `<div><strong>${esc(roleName[r.role] || "制作复核")} · ${r.decision === "accept" ? "接受" : "要求修订"}</strong><p>${esc(r.reason)}</p></div>`).join("")}</details>`;
+  const rounds = arr(plan.review_rounds);
+  const history =
+    rounds.length &&
+    (rounds.length > 1 || run.mode === "team" || plan.planning_mode === "team")
+      ? `<details class="director-decisions"><summary>小队复核 · ${rounds.length} 轮</summary>${rounds.map((r) => `<div><strong>第 ${esc(r.round)} 轮 · ${r.decision === "revise" ? "要求修订" : "进入人工审阅"}</strong>${r.blocker ? `<p>${esc(typeof r.blocker === "string" ? r.blocker : r.blocker.message || r.blocker.reason || r.blocker.code)}</p>` : ""}<small>${arr(r.call_refs).length} 次调用</small></div>`).join("")}</details>`
+      : "";
+  if (!checks.length) return history;
+  return (
+    history +
+    `<details class="director-decisions" open><summary>制作复核</summary>${checks.map((r) => `<div><strong>${esc(roleName[r.role] || "制作复核")} · ${r.decision === "accept" ? "接受" : "要求修订"}</strong><p>${esc(r.reason)}</p></div>`).join("")}</details>`
+  );
 }
 function renderQC(qc) {
   const data = qc?.technical_qc;
@@ -327,9 +336,11 @@ export async function mountProduction(root, ctx) {
         m !== "local_vision"
           ? `<div class="director-model-settings">${select("导演模型", "model_profile_id", options(), director?.id || "", "required")}
       ${m === "team" ? select("镜头复核模型", "reviewer_profile_id", options(), reviewer?.id || "", "required") + select("独立裁决模型", "judge_profile_id", options(), judge?.id || "", "required") : ""}
+      ${m === "team" ? field("最多复核轮数", "max_review_rounds", draft.max_review_rounds || 1, "number", 'min="1" max="4" step="1" required') : ""}
       ${field("本次费用上限（USD）", "max_cost", draft.max_cost ?? "", "number", 'min="0.000001" max="10000" step="any" required placeholder="输入本次上限"')}</div>`
           : ""
       }
+    ${m !== "local_vision" ? feedbackFields() + `<label class="check"><input type="checkbox" name="use_project_preferences" ${draft.use_project_preferences ? "checked" : ""}>采用本次制作时有效的项目偏好</label><a href="#module/data/D04">查看项目剪辑偏好</a>` : ""}
     ${btn("模型配置", "models", "sliders", "button small ghost director-model-button")}<div class="director-numbers">${field("目标时长（秒）", "target_seconds", draft.target_seconds ?? Math.min(120, Math.max(1, Number(project.data.duration) || 30)), "number", 'min="1" max="120" step="any" required')}${select(
       "帧率",
       "fps",
@@ -343,6 +354,19 @@ export async function mountProduction(root, ctx) {
       draft.fps || "30",
     )}</div>
     <details class="director-format"><summary>输出画幅</summary><div class="director-numbers">${field("宽（像素）", "width", draft.width ?? project.data.width ?? 1080, "number", 'min="64" max="4096" step="2" required')}${field("高（像素）", "height", draft.height ?? project.data.height ?? 1920, "number", 'min="64" max="4096" step="2" required')}</div></details></div>`;
+  }
+  function feedbackFields() {
+    const candidates = ctx.state.records.filter((r) =>
+      ["Trend", "Insight"].includes(r.kind),
+    );
+    const pinned = new Set(
+      arr(draft.feedback).map((r) => r.id + "@" + r.version),
+    );
+    return `<details class="director-format"><summary>参考热点与表现证据 · 最多 8 项</summary>${
+      candidates.length
+        ? `<div class="batch-pins">${candidates.map((r) => `<label><input type="checkbox" data-feedback="${esc(r.id)}" data-version="${esc(r.version)}" ${pinned.has(r.id + "@" + r.version) ? "checked" : ""}><span>${esc(r.data.title || r.data.name || r.data.hypothesis || r.data.metric_name || r.id)}<small>${r.kind === "Trend" ? "热点" : "效果观察"} · v${esc(r.version)}</small></span></label>`).join("")}</div>`
+        : "<p>还没有项目热点或效果观察。</p>"
+    }<a href="#module/trend/T01">记录或同步热点</a></details>`;
   }
   function sourcesMarkup() {
     const assets = sources(),
@@ -482,7 +506,7 @@ export async function mountProduction(root, ctx) {
         " · " +
         reviewStage(s.data.stage),
     ]);
-    root.innerHTML = `<div class="page director-page" ${changed ? "data-scene-enter" : ""}><div class="director-titlebar"><div><h1>制作台</h1></div><div>${btn("项目设置", "project-settings", "sliders", "button ghost")}${!detail?.timeline ? link("手动剪辑", "editor", "manual") : ""}${detail ? btn("新建任务", "new-task", "plus", "button secondary") : ""}</div></div>
+    root.innerHTML = `<div class="page director-page" ${changed ? "data-scene-enter" : ""}><div class="director-titlebar"><div><h1>制作台</h1></div><div><a href="#production/batches" class="button secondary">${icon("layers")}批量制作</a>${btn("项目设置", "project-settings", "sliders", "button ghost")}${!detail?.timeline ? link("手动剪辑", "editor", "manual") : ""}${detail ? btn("新建任务", "new-task", "plus", "button secondary") : ""}</div></div>
     ${list.length ? `<details class="director-task-picker"><summary>${icon("history")} 制作记录 · ${list.length}</summary><div class="director-history">${select("制作记录", "history", [["", "选择制作记录"], ...list], detail?.session.id || "")}</div></details>` : ""}
     <div class="director-work"><div class="director-primary">${detail ? reviewMarkup() : composeMarkup()}<p data-production-status role="status" class="director-live" ${busy || issue ? "" : "hidden"}>${esc(busy || issue)}</p></div>
     <aside class="director-evidence"><div data-director-monitor></div>${detail ? `<div class="director-run-meta"><h3>任务依据</h3>${detail.session.data.goal && detail.session.data.goal !== detail.plan?.data.title ? `<p>${esc(detail.session.data.goal)}</p>` : ""}<small>${esc(modes[detail.session.data.mode] || "")}</small>${showEvidence(detail.session.data)}</div>` : ""}<div data-variants></div><div data-generation-panel></div><details class="director-format director-audio-tools"><summary>声音与叙事</summary><div class="director-actions">${btn("生成或导入口播", "narration", "audio", "button small secondary")}${btn("口播与画面对齐", "voice-studio", "sliders", "button small secondary")}${btn("配乐与混音", "soundtrack", "sliders", "button small secondary")}</div></details></aside></div></div>`;
@@ -574,9 +598,17 @@ export async function mountProduction(root, ctx) {
       return;
     }
     if (request.mode !== "local_vision") {
+      const evidence = $$("[data-feedback]:checked", form).map((el) => ({
+        id: el.dataset.feedback,
+        version: Number(el.dataset.version),
+      }));
+      if (evidence.length) request.feedback_evidence = evidence;
+      if (form.elements.use_project_preferences?.checked)
+        request.use_project_preferences = true;
       request.model_profile_id = data.model_profile_id;
       request.max_cost = Number(data.max_cost);
       if (request.mode === "team") {
+        request.max_review_rounds = Number(data.max_review_rounds);
         request.reviewer_profile_id = data.reviewer_profile_id;
         request.judge_profile_id = data.judge_profile_id;
       }
@@ -749,7 +781,17 @@ export async function mountProduction(root, ctx) {
       form.onsubmit = submit;
       form.oninput = (e) => {
         const t = e.target;
-        if (t.dataset.source) {
+        if (t.dataset.feedback) {
+          const checks = $$("[data-feedback]:checked", form);
+          if (checks.length > 8) {
+            t.checked = false;
+            ctx.toast("一次制作最多选择 8 项证据。", "error");
+          }
+          draft.feedback = $$("[data-feedback]:checked", form).map((el) => ({
+            id: el.dataset.feedback,
+            version: Number(el.dataset.version),
+          }));
+        } else if (t.dataset.source) {
           delete draft.explorationPlan;
           draft.assetIds = $$("[data-source]:checked", form).map(
             (c) => c.dataset.source,
@@ -757,7 +799,7 @@ export async function mountProduction(root, ctx) {
           $("h2 small", form).textContent =
             draft.assetIds.length + " / " + sources().length;
         } else if (t.name) {
-          draft[t.name] = t.value;
+          draft[t.name] = t.type === "checkbox" ? t.checked : t.value;
         }
         persist();
       };

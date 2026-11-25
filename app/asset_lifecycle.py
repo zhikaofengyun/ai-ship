@@ -30,7 +30,10 @@ from .production import Body, record, ref, revise, save, timestamp
 from .selection import ChosenVersion, Label, Note, on_request
 from .store import get_store
 
+from .media_admission import router as admission_router
+
 router = APIRouter(prefix="/production/assets", tags=["asset-lifecycle"])
+router.include_router(admission_router)
 
 
 class AssetCommand(Body):
@@ -38,13 +41,21 @@ class AssetCommand(Body):
     request_id: Label
 
 
-def records(actor, pid, kind):
-    items = get_store().list(actor.tenant_id, project_id=pid, kind=kind, limit=2000)
-    if len(items) == 2000:
-        raise DomainError(
-            "ASSET_SCAN_LIMIT", "本机统计已到单项目扫描上限，请缩小分区；未使用截断的样本。", 409
-        )
-    return items
+def records(actor, pid, kind, *, run_type=None, base_session=None):
+    store = get_store()
+    query = """SELECT r.id,r.kind,r.project_id,r.tenant_id,v.* FROM records r JOIN revisions v
+        ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version
+        WHERE r.tenant_id=? AND r.project_id=? AND r.kind=?"""
+    args = [actor.tenant_id, pid, kind]
+    if run_type:
+        query += " AND json_extract(v.data_json,'$.run_type')=?"
+        args.append(run_type)
+    if base_session:
+        query += " AND json_extract(v.data_json,'$.base_session_ref.id')=?"
+        args.append(base_session)
+    with store.connection() as conn:
+        rows = conn.execute(query + " ORDER BY r.created_at DESC,r.id", args)
+        yield from (store._row_record(row) for row in rows)
 
 
 def rid(value):
@@ -154,26 +165,54 @@ class Ledger:
                     members.add(mid)
             if members:
                 self.groups.append((group, members))
-        self.usage = records(actor, pid, "Usage")
-        self.posts = records(actor, pid, "Post")
-        self.metrics = records(actor, pid, "Metric")
+        self.family_links = defaultdict(set)
+        self.family_groups = defaultdict(list)
+        for version_id, parents in self.origins.items():
+            for parent in parents:
+                self.family_links[parent].add(version_id)
+                self.family_links[version_id].add(parent)
+        for group, members in self.groups:
+            anchor = min(members)
+            for mid in members:
+                self.family_links[anchor].add(mid)
+                self.family_links[mid].add(anchor)
+            self.family_groups[anchor].append(group)
+        self.usage_by_source = defaultdict(list)
+        for usage in records(actor, pid, "Usage"):
+            d = usage["data"]
+            shot = self.shots.get(d.get("shot_id"), {}).get("data", {})
+            source_ids = (
+                d.get("asset_id"),
+                rid(d.get("asset_version_ref")),
+                d.get("asset_version_id"),
+                shot.get("asset_id"),
+                shot.get("asset_version_id"),
+            )
+            for source_id in {s for s in source_ids if isinstance(s, str)}:
+                self.usage_by_source[source_id].append(usage)
+        self.posts_by_artifact = defaultdict(list)
+        for post in records(actor, pid, "Post"):
+            d = post["data"]
+            self.posts_by_artifact[d.get("artifact_id") or d.get("submitted_artifact_id")].append(
+                post
+            )
+        self.metrics_by_post = defaultdict(list)
+        for metric in records(actor, pid, "Metric"):
+            if metric["data"].get("metric_name") == "views":
+                self.metrics_by_post[metric["data"].get("post_record_id")].append(metric)
         self.accounts = {a["id"]: a for a in records(actor, pid, "Account")}
 
     def family(self, version):
-        ids = {version["id"]}
-        evidence = {}
-        while True:
-            before = len(ids)
-            for version_id, parents in self.origins.items():
-                links = {version_id, *parents}
-                if links & ids:
-                    ids.update(links)
-            for group, members in self.groups:
-                if members & ids:
-                    ids.update(members)
-                    evidence[group["id"]] = group
-            if len(ids) == before:
-                return ids, list(evidence.values())
+        ids, evidence = set(), []
+        todo = [version["id"]]
+        while todo:
+            current = todo.pop()
+            if current in ids:
+                continue
+            ids.add(current)
+            todo.extend(self.family_links[current] - ids)
+            evidence.extend(self.family_groups[current])
+        return ids, evidence
 
     def observations(self, version, rule):
         ids, evidence = self.family(version)
@@ -189,18 +228,9 @@ class Ledger:
         reservations = set()
         artifacts = set()
         all_uses = set()
-        for usage in self.usage:
+        family_usage = {u["id"]: u for sid in sorted(ids) for u in self.usage_by_source[sid]}
+        for usage in family_usage.values():
             d = usage["data"]
-            shot = self.shots.get(d.get("shot_id"), {}).get("data", {})
-            sources = (
-                d.get("asset_id"),
-                rid(d.get("asset_version_ref")),
-                d.get("asset_version_id"),
-                shot.get("asset_id"),
-                shot.get("asset_version_id"),
-            )
-            if not any(s in ids for s in sources):
-                continue
             if d.get("reservation_status") == "reserved":
                 expiry = d.get("lease_expires_at") or d.get("expires_at")
                 if expiry and timestamp(expiry) > self.now:
@@ -218,10 +248,8 @@ class Ledger:
 
         scoped = bool(rule.account_id or rule.audience)
         confirmed, unresolved = set(), set()
-        for post in self.posts:
+        for post in (p for aid in sorted(artifacts) for p in self.posts_by_artifact[aid]):
             d = post["data"]
-            if (d.get("artifact_id") or d.get("submitted_artifact_id")) not in artifacts:
-                continue
             account = self.accounts.get(d.get("account_id"), {})
             audience = d.get("audience_scope") or account.get("data", {}).get("audience_scope")
             if scoped and not (
@@ -244,7 +272,7 @@ class Ledger:
         # Only comparable cumulative post views are eligible. A family may occur
         # multiple times in a post; one post contributes its latest snapshot once.
         latest = {}
-        for metric in self.metrics:
+        for metric in (m for post_id in sorted(confirmed) for m in self.metrics_by_post[post_id]):
             d = metric["data"]
             post_id = d.get("post_record_id")
             if (

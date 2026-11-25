@@ -25,8 +25,12 @@ from .production import (
 )
 from .selection import ChosenVersion, Label, Note, on_request
 from .store import get_store
+from .retention import router as retention_router
+from .placement_performance import router as performance_router
 
 router = APIRouter(prefix="/production/post-reviews", tags=["metric intake and post review"])
+router.include_router(retention_router)
+router.include_router(performance_router)
 
 
 class Archive(Body):

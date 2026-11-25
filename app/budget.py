@@ -6,6 +6,7 @@ Numeric legacy project budgets are USD. Structured budgets state a currency.
 """
 
 from decimal import Decimal, InvalidOperation
+import json
 import math
 import re
 
@@ -87,3 +88,28 @@ def committed_amount(data: dict) -> Decimal | None:
     )
     bounds = [value for value in (reserved, estimated) if value is not None]
     return max(bounds) if bounds else None
+
+
+def project_commitments(store, tenant, project, currency, unknown_code):
+    """Scan every current liability in the same write transaction as the next reservation."""
+    committed, unpriced = Decimal(0), []
+    with store.connection() as conn:
+        rows = conn.execute(
+            """SELECT r.id, v.data_json FROM records r JOIN revisions v
+            ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version
+            WHERE r.tenant_id=? AND r.project_id=? AND r.kind='Cost'
+            AND json_extract(v.data_json,'$.currency')=?""",
+            (tenant, project, currency),
+        )
+        for rid, raw in rows:
+            data = json.loads(raw)
+            amount = committed_amount(data)
+            if amount is not None:
+                committed += amount
+            elif is_unpriced_local_compute(data):
+                unpriced.append(rid)
+            else:
+                raise DomainError(
+                    unknown_code, "货币费用尚未核实，请先核对账单。", 409, {"cost_id": rid}
+                )
+    return committed, unpriced

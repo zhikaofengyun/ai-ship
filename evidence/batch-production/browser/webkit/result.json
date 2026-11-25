@@ -1,0 +1,24 @@
+{
+  "engine": "webkit",
+  "browser": "26.5",
+  "checks": [
+    "real batch of two distinct FFmpeg outputs, result links and determinate progress",
+    "versioned output contract with real per-file decode receipts",
+    "filter on real persisted item states",
+    "keyboard resize, reorder and collapse queue",
+    "390-pixel stacked panels without horizontal page overflow",
+    "open a produced timeline in the existing editor",
+    "narrow workflow inspector can be hidden and reopened",
+    "two timeline outputs run a pinned project DAG and expose separate child runs",
+    "compare measured batch throughput and isolate non-comparable delivery modes",
+    "two ordered generation slots expose four model calls before submission",
+    "versioned public-source switch suspends and restores project acquisition",
+    "effective project preference set, observed and revoked with version checks",
+    "qualify and run an exact Workflow version from the harness view",
+    "persist a project TikTok read-connection suspension with no outbound publication",
+    "M09 placement comparison filters paid traffic to an empty state, then verifies 80.0% and 55.0% against two actual rendered files and pinned synthetic post/Insight receipts; returns to conditions and the review entry",
+    "version-bound source usage decision submitted from I05"
+  ],
+  "page_errors": [],
+  "fixtures": "Two generated one-second solid-color input videos; export verified with the local renderer."
+}

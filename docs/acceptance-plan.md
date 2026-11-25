@@ -1,5 +1,7 @@
 # 余项验收与开发次序
 
+最新逐项状态和实测证据请见[当前审计](source-coverage-review.md)及[批量制作证据](../evidence/batch-production)。以下计划保留当时的验收次序。
+
 此清单不增加 Atlas 以外的新模块。它把独立审计中尚未通过的条件按依赖关系排序，用于接手人选择下一批开发；准确的逐项验收文字仍以 `contracts/atlas.json`、`contracts/implementation.json` 与 `scenario-coverage.md` 为准。不同方案仍由用户选择，顺序不是强制固定的生产流水线。
 
 ## 先关闭合同与可执行行为的差距

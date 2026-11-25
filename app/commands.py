@@ -9,7 +9,7 @@ from .asset_controls import manual_asset_data
 from .errors import DomainError
 from .store import now, new_id, digest
 from .workflow import validate_controls, validate_workflow
-from .budget import is_unpriced_local_compute, committed_amount, money_amount, project_cap
+from .budget import project_commitments, money_amount, project_cap
 
 # This table describes actual handlers, not the 178-item design catalogue.
 LOCAL_CREATE = {
@@ -377,29 +377,9 @@ def _dispatch(store, actor, command):
         cap = project_cap(store.get(project, actor.tenant_id)["data"], currency)
         if cap is not None:
             limit = min(limit, cap)
-        costs = store.list(actor.tenant_id, "Cost", project, limit=2000)
-        if len(costs) >= 2000:
-            raise DomainError(
-                "COST_SCAN_LIMIT", "费用账本超过本机核查上限，不能忽略较早费用。", 409
-            )
-        committed = money_amount(0)
-        unpriced = []
-        for item in costs:
-            data = item["data"]
-            if data.get("currency") != currency:
-                continue
-            value = committed_amount(data)
-            if value is None:
-                if is_unpriced_local_compute(data):
-                    unpriced.append(item["id"])
-                    continue
-                raise DomainError(
-                    "COST_RECONCILIATION_REQUIRED",
-                    "已有货币费用缺少可核验金额，核对后才能预留。",
-                    409,
-                    {"cost_id": item["id"]},
-                )
-            committed += value
+        committed, unpriced = project_commitments(
+            store, actor.tenant_id, project, currency, "COST_RECONCILIATION_REQUIRED"
+        )
         if committed + amount > limit:
             raise DomainError(
                 "BUDGET_EXCEEDED",

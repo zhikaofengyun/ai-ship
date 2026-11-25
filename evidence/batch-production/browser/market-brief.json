@@ -1,0 +1,12 @@
+{
+  "checks": [
+    "create and review a market brief",
+    "forbidden expression prevents approval and preserves form for correction",
+    "remove and select the exact approved revision",
+    "submitted normal batch completes with pinned caption evidence"
+  ],
+  "page_errors": [],
+  "version": 1,
+  "declared_language": "en-US",
+  "caption_count": 1
+}

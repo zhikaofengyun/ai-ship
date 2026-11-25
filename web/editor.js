@@ -93,11 +93,18 @@ export async function mountEditor(container, ctx) {
   const pid = ctx.state.projectId || "none";
   const actor = ctx.state.health?.actor;
   const requestedId = ctx.editorTimelineId;
-  const requested =
-    requestedId &&
-    ctx.records("Timeline").find((record) => record.id === requestedId);
-  if (requestedId && !requested)
-    throw new Error("此剪辑工程不在当前项目，或当前身份无权读取。");
+  const pageGeneration = ctx.state.routeGeneration;
+  const currentPage = () =>
+    pageGeneration === ctx.state.routeGeneration &&
+    (ctx.state.projectId || "none") === pid;
+  let requested =
+    requestedId && ctx.records("Timeline").find((r) => r.id === requestedId);
+  if (requestedId && !requested) {
+    requested = await ctx.api("/records/" + encodeURIComponent(requestedId));
+    if (!currentPage()) return;
+    if (requested.kind !== "Timeline" || requested.project_id !== pid)
+      throw new Error("此剪辑工程不在当前项目。");
+  }
   const localDraft =
     ctx.editorIntent === "local-draft" ? location.hash.split("/")[2] : null;
   const baseDraftKey = [
@@ -176,9 +183,49 @@ export async function mountEditor(container, ctx) {
   let releaseLayout, viewerControls;
   let mounted = true;
   const active = () => mounted && (ctx.state.projectId || "none") === pid;
-  const assets = () => mediaLibrary(ctx.state.records);
-  const findAsset = (id) => ctx.state.records.find((r) => r.id === id);
-  const clipAsset = (c) => selectedMedia(c, ctx.state.records);
+  // A batch timeline can outlive the recent-record window. Resolve only the
+  // distinct sources needed for this timeline and keep them across list refreshes.
+  const pinned = new Map();
+  const sourceIds = new Set(
+    [...e.data.clips, ...e.data.audio_tracks]
+      .flatMap((c) => [c.asset_version_id, c.asset_id])
+      .filter(Boolean),
+  );
+  const currentIds = new Map(ctx.state.records.map((r) => [r.id, r]));
+  const missing = [];
+  for (const id of sourceIds) {
+    if (currentIds.has(id)) pinned.set(id, currentIds.get(id));
+    else missing.push(id);
+  }
+  for (let n = 0; n < missing.length; n += 8) {
+    await Promise.all(
+      missing.slice(n, n + 8).map(async (id) => {
+        try {
+          const r = await ctx.api("/records/" + encodeURIComponent(id));
+          if (r?.project_id === pid) pinned.set(id, r);
+        } catch (err) {
+          if (![403, 404].includes(err.status)) throw err;
+        }
+      }),
+    );
+    if (!currentPage()) return;
+  }
+  let baseRecords = null,
+    combined = [];
+  const allRecords = () => {
+    if (baseRecords !== ctx.state.records) {
+      baseRecords = ctx.state.records;
+      const known = new Set(baseRecords.map((r) => r.id));
+      combined = [
+        ...baseRecords,
+        ...Array.from(pinned.values()).filter((r) => !known.has(r.id)),
+      ];
+    }
+    return combined;
+  };
+  const assets = () => mediaLibrary(allRecords());
+  const findAsset = (id) => allRecords().find((r) => r.id === id);
+  const clipAsset = (c) => selectedMedia(c, allRecords());
   const currentSource = () => e.sourceId && findAsset(e.sourceId);
   const lastExport = () =>
     ctx
@@ -260,8 +307,8 @@ export async function mountEditor(container, ctx) {
     guard();
     if (!a?.data?.blob_location_id)
       throw new Error("所选素材没有当前可消费的实际文件");
-    const binding = mediaBinding(a, ctx.state.records),
-      selected = selectedMedia(binding, ctx.state.records);
+    const binding = mediaBinding(a, allRecords()),
+      selected = selectedMedia(binding, allRecords());
     if (!selected || assetDuration(selected) <= 0)
       throw new Error("所选版本缺少有效媒体时长，请核对探测结果。");
     mutate(() => {
@@ -1282,7 +1329,7 @@ export async function mountEditor(container, ctx) {
         const latest = await ctx.api(
           "/records/" + encodeURIComponent(e.record.id),
         );
-        revisionConflict(latest, e.data, ctx.state.records, async () => {
+        revisionConflict(latest, e.data, allRecords(), async () => {
           const saved = e.record,
             name = e.data.name;
           e.record = null;
@@ -1742,7 +1789,7 @@ export async function mountEditor(container, ctx) {
         const a = findAsset(formData(f).asset);
         mutate(() => {
           delete c.asset_version_id;
-          Object.assign(c, mediaBinding(a, ctx.state.records));
+          Object.assign(c, mediaBinding(a, allRecords()));
         });
         draw();
       },
@@ -1840,7 +1887,7 @@ export async function mountEditor(container, ctx) {
         )
           return;
         mutate(() =>
-          Object.assign(c, mediaBinding(result.version, ctx.state.records)),
+          Object.assign(c, mediaBinding(result.version, allRecords())),
         );
         draw();
       },

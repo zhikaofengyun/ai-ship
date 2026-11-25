@@ -650,6 +650,80 @@ class ExecutionTests(unittest.TestCase):
                 self.assertEqual(r.status_code, 422)
         self.assertEqual(self.store.list("local", "Run"), [])
 
+    def test_revise_only_unstarted_node_preserves_checkpoint_and_executes_new_graph(self):
+        from app.main import app
+
+        unavailable = {**self.script_node("b"), "route_id": "V01-R1"}
+        initial = self.workflow(
+            [self.script_node("a"), unavailable],
+            [{"source": "a", "target": "b", "type": "control"}],
+        )
+        run = self.start(initial)["run"]
+        self.assertEqual(run["data"]["status"], "blocked")
+        old = run["data"]["checkpoint"]
+        self.assertEqual(old["nodes"]["b"]["attempts"], 0)
+        first_output = old["nodes"]["a"]["outputs"]["script"]
+        graph = self.store.get(run["data"]["run_graph_ref"], "local")
+        base = {
+            "project_id": self.project["id"],
+            "expected_revision": run["version"],
+            "base_spec_hash": run["data"]["spec_hash"],
+            "node_id": "b",
+            "route_id": "V01-R3",
+            "operation_args": {"data": {"text": "revised after inspection"}},
+            "reason": "switch to supported script input",
+            "request_id": uuid.uuid4().hex,
+        }
+        with TestClient(app) as client:
+
+            def change(payload, status):
+                response = client.post(
+                    "/api/v1/execution/" + run["id"] + "/revise-node", json=payload
+                )
+                self.assertEqual(response.status_code, status, response.text)
+                return response.json().get("data") or response.json()["error"]
+
+            self.assertEqual(
+                change({**base, "node_id": "a"}, 409)["code"], "NODE_ALREADY_ATTEMPTED"
+            )
+            self.assertEqual(
+                change({**base, "route_id": "Y03-R1"}, 422)["code"], "INVALID_REPLACEMENT_ROUTE"
+            )
+            self.assertEqual(
+                change({**base, "operation_args": {"unknown": True}}, 422)["code"],
+                "OPERATION_ARGUMENTS",
+            )
+            result = change(base, 200)
+            self.assertEqual(result["run"]["data"]["checkpoint"], old)
+            self.assertEqual(result["run"]["data"]["deadline_at"], run["data"]["deadline_at"])
+            self.assertEqual(
+                result["change_set"]["data"]["inverse_snapshot_ref"]["id"], graph["id"]
+            )
+            self.assertEqual(change(base, 200)["graph"]["id"], result["graph"]["id"])
+            self.assertEqual(
+                self.store.get(initial["id"], "local")["data"]["DAG"]["nodes"][1]["route_id"],
+                "V01-R1",
+            )
+            self.assertEqual(
+                change({**base, "request_id": uuid.uuid4().hex}, 409)["code"], "REVISION_CONFLICT"
+            )
+            finished = client.post(
+                "/api/v1/execution/" + run["id"] + "/resume",
+                json={"expected_revision": result["run"]["version"]},
+            )
+            self.assertEqual(finished.status_code, 200, finished.text)
+            completed = finished.json()["data"]["run"]["data"]
+            self.assertEqual(completed["status"], "completed")
+            self.assertEqual(
+                completed["checkpoint"]["nodes"]["a"]["outputs"]["script"], first_output
+            )
+            self.assertEqual(completed["checkpoint"]["steps_started"], 2)
+            second_output = completed["checkpoint"]["nodes"]["b"]["outputs"]["script"]
+            self.assertEqual(
+                self.store.get(second_output["id"], "local")["data"]["text"],
+                "revised after inspection",
+            )
+
     def test_http_start_and_resume_contracts(self):
         from app.main import app
 

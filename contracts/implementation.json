@@ -2,7 +2,7 @@
   "schema_version": "implementation-2",
   "source_version": "6.0",
   "source_html_sha256": "65a0e6e7f19b0e087be4ff0adcd1166c7073211caa5988f739df05b47971dee4",
-  "boundary": "178项目录完整；151真实业务子集/16通用框架/0仅有未实联适配器/11仅合同配置，整项验收0。分类不等于完成率，目录路线不等于已注册执行路线。",
+  "boundary": "178项目录完整；176真实业务子集/0通用框架/2仅有未实联适配器/0仅合同配置，整项验收0。分类不等于完成率，目录路线不等于已注册执行路线。",
   "status_definitions": {
     "local_business_subset": "真实局部路径",
     "generic_framework_only": "通用基础/配置",
@@ -12,10 +12,10 @@
   "counts": {
     "features": 178,
     "by_status": {
-      "local_business_subset": 151,
-      "generic_framework_only": 16,
-      "external_adapter_unverified": 0,
-      "contract_and_configuration_only": 11
+      "local_business_subset": 176,
+      "generic_framework_only": 0,
+      "external_adapter_unverified": 2,
+      "contract_and_configuration_only": 0
     },
     "full_business_acceptance": 0,
     "production_verified": 0,
@@ -25,7 +25,10 @@
     "source_file": "app/execution.py",
     "registered_routes": [
       "E01-R1",
+      "E01-R3",
       "E08-R1",
+      "G02-R2",
+      "G03-R2",
       "I03-R2",
       "I04-R1",
       "I07-R2",
@@ -36,13 +39,13 @@
       "Y03-R1",
       "Y06-R2"
     ],
-    "registered_count": 11,
+    "registered_count": 14,
     "boundary": "静态读取真实HANDLERS注册表；不是534条原文路线全量执行或全验收声明"
   },
   "scenario_coverage": {
     "total": 69,
-    "partial": 51,
-    "uncovered": 18,
+    "partial": 54,
+    "uncovered": 15,
     "full_acceptance_passed": 0,
     "audit_document": "docs/scenario-coverage.md",
     "boundary": "部分仅指列出的子约束证据；逐场景完整验收另行核实"
@@ -257,8 +260,8 @@
       "module": "project",
       "label": "受众与本地化",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "P03-R1",
@@ -282,20 +285,36 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "POST /api/v1/production/batches/market-briefs"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "项目字段和质量/资源参数可以保存，另有通用预算预留。",
-      "remaining_scope": "本地化读法/受众适配和质量档位到真实后端策略的映射没有专用实现。",
+      "implemented_subset": "可冻结市场、账号、原文和本地化脚本、受众假设、有效期及禁用表达；指定批次核对账号市场、语种、字幕、数字、SKU 和事实版本后才会放行。",
+      "remaining_scope": "仅实现规则简报及指定人工字幕模板的核查，尚未验证翻译语义、受众成效和口播本地化。",
       "code": [
         "app/api.py",
+        "app/batch_market.py",
+        "app/batches.py",
         "app/commands.py"
       ],
       "test_files": [
+        "tests/test_batch_market.py",
         "tests/test_core.py"
       ],
-      "test_definitions": [],
+      "test_definitions": [
+        {
+          "file": "tests/test_batch_market.py",
+          "symbol": "BatchMarketTests.test_market_scope_sku_number_and_prohibited_expression",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batch_market.py",
+          "symbol": "BatchMarketTests.test_caption_binding_gate_and_live_evidence_drift_before_worker",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        }
+      ],
       "verification_runs": [],
       "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
       "full_business_acceptance": false,
@@ -335,8 +354,8 @@
       "module": "project",
       "label": "质量与资源档位",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "P04-R1",
@@ -360,7 +379,9 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "POST /api/v1/production/batches/contracts"
+        ],
         "control_plane_commands": [
           {
             "endpoint": "POST /api/v1/commands",
@@ -373,18 +394,26 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "项目字段和质量/资源参数可以保存，另有通用预算预留。",
-      "remaining_scope": "本地化读法/受众适配和质量档位到真实后端策略的映射没有专用实现。",
+      "implemented_subset": "批次可以绑定固定版本的交付合同，按配置核验输出规格、时间范围、剪辑节奏及证据要求，保存各门槛结果。",
+      "remaining_scope": "尚未覆盖全部业务角色的语义验收、平台内容安全区和多供应商成本最优求解。",
       "code": [
         "app/api.py",
+        "app/batch_acceptance.py",
         "app/budget.py",
-        "app/commands.py"
+        "app/commands.py",
+        "web/batch-contracts.js"
       ],
       "test_files": [
+        "tests/test_batch_acceptance.py",
         "tests/test_budget.py",
         "tests/test_core.py"
       ],
       "test_definitions": [
+        {
+          "file": "tests/test_batch_acceptance.py",
+          "symbol": "BatchAcceptanceTests.test_versioned_preflight_and_actual_decoded_output",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
         {
           "file": "tests/test_budget.py",
           "symbol": "BudgetIntegrationTests.test_manual_reservation_blocks_model_before_network_then_releases_exact_hold",
@@ -455,6 +484,8 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "GET /api/v1/production/batches/{bid}",
+          "POST /api/v1/production/batches",
           "POST /api/v1/workflows/validate"
         ],
         "control_plane_commands": [
@@ -473,19 +504,29 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "带类型端口的静态 DAG 验证、画布配置、11 条路线的本地顺序执行。",
-      "remaining_scope": "动态规划、子流程/有界循环及其余路线的执行适配器缺失。",
+      "implemented_subset": "执行带类型端口的 DAG，14 条已登记路线可绑定到独立批次变体，支持生成等待与回执后恢复。",
+      "remaining_scope": "其余路线、任意嵌套循环与全局动态规划尚待实现。",
       "code": [
+        "app/batch_queue.py",
+        "app/batch_workflows.py",
+        "app/batches.py",
         "app/execution.py",
         "app/store.py",
         "app/workflow.py",
+        "web/batch-workspace.js",
         "web/workflow.js"
       ],
       "test_files": [
+        "tests/test_batches.py",
         "tests/test_core.py",
         "tests/test_execution.py"
       ],
       "test_definitions": [
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchTests.test_batch_dispatches_frozen_dag_input_and_records_child_run",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
         {
           "file": "tests/test_execution.py",
           "symbol": "ExecutionTests.test_real_transform_then_extract_audio_and_idempotent_replay",
@@ -638,23 +679,31 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
-          "POST /api/v1/production/trends"
+          "POST /api/v1/production/trends",
+          "POST /api/v1/production/trends/sync"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "人工登记 URL、观察/到期时间与来源证据；拒绝倒置时间窗。",
-      "remaining_scope": "没有连接实时趋势源；没有多源独立性推断、自动撤回检测和创意重路由。",
+      "implemented_subset": "实联 Google Trends RSS 并保留观察来源、市场和发生时间；另支持带密钥的 YouTube 热门榜读取，按窗口去重。",
+      "remaining_scope": "单源观察的独立性、跨站热度同口径校准及实时撤回仍待核实。",
       "code": [
-        "app/production.py"
+        "app/production.py",
+        "app/trend_feeds.py"
       ],
       "test_files": [
-        "tests/test_production.py"
+        "tests/test_production.py",
+        "tests/test_trend_feeds.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_production.py",
           "symbol": "ProductionIntegrationTests.test_trend_source_window_and_atomicity",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_trend_feeds.py",
+          "symbol": "TrendFeedTests.test_rss_with_pinned_evidence_and_duplicate_sync",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -722,21 +771,24 @@
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
           "POST /api/v1/production/creative/verify-trend",
-          "POST /api/v1/production/trends"
+          "POST /api/v1/production/trends",
+          "POST /api/v1/production/trends/sync"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
       "implemented_subset": "记录原始发生与观察时间，按已注明的原出处、来源地址及编辑机构合并转载链。冲突、过期和证据不足分别处理，过期热点不能继续创作。",
-      "remaining_scope": "来源归属仍依赖人工读回与说明，未接自动采集或出版社的实时更新。",
+      "remaining_scope": "来源归属仍依赖人工读回与说明，出版社撤稿和实时更新仍需独立核查。",
       "code": [
         "app/creative.py",
         "app/production.py",
+        "app/trend_feeds.py",
         "web/creative-actions.js"
       ],
       "test_files": [
         "tests/test_creative.py",
-        "tests/test_production.py"
+        "tests/test_production.py",
+        "tests/test_trend_feeds.py"
       ],
       "test_definitions": [
         {
@@ -747,6 +799,11 @@
         {
           "file": "tests/test_production.py",
           "symbol": "ProductionIntegrationTests.test_trend_source_window_and_atomicity",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_trend_feeds.py",
+          "symbol": "TrendFeedTests.test_rss_with_pinned_evidence_and_duplicate_sync",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -1263,8 +1320,8 @@
       "module": "acquire",
       "label": "链接与多源获取",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "A02-R1",
@@ -1288,25 +1345,31 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/production/source-media/search",
+          "POST /api/v1/production/source-media/import"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "从 Wikimedia Commons 搜索真实视频，复核文件修订、大小和校验值，保留作者、许可说明和原始链接后入库。",
+      "remaining_scope": "目前只接一种公共媒体来源。其他站点的授权连接、断点续传和跨源版本对账待验。",
       "code": [
         "app/catalog.py",
         "app/schemas.py",
-        "web/controls.js"
+        "app/source_media.py",
+        "web/controls.js",
+        "web/source-media.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_source_media.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_source_media.py",
+          "symbol": "SourceMediaTests.test_verified_bytes_source_and_idempotent_retry",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -1346,8 +1409,8 @@
       "module": "acquire",
       "label": "采集适配器管理",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "A03-R1",
@@ -1371,25 +1434,37 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/production/source-media/search",
+          "POST /api/v1/production/source-media/import",
+          "POST /api/v1/production/source-media/settings"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "项目管理员可以带版本切换 Commons 适配器；下载开始前和提交入库前均检查该开关。",
+      "remaining_scope": "缺少自定义适配器安装、多供应商健康路由和自动升级。",
       "code": [
         "app/catalog.py",
         "app/schemas.py",
-        "web/controls.js"
+        "app/source_media.py",
+        "web/controls.js",
+        "web/source-media.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_source_media.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_source_media.py",
+          "symbol": "SourceMediaTests.test_verified_bytes_source_and_idempotent_retry",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_source_media.py",
+          "symbol": "SourceMediaTests.test_disabling_connector_before_download_commit",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -1824,8 +1899,10 @@
         "executes_business_work": false
       },
       "execution": {
-        "registered_workflow_routes": [],
-        "workflow_start_endpoint": null,
+        "registered_workflow_routes": [
+          "G02-R2"
+        ],
+        "workflow_start_endpoint": "POST /api/v1/execution/start",
         "direct_api_endpoints": [
           "GET /api/v1/production/generation",
           "GET /api/v1/production/generation/profiles",
@@ -1840,6 +1917,7 @@
       "remaining_scope": "静态生成中的参考边界、参考风格和商品身份分别需要内容评估。",
       "code": [
         "app/catalog.py",
+        "app/execution.py",
         "app/generation.py",
         "app/schemas.py",
         "web/controls.js",
@@ -1864,6 +1942,11 @@
         {
           "file": "tests/test_generation.py",
           "symbol": "GenerationTests.test_verified_generated_image_stays_distinct_from_explicit_timed_still_and_is_reusable",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_generated_workflow_parks_and_resumes_same_request_with_one_attempt",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -1928,8 +2011,10 @@
         "executes_business_work": false
       },
       "execution": {
-        "registered_workflow_routes": [],
-        "workflow_start_endpoint": null,
+        "registered_workflow_routes": [
+          "G03-R2"
+        ],
+        "workflow_start_endpoint": "POST /api/v1/execution/start",
         "direct_api_endpoints": [
           "GET /api/v1/production/generation",
           "GET /api/v1/production/generation/profiles",
@@ -1943,6 +2028,7 @@
       "remaining_scope": "双端帧控制、局部蒙版重绘、商品身份与跨镜头连续性尚需独立验收。",
       "code": [
         "app/catalog.py",
+        "app/execution.py",
         "app/generation.py",
         "app/schemas.py",
         "web/controls.js",
@@ -1972,6 +2058,11 @@
         {
           "file": "tests/test_generation.py",
           "symbol": "GenerationTests.test_queue_download_probe_generated_origin_and_deduplicated_adoption",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_generated_workflow_parks_and_resumes_same_request_with_one_attempt",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -2716,8 +2807,8 @@
       "module": "ingest",
       "label": "入库批准与分层",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "I05-R1",
@@ -2741,25 +2832,31 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "POST /api/v1/production/assets/admission",
+          "POST /api/v1/production/assets/retention-reconcile"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "按来源版本办理准入、隔离、保留期和层级；真实生产与素材选择会重查当前来源状态。",
+      "remaining_scope": "跨存储及全渠道审批和组织级多角色策略仍待验。",
       "code": [
         "app/catalog.py",
+        "app/media_admission.py",
         "app/schemas.py",
+        "scripts/restore.py",
         "web/controls.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_asset_lifecycle.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_asset_lifecycle.py",
+          "symbol": "AssetLifecycleTests.test_source_admission_expiry_reconciles_real_derivative_and_preserves_shared_bytes",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -3633,8 +3730,8 @@
       "module": "search",
       "label": "语义与混合检索",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "S02-R1",
@@ -3660,18 +3757,21 @@
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
           "GET /api/v1/production/search",
+          "POST /api/v1/production/asset-index/embed",
           "POST /api/v1/production/asset-index/query"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "未接向量模型时查询明确返回字面召回及其降级原因，使用实际全文索引与最新来源事实。",
-      "remaining_scope": "语义向量、跨模态召回以及不同嵌入空间的混合排序待实现。",
+      "implemented_subset": "可选本地多语句向量对名称和已验证片段标签编码，与文字索引融合并逐条重检授权；实测中文查询命中英文素材。",
+      "remaining_scope": "尚无视觉或音频的跨模态嵌入、生产召回率标注集和大规模近邻索引。",
       "code": [
         "app/asset_index.py",
         "app/index_schema.py",
         "app/media.py",
         "app/production.py",
+        "app/text_vectors.py",
+        "scripts/verify_semantic_search.py",
         "web/asset-search.js"
       ],
       "test_files": [
@@ -3687,6 +3787,11 @@
         {
           "file": "tests/test_production.py",
           "symbol": "RealMediaCrossDomainTests.test_real_probe_bounds_tags_search_and_audio_anchors",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_asset_index.py",
+          "symbol": "AssetIndexTests.test_missing_semantic_runtime_keeps_existing_literal_workflow",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -4141,7 +4246,9 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/production/post-reviews/placement-performance"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
@@ -4149,9 +4256,12 @@
       "remaining_scope": "未闭环到平台真实曝光/账号受众用途，也未逐层估计遮挡贡献。",
       "code": [
         "app/media.py",
-        "app/production.py"
+        "app/placement_performance.py",
+        "app/production.py",
+        "web/placement-performance.js"
       ],
       "test_files": [
+        "tests/test_auto_edits.py",
         "tests/test_media.py",
         "tests/test_production.py"
       ],
@@ -4159,6 +4269,11 @@
         {
           "file": "tests/test_media.py",
           "symbol": "MediaIntegrationTests.test_actual_multitrack_render_manifest_package_and_qc_boundary",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -4328,7 +4443,9 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
-          "POST /api/v1/production/assets/score"
+          "GET /api/v1/production/post-reviews/placement-performance",
+          "POST /api/v1/production/assets/score",
+          "POST /api/v1/production/post-reviews/retention-mapping"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
@@ -4336,16 +4453,31 @@
       "implemented_subset": "人工维度与显式权重、缺失保持 null、已观测均值和覆盖率。",
       "remaining_scope": "置信区间、证据独立性/校准、效果去混杂和环境分层没有自动验证。",
       "code": [
+        "app/edit_feedback.py",
         "app/media.py",
-        "app/production.py"
+        "app/placement_performance.py",
+        "app/production.py",
+        "app/retention.py",
+        "web/placement-performance.js"
       ],
       "test_files": [
+        "tests/test_auto_edits.py",
         "tests/test_production.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_production.py",
           "symbol": "ProductionIntegrationTests.test_score_missing_dimensions_not_zero",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -6428,8 +6560,8 @@
       "module": "plan",
       "label": "规格安全区与节奏",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "N05-R1",
@@ -6453,7 +6585,9 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "POST /api/v1/production/batches/contracts"
+        ],
         "control_plane_commands": [
           {
             "endpoint": "POST /api/v1/commands",
@@ -6466,17 +6600,26 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "Plan 可按通用实体合同保存，Timeline 有区间/规格检查。",
-      "remaining_scope": "没有叙事规划、硬约束可解性/最小冲突求解或内容安全区语义验收。",
+      "implemented_subset": "批次可以绑定固定版本的交付合同，按配置核验输出规格、时间范围、剪辑节奏及证据要求，保存各门槛结果。",
+      "remaining_scope": "尚未覆盖全部业务角色的语义验收、平台内容安全区和多供应商成本最优求解。",
       "code": [
+        "app/batch_acceptance.py",
         "app/commands.py",
         "app/media.py",
-        "app/production.py"
+        "app/production.py",
+        "web/batch-contracts.js"
       ],
       "test_files": [
+        "tests/test_batch_acceptance.py",
         "tests/test_media.py"
       ],
-      "test_definitions": [],
+      "test_definitions": [
+        {
+          "file": "tests/test_batch_acceptance.py",
+          "symbol": "BatchAcceptanceTests.test_versioned_preflight_and_actual_decoded_output",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        }
+      ],
       "verification_runs": [],
       "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
       "full_business_acceptance": false,
@@ -6746,7 +6889,8 @@
       },
       "execution": {
         "registered_workflow_routes": [
-          "E01-R1"
+          "E01-R1",
+          "E01-R3"
         ],
         "workflow_start_endpoint": "POST /api/v1/execution/start",
         "direct_api_endpoints": [
@@ -6813,6 +6957,11 @@
         {
           "file": "scripts/browser_ai_production.py",
           "symbol": "run",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_timeline_exchange.py",
+          "symbol": "TimelineExchangeTests.test_hand_edited_otio_is_a_dag_input",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         },
         {
@@ -7823,8 +7972,10 @@
         ],
         "workflow_start_endpoint": "POST /api/v1/execution/start",
         "direct_api_endpoints": [
+          "GET /api/v1/production/batches/{bid}",
           "POST /api/v1/media/render",
-          "POST /api/v1/production/auto-edits/{run_id}/render"
+          "POST /api/v1/production/auto-edits/{run_id}/render",
+          "POST /api/v1/production/batches"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
@@ -7833,15 +7984,20 @@
       "remaining_scope": "没有 HyperFrames/其他后端的完整合同转换、能力比较或语义等效降级。",
       "code": [
         "app/auto_edits.py",
+        "app/batch_queue.py",
+        "app/batch_workflows.py",
+        "app/batches.py",
         "app/execution.py",
         "app/media.py",
         "app/store.py",
         "app/transitions.py",
+        "web/batch-workspace.js",
         "web/clip-transitions.js",
         "web/project-production.js"
       ],
       "test_files": [
         "tests/test_auto_edits.py",
+        "tests/test_batches.py",
         "tests/test_clip_transitions.py",
         "tests/test_execution.py",
         "tests/test_media.py"
@@ -7860,6 +8016,11 @@
         {
           "file": "tests/test_clip_transitions.py",
           "symbol": "ClipTransitionTests.test_decoded_five_transitions_audio_mix_and_lineage",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchTests.test_batch_dispatches_frozen_dag_input_and_records_child_run",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         },
         {
@@ -8310,8 +8471,8 @@
       "module": "account",
       "label": "账号与应用授权",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "external_adapter_unverified",
+      "status_label": "适配器未实联",
       "source_route_count": 3,
       "source_route_ids": [
         "J01-R1",
@@ -8335,25 +8496,30 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/production/tiktok/accounts/{account_id}/connection",
+          "POST /api/v1/production/tiktok/accounts/{account_id}/connection"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "实现 TikTok 服务端账号绑定及官方用户身份核对。凭据和 open_id 与租户、项目、账号逐级匹配。",
+      "remaining_scope": "尚无成套 OAuth 同意与刷新流程，未用真实授权账号完成实联。",
       "code": [
         "app/catalog.py",
         "app/schemas.py",
+        "app/tiktok_metrics.py",
         "web/controls.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_tiktok_metrics.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_tiktok_metrics.py",
+          "symbol": "TikTokMetricsTests.test_identity_capability_probe_and_suspend",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -8401,8 +8567,8 @@
       "module": "account",
       "label": "令牌健康与撤权",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "J02-R1",
@@ -8426,25 +8592,30 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/production/tiktok/accounts/{account_id}/connection",
+          "POST /api/v1/production/tiktok/accounts/{account_id}/connection"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "支持明确暂停连接，按版本防止并发覆写，暂停后阻止账号指标同步。",
+      "remaining_scope": "平台令牌轮换、主动撤权通知和真实失效生命周期仍待授权联调。",
       "code": [
         "app/catalog.py",
         "app/schemas.py",
+        "app/tiktok_metrics.py",
         "web/controls.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_tiktok_metrics.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_tiktok_metrics.py",
+          "symbol": "TikTokMetricsTests.test_identity_capability_probe_and_suspend",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -8855,8 +9026,8 @@
       "module": "account",
       "label": "账号能力测试与降级",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "external_adapter_unverified",
+      "status_label": "适配器未实联",
       "source_route_count": 3,
       "source_route_ids": [
         "J07-R1",
@@ -8880,25 +9051,30 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/production/tiktok/accounts/{account_id}/connection",
+          "POST /api/v1/production/tiktok/accounts/{account_id}/connection"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "通过 TikTok 官方用户及视频读取接口探测当前连接身份与读取能力，保留探测结果。",
+      "remaining_scope": "未用真实账号验收，尚未覆盖上传、撤回、配额与多平台能力协商。",
       "code": [
         "app/catalog.py",
         "app/schemas.py",
+        "app/tiktok_metrics.py",
         "web/controls.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_tiktok_metrics.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_tiktok_metrics.py",
+          "symbol": "TikTokMetricsTests.test_identity_capability_probe_and_suspend",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -9336,8 +9512,8 @@
       "module": "publish",
       "label": "异步上传与结果核对",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "F05-R1",
@@ -9361,25 +9537,32 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "POST /api/v1/production/publication-lifecycle/{pid}/cancel",
+          "POST /api/v1/production/publication-lifecycle/{pid}/change",
+          "POST /api/v1/production/publication-lifecycle/{pid}/observe"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "人工登记发送结果未知、成功或失败回执，按帖子和尝试对账；晚到成功仍会入账并阻止重复交付。",
+      "remaining_scope": "没有直接驱动平台分块上传，生产异步回调与平台投递协议尚待实联。",
       "code": [
         "app/catalog.py",
+        "app/publication_lifecycle.py",
         "app/schemas.py",
-        "web/controls.js"
+        "web/controls.js",
+        "web/publication-lifecycle.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_publication_lifecycle.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_publication_lifecycle.py",
+          "symbol": "PublicationLifecycleTests.test_changed_schedule_races_and_predecessor_late_evidence_blocks_successor",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -9529,8 +9712,8 @@
       "module": "publish",
       "label": "取消撤下与补偿",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "F07-R1",
@@ -9554,25 +9737,32 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "POST /api/v1/production/publication-lifecycle/{pid}/cancel",
+          "POST /api/v1/production/publication-lifecycle/{pid}/change",
+          "POST /api/v1/production/publication-lifecycle/{pid}/observe"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "取消未发计划可释放本地额度；在途或已成功的帖子分别跟踪撤下请求及人工核实结果。",
+      "remaining_scope": "外部平台的物理撤下、自动补偿和多目的地对账尚待实联。",
       "code": [
         "app/catalog.py",
+        "app/publication_lifecycle.py",
         "app/schemas.py",
-        "web/controls.js"
+        "web/controls.js",
+        "web/publication-lifecycle.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_publication_lifecycle.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_publication_lifecycle.py",
+          "symbol": "PublicationLifecycleTests.test_changed_schedule_races_and_predecessor_late_evidence_blocks_successor",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -9739,23 +9929,38 @@
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
           "GET /api/v1/production/analytics",
-          "POST /api/v1/production/metrics/import"
+          "GET /api/v1/production/tiktok/accounts/{account_id}/connection",
+          "POST /api/v1/production/metrics/import",
+          "POST /api/v1/production/tiktok/accounts/{account_id}/connection",
+          "POST /api/v1/production/tiktok/metrics"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "人工导入带来源/口径/窗口/单位的指标快照、零/缺失区分及同口径描述统计。",
-      "remaining_scope": "没有真实平台采集、留存曲线推断、交易退款归因或自动回补调度；聚合受查询上限约束。",
+      "implemented_subset": "可人工导入或用授权 TikTok 读取指标。累计与区间计数、零与缺项分开；有映射和留存证据时按同账号、流量和观察窗比较同一成片位置的素材，逐帖子等权，列出共同出现的来源。",
+      "remaining_scope": "TikTok 真实账号联调、自动逐秒曲线获取、退款归因和跨平台统计仍待验。",
       "code": [
-        "app/production.py"
+        "app/production.py",
+        "app/tiktok_metrics.py"
       ],
       "test_files": [
-        "tests/test_production.py"
+        "tests/test_production.py",
+        "tests/test_tiktok_metrics.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_production.py",
           "symbol": "ProductionIntegrationTests.test_metric_zero_null_duplicates_and_scope_groups",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_tiktok_metrics.py",
+          "symbol": "TikTokMetricsTests.test_identity_capability_probe_and_suspend",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_tiktok_metrics.py",
+          "symbol": "TikTokMetricsTests.test_missing_post_zero_field_and_retry",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -9838,7 +10043,7 @@
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
       "implemented_subset": "人工导入带来源/口径/窗口/单位的指标快照、零/缺失区分及同口径描述统计。",
-      "remaining_scope": "没有真实平台采集、留存曲线推断、交易退款归因或自动回补调度；聚合受查询上限约束。",
+      "remaining_scope": "没有真实平台采集、留存曲线推断、交易退款归因或自动回补调度；大规模跨平台汇总待实测。",
       "code": [
         "app/production.py"
       ],
@@ -9926,23 +10131,40 @@
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
           "GET /api/v1/production/analytics",
-          "POST /api/v1/production/metrics/import"
+          "GET /api/v1/production/post-reviews/placement-performance",
+          "POST /api/v1/production/metrics/import",
+          "POST /api/v1/production/tiktok/metrics"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "人工导入带来源/口径/窗口/单位的指标快照、零/缺失区分及同口径描述统计。",
-      "remaining_scope": "没有真实平台采集、留存曲线推断、交易退款归因或自动回补调度；聚合受查询上限约束。",
+      "implemented_subset": "可人工导入或用授权 TikTok 读取指标。累计与区间计数、零与缺项分开；有映射和留存证据时按同账号、流量和观察窗比较同一成片位置的素材，逐帖子等权，列出共同出现的来源。",
+      "remaining_scope": "TikTok 真实账号联调、自动逐秒曲线获取、退款归因和跨平台统计仍待验。",
       "code": [
-        "app/production.py"
+        "app/placement_performance.py",
+        "app/production.py",
+        "app/tiktok_metrics.py",
+        "web/placement-performance.js"
       ],
       "test_files": [
-        "tests/test_production.py"
+        "tests/test_auto_edits.py",
+        "tests/test_production.py",
+        "tests/test_tiktok_metrics.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_production.py",
           "symbol": "ProductionIntegrationTests.test_metric_zero_null_duplicates_and_scope_groups",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_tiktok_metrics.py",
+          "symbol": "TikTokMetricsTests.test_missing_post_zero_field_and_retry",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -10122,7 +10344,7 @@
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
       "implemented_subset": "人工导入带来源/口径/窗口/单位的指标快照、零/缺失区分及同口径描述统计。",
-      "remaining_scope": "没有真实平台采集、留存曲线推断、交易退款归因或自动回补调度；聚合受查询上限约束。",
+      "remaining_scope": "没有真实平台采集、留存曲线推断、交易退款归因或自动回补调度；大规模跨平台汇总待实测。",
       "code": [
         "app/production.py"
       ],
@@ -10216,7 +10438,7 @@
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
       "implemented_subset": "人工导入带来源/口径/窗口/单位的指标快照、零/缺失区分及同口径描述统计。",
-      "remaining_scope": "没有真实平台采集、留存曲线推断、交易退款归因或自动回补调度；聚合受查询上限约束。",
+      "remaining_scope": "没有真实平台采集、留存曲线推断、交易退款归因或自动回补调度；大规模跨平台汇总待实测。",
       "code": [
         "app/production.py"
       ],
@@ -10308,7 +10530,7 @@
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
       "implemented_subset": "人工导入带来源/口径/窗口/单位的指标快照、零/缺失区分及同口径描述统计。",
-      "remaining_scope": "没有真实平台采集、留存曲线推断、交易退款归因或自动回补调度；聚合受查询上限约束。",
+      "remaining_scope": "没有真实平台采集、留存曲线推断、交易退款归因或自动回补调度；大规模跨平台汇总待实测。",
       "code": [
         "app/production.py"
       ],
@@ -10389,7 +10611,9 @@
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
           "GET /api/v1/production/analytics",
-          "POST /api/v1/production/metrics/import"
+          "GET /api/v1/production/post-reviews/placement-performance",
+          "POST /api/v1/production/metrics/import",
+          "POST /api/v1/production/post-reviews/retention-mapping"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
@@ -10397,15 +10621,30 @@
       "implemented_subset": "指标按定义/单位/币种/窗口/付费属性分组，明确不作因果主张。",
       "remaining_scope": "混杂识别、因果设计和真实多账号小流量验证尚未完成。",
       "code": [
-        "app/production.py"
+        "app/edit_feedback.py",
+        "app/placement_performance.py",
+        "app/production.py",
+        "app/retention.py",
+        "web/placement-performance.js"
       ],
       "test_files": [
+        "tests/test_auto_edits.py",
         "tests/test_production.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_production.py",
           "symbol": "ProductionIntegrationTests.test_metric_zero_null_duplicates_and_scope_groups",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -10574,7 +10813,8 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
-          "POST /api/v1/production/score-policies/evaluate"
+          "POST /api/v1/production/score-policies/evaluate",
+          "POST /api/v1/production/score-policies/optimize"
         ],
         "control_plane_commands": [
           {
@@ -10584,8 +10824,8 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "冻结实际素材评分对和人工偏好，以相同样本计算新旧策略并保存失败用例，缺项、重复与未通过证据限制晋升。",
-      "remaining_scope": "当前评测只覆盖项目素材软评分，模型、发布与完整时序策略套件待验。",
+      "implemented_subset": "以历史标注训练候选评分参数，以独立留出样本对照当前策略；保留失败样本，经审批后发布或回滚。",
+      "remaining_scope": "当前仅优化已支持的素材评分权重，尚缺跨市场前瞻实验和真实投放的效应评估。",
       "code": [
         "app/api.py",
         "app/score_policies.py",
@@ -10607,6 +10847,11 @@
         {
           "file": "tests/test_score_policies.py",
           "symbol": "ScorePolicyTests.test_incomplete_duplicate_or_failed_case_blocks_approval",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_score_policies.py",
+          "symbol": "ScorePolicyTests.test_fit_draft_holdout_and_production_release",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -10966,6 +11211,7 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "POST /api/v1/production/score-policies/optimize",
           "POST /api/v1/production/score-policies/rollback"
         ],
         "control_plane_commands": [],
@@ -10993,6 +11239,11 @@
         {
           "file": "tests/test_score_policies.py",
           "symbol": "ScorePolicyTests.test_freeze_activate_consume_replay_and_rollback",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_score_policies.py",
+          "symbol": "ScorePolicyTests.test_fit_draft_holdout_and_production_release",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -11162,8 +11413,8 @@
       "module": "agents",
       "label": "动态依赖规划",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "C02-R1",
@@ -11188,6 +11439,8 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "GET /api/v1/production/batches/{bid}",
+          "POST /api/v1/production/batches",
           "POST /api/v1/workflows/validate"
         ],
         "control_plane_commands": [
@@ -11206,19 +11459,29 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "静态 DAG 编译与少量已注册节点执行。",
-      "remaining_scope": "没有依据目标动态规划依赖、代价搜索与可验证重规划。",
+      "implemented_subset": "按固定版本的调用方工作流为每条变体生成独立子运行，绑定对应时间线，验证图与数据输入。",
+      "remaining_scope": "尚无目标驱动的任意拓扑搜索、跨图全局成本最优规划。",
       "code": [
+        "app/batch_queue.py",
+        "app/batch_workflows.py",
+        "app/batches.py",
         "app/execution.py",
         "app/store.py",
         "app/workflow.py",
+        "web/batch-workspace.js",
         "web/workflow.js"
       ],
       "test_files": [
+        "tests/test_batches.py",
         "tests/test_core.py",
         "tests/test_execution.py"
       ],
       "test_definitions": [
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchTests.test_batch_dispatches_frozen_dag_input_and_records_child_run",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
         {
           "file": "tests/test_execution.py",
           "symbol": "ExecutionTests.test_real_transform_then_extract_audio_and_idempotent_replay",
@@ -11485,8 +11748,8 @@
       "module": "agents",
       "label": "局部重跑与重新规划",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "C05-R1",
@@ -11512,6 +11775,7 @@
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
           "POST /api/v1/dependencies/impact",
+          "POST /api/v1/execution/{run_id}/revise-node",
           "POST /api/v1/parameters/resolve"
         ],
         "control_plane_commands": [
@@ -11522,11 +11786,12 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "Timeline 局部 ChangeSet 与字段/区间影响索引。",
-      "remaining_scope": "不能替代运行中 RunGraph 的安全改图、拓扑增量重编译、旧尝试收敛及精确局部重跑。",
+      "implemented_subset": "受版本和运行状态保护，只能改未开始节点，生成新图版本，保存前后依赖和既有检查点，恢复时执行新图。",
+      "remaining_scope": "未覆盖正在外发的副作用迁移、任意拓扑替换或全部原文重规划路线。",
       "code": [
         "app/commands.py",
         "app/execution.py",
+        "app/graph_revision.py",
         "app/store.py",
         "app/workflow.py"
       ],
@@ -11538,6 +11803,11 @@
         {
           "file": "tests/test_core.py",
           "symbol": "CoreStoreTests.test_dependency_invalidation_uses_fields_and_half_open_ranges",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_execution.py",
+          "symbol": "ExecutionTests.test_revise_only_unstarted_node_preserves_checkpoint_and_executes_new_graph",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         },
         {
@@ -11752,6 +12022,7 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "POST /api/v1/execution/edit-preferences",
           "POST /api/v1/production/auto-edits",
           "POST /api/v1/providers/team"
         ],
@@ -11777,7 +12048,11 @@
         "app/auto_edits.py",
         "app/budget.py",
         "app/commands.py",
+        "app/context_pack.py",
+        "app/edit_feedback.py",
+        "app/edit_memory.py",
         "app/providers.py",
+        "web/edit-preferences.js",
         "web/project-production.js"
       ],
       "test_files": [
@@ -11805,6 +12080,16 @@
         {
           "file": "tests/test_auto_edits.py",
           "symbol": "AutoEditTests.test_real_http_contract_three_roles_cost_replay_and_independent_judge",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_bitemporal_project_preferences_feed_model_and_enforce_withdrawal",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_durable_second_director_turn_consumes_failure_and_keeps_original",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         },
         {
@@ -11884,7 +12169,7 @@
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "64 实体合同、请求验证、类型 DAG 和 11 路线实际 operation schema。",
+      "implemented_subset": "64 实体合同、请求验证、类型 DAG 和 14 路线实际 operation schema。",
       "remaining_scope": "原文大量领域字段仍开放；结构合法不证明商品事实/数量/业务意义正确。",
       "code": [
         "app/api.py",
@@ -11945,8 +12230,8 @@
       "module": "harness",
       "label": "协议与能力发现",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "H02-R1",
@@ -11970,21 +12255,34 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/harness/runtime",
+          "POST /api/v1/harness/dispatch",
+          "POST /api/v1/harness/qualify"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "静态能力目录、版本化合同及 SkillVersion 等记录。",
-      "remaining_scope": "没有全部协议发现/握手、技能安装与签名、底座对比评测及迁移验证。",
+      "implemented_subset": "在线列出已注册的工具路线、运行时版本及每个输入输出/操作契约的指纹。",
+      "remaining_scope": "尚缺任意外部协议的自动发现、握手与未知供应商认证。",
       "code": [
         "app/api.py",
         "app/catalog.py",
-        "app/schemas.py"
+        "app/harness_qualification.py",
+        "app/schemas.py",
+        "web/harness-runtime.js"
       ],
       "test_files": [
-        "tests/test_core.py"
+        "tests/test_core.py",
+        "tests/test_harness_qualification.py"
       ],
-      "test_definitions": [],
+      "test_definitions": [
+        {
+          "file": "tests/test_harness_qualification.py",
+          "symbol": "QualificationTests.test_qualified_workflow_dispatch_and_runtime_drift",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        }
+      ],
       "verification_runs": [],
       "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
       "full_business_acceptance": false,
@@ -12293,19 +12591,27 @@
       "implemented_subset": "本地资源上限、参数白名单、协议限制、无 shell 调用。",
       "remaining_scope": "不是强容器/VM 隔离和多租户恶意负载沙箱。",
       "code": [
+        "app/auto_edits.py",
         "app/budget.py",
         "app/commands.py",
+        "app/edit_feedback.py",
         "app/execution.py",
         "app/media.py",
         "app/providers.py",
         "app/store.py"
       ],
       "test_files": [
+        "tests/test_auto_edits.py",
         "tests/test_budget.py",
         "tests/test_core.py",
         "tests/test_execution.py"
       ],
       "test_definitions": [
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_durable_second_director_turn_consumes_failure_and_keeps_original",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
         {
           "file": "tests/test_execution.py",
           "symbol": "ExecutionTests.test_real_transform_then_extract_audio_and_idempotent_replay",
@@ -12615,8 +12921,8 @@
       "module": "harness",
       "label": "运行底座版本与评测",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "H08-R1",
@@ -12640,21 +12946,34 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/harness/runtime",
+          "POST /api/v1/harness/dispatch",
+          "POST /api/v1/harness/qualify"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "静态能力目录、版本化合同及 SkillVersion 等记录。",
-      "remaining_scope": "没有全部协议发现/握手、技能安装与签名、底座对比评测及迁移验证。",
+      "implemented_subset": "冻结运行时版本、配方、故障演练和已注册节点合同；底座或生成配置漂移会阻止旧资格直接派发。",
+      "remaining_scope": "跨机器与硬件的等价确认和生产迁移仍待验证。",
       "code": [
         "app/api.py",
         "app/catalog.py",
-        "app/schemas.py"
+        "app/harness_qualification.py",
+        "app/schemas.py",
+        "web/harness-runtime.js"
       ],
       "test_files": [
-        "tests/test_core.py"
+        "tests/test_core.py",
+        "tests/test_harness_qualification.py"
       ],
-      "test_definitions": [],
+      "test_definitions": [
+        {
+          "file": "tests/test_harness_qualification.py",
+          "symbol": "QualificationTests.test_qualified_workflow_dispatch_and_runtime_drift",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        }
+      ],
       "verification_runs": [],
       "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
       "full_business_acceptance": false,
@@ -12970,8 +13289,8 @@
       "module": "data",
       "label": "时间语义记忆",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "D04-R1",
@@ -12995,25 +13314,31 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "POST /api/v1/execution/edit-preferences"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "项目剪辑偏好以生效时间与获知时间分别记账；按当时可见版本读取，支持撤回，导演调用固定使用过的偏好及其来源。",
+      "remaining_scope": "仅覆盖剪辑偏好，组织跨项目记忆、自动提炼及全部冲突消解仍待验。",
       "code": [
         "app/catalog.py",
+        "app/context_pack.py",
+        "app/edit_memory.py",
         "app/schemas.py",
-        "web/controls.js"
+        "web/controls.js",
+        "web/edit-preferences.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_auto_edits.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_bitemporal_project_preferences_feed_model_and_enforce_withdrawal",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -13161,8 +13486,8 @@
       "module": "data",
       "label": "保留期与删除核销",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "D06-R1",
@@ -13186,25 +13511,31 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "POST /api/v1/production/assets/admission",
+          "POST /api/v1/production/assets/retention-reconcile"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "按项目核销到期的源及衍生对象，保留同字节的其他有效引用；恢复旧备份可从现行库重放终态墓碑并使旧工作进程的租约失效。",
+      "remaining_scope": "尚未核销云存储、CDN 和平台副本，生产环境恢复演练待做。",
       "code": [
         "app/catalog.py",
+        "app/media_admission.py",
         "app/schemas.py",
+        "scripts/restore.py",
         "web/controls.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_asset_lifecycle.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_asset_lifecycle.py",
+          "symbol": "AssetLifecycleTests.test_source_admission_expiry_reconciles_real_derivative_and_preserves_shared_bytes",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -14140,7 +14471,10 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/production/batches/{bid}",
+          "POST /api/v1/production/batches"
+        ],
         "control_plane_commands": [
           {
             "endpoint": "POST /api/v1/commands",
@@ -14165,22 +14499,32 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "本机进程槽、预算/步骤/时限以及执行租约。",
-      "remaining_scope": "没有公平调度、租户并发额度层次和生产尾延迟指标。",
+      "implemented_subset": "批量工作按项目批次轮转，控制并发工作进程与生成窗口，登记每次生成请求，凭租约认领和恢复。",
+      "remaining_scope": "缺多主机调度、跨租户分层 SLA 与高分辨率成片的持续负载测量。",
       "code": [
+        "app/batch_queue.py",
+        "app/batch_workflows.py",
+        "app/batches.py",
         "app/budget.py",
         "app/commands.py",
         "app/execution.py",
         "app/media.py",
         "app/providers.py",
-        "app/store.py"
+        "app/store.py",
+        "web/batch-workspace.js"
       ],
       "test_files": [
+        "tests/test_batches.py",
         "tests/test_budget.py",
         "tests/test_core.py",
         "tests/test_execution.py"
       ],
       "test_definitions": [
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchTests.test_batch_dispatches_frozen_dag_input_and_records_child_run",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
         {
           "file": "tests/test_execution.py",
           "symbol": "ExecutionTests.test_real_transform_then_extract_audio_and_idempotent_replay",
@@ -14235,8 +14579,8 @@
       "module": "ops",
       "label": "运行健康与质量告警",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "O04-R1",
@@ -14260,22 +14604,34 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/production/batches/observability/compare",
+          "GET /api/v1/production/batches/observability/health"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "健康接口、运行账本与仓库回归测试。",
-      "remaining_scope": "不是产品化质量告警或方案质量成本基准平台；没有生产负载样本。",
+      "implemented_subset": "按项目查询真实队列积压、等待时长、过期租约与失败代码；页面展示批次与异常说明。",
+      "remaining_scope": "尚缺跨机器的主动通知、分位数 SLO 和基于生产历史的质量基线。",
       "code": [
         "app/api.py",
+        "app/batch_observability.py",
         "tests/test_core.py",
         "tests/test_media.py",
-        "tests/test_production.py"
+        "tests/test_production.py",
+        "web/batch-observability.js"
       ],
       "test_files": [
+        "tests/test_batch_observability.py",
         "tests/test_core.py"
       ],
-      "test_definitions": [],
+      "test_definitions": [
+        {
+          "file": "tests/test_batch_observability.py",
+          "symbol": "BatchObservabilityTests.test_comparison_same_outputs_with_fixed_sample_and_reject_mismatched_scope",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        }
+      ],
       "verification_runs": [],
       "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
       "full_business_acceptance": false,
@@ -14319,8 +14675,8 @@
       "module": "ops",
       "label": "方案质量成本评测",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "O05-R1",
@@ -14344,22 +14700,34 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/production/batches/observability/compare",
+          "GET /api/v1/production/batches/observability/health"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "健康接口、运行账本与仓库回归测试。",
-      "remaining_scope": "不是产品化质量告警或方案质量成本基准平台；没有生产负载样本。",
+      "implemented_subset": "相同输出范围内比较两个批次的固定样本、实际完成和用量，范围不可比时拒绝评比。",
+      "remaining_scope": "真实投放单位成本、第三方账单和长期质量基准仍待核实。",
       "code": [
         "app/api.py",
+        "app/batch_observability.py",
         "tests/test_core.py",
         "tests/test_media.py",
-        "tests/test_production.py"
+        "tests/test_production.py",
+        "web/batch-observability.js"
       ],
       "test_files": [
+        "tests/test_batch_observability.py",
         "tests/test_core.py"
       ],
-      "test_definitions": [],
+      "test_definitions": [
+        {
+          "file": "tests/test_batch_observability.py",
+          "symbol": "BatchObservabilityTests.test_comparison_same_outputs_with_fixed_sample_and_reject_mismatched_scope",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        }
+      ],
       "verification_runs": [],
       "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
       "full_business_acceptance": false,
@@ -14525,8 +14893,8 @@
       "module": "ops",
       "label": "API与契约变化管理",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "O07-R1",
@@ -14550,21 +14918,34 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/harness/runtime",
+          "POST /api/v1/harness/dispatch",
+          "POST /api/v1/harness/qualify"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "静态版本化合同和本地 schema 验证。",
-      "remaining_scope": "没有 API 变化监测、供应商适配迁移评测或在途跨代迁移编排。",
+      "implemented_subset": "已登记路线采用逐项合同和底座指纹，派发前对照资格记录重新核验漂移。",
+      "remaining_scope": "外部供应商 API 行为变化和跨代迁移仍待实联。",
       "code": [
         "app/api.py",
         "app/catalog.py",
-        "app/schemas.py"
+        "app/harness_qualification.py",
+        "app/schemas.py",
+        "web/harness-runtime.js"
       ],
       "test_files": [
-        "tests/test_core.py"
+        "tests/test_core.py",
+        "tests/test_harness_qualification.py"
       ],
-      "test_definitions": [],
+      "test_definitions": [
+        {
+          "file": "tests/test_harness_qualification.py",
+          "symbol": "QualificationTests.test_qualified_workflow_dispatch_and_runtime_drift",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        }
+      ],
       "verification_runs": [],
       "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
       "full_business_acceptance": false,
@@ -15145,8 +15526,8 @@
       "module": "workspace",
       "label": "插件与能力扩展",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "W06-R1",
@@ -15170,21 +15551,34 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/harness/runtime",
+          "POST /api/v1/harness/dispatch",
+          "POST /api/v1/harness/qualify"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "插件/能力合同可查看和配置。",
-      "remaining_scope": "没有完整插件安装、签名、隔离、兼容迁移与真实扩展运行。",
+      "implemented_subset": "固定版本的本地工作流配方通过实际资格检查后可登记、派发；拒绝未核验记录或冒充已合格的技能。",
+      "remaining_scope": "没有任意第三方代码安装、供应链签名或操作系统级插件隔离。",
       "code": [
         "app/api.py",
         "app/catalog.py",
-        "app/schemas.py"
+        "app/harness_qualification.py",
+        "app/schemas.py",
+        "web/harness-runtime.js"
       ],
       "test_files": [
-        "tests/test_core.py"
+        "tests/test_core.py",
+        "tests/test_harness_qualification.py"
       ],
-      "test_definitions": [],
+      "test_definitions": [
+        {
+          "file": "tests/test_harness_qualification.py",
+          "symbol": "QualificationTests.test_qualified_workflow_dispatch_and_runtime_drift",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        }
+      ],
       "verification_runs": [],
       "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
       "full_business_acceptance": false,
@@ -15333,8 +15727,8 @@
       "module": "agents",
       "label": "目标与验收契约",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "C08-R1",
@@ -15359,7 +15753,8 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
-          "POST /api/v1/production/auto-edits"
+          "POST /api/v1/production/auto-edits",
+          "POST /api/v1/production/batches/contracts"
         ],
         "control_plane_commands": [
           {
@@ -15373,22 +15768,30 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "已有任务合同，制作提案另有目标时长、格式、来源范围、结构化结果及硬边界检查。",
-      "remaining_scope": "缺少覆盖所有角色/工具的目标分解与语义验收合同。",
+      "implemented_subset": "批次可以绑定固定版本的交付合同，按配置核验输出规格、时间范围、剪辑节奏及证据要求，保存各门槛结果。",
+      "remaining_scope": "尚未覆盖全部业务角色的语义验收、平台内容安全区和多供应商成本最优求解。",
       "code": [
         "app/auto_edits.py",
+        "app/batch_acceptance.py",
         "app/commands.py",
         "app/providers.py",
+        "web/batch-contracts.js",
         "web/project-production.js"
       ],
       "test_files": [
         "tests/test_auto_edits.py",
+        "tests/test_batch_acceptance.py",
         "tests/test_production.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_auto_edits.py",
           "symbol": "AutoEditTests.test_real_http_contract_three_roles_cost_replay_and_independent_judge",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batch_acceptance.py",
+          "symbol": "BatchAcceptanceTests.test_versioned_preflight_and_actual_decoded_output",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -15485,6 +15888,7 @@
         "app/auto_edits.py",
         "app/budget.py",
         "app/commands.py",
+        "app/edit_feedback.py",
         "app/providers.py",
         "web/project-production.js"
       ],
@@ -15513,6 +15917,11 @@
         {
           "file": "tests/test_auto_edits.py",
           "symbol": "AutoEditTests.test_real_http_contract_three_roles_cost_replay_and_independent_judge",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_durable_second_director_turn_consumes_failure_and_keeps_original",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         },
         {
@@ -15564,8 +15973,8 @@
       "module": "agents",
       "label": "安全局部改图事务",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "C10-R1",
@@ -15591,6 +16000,7 @@
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
           "POST /api/v1/dependencies/impact",
+          "POST /api/v1/execution/{run_id}/revise-node",
           "POST /api/v1/parameters/resolve"
         ],
         "control_plane_commands": [
@@ -15601,11 +16011,12 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "Timeline 局部 ChangeSet 与字段/区间影响索引。",
-      "remaining_scope": "不能替代运行中 RunGraph 的安全改图、拓扑增量重编译、旧尝试收敛及精确局部重跑。",
+      "implemented_subset": "受版本和运行状态保护，只能改未开始节点，生成新图版本，保存前后依赖和既有检查点，恢复时执行新图。",
+      "remaining_scope": "未覆盖正在外发的副作用迁移、任意拓扑替换或全部原文重规划路线。",
       "code": [
         "app/commands.py",
         "app/execution.py",
+        "app/graph_revision.py",
         "app/store.py",
         "app/workflow.py"
       ],
@@ -15617,6 +16028,11 @@
         {
           "file": "tests/test_core.py",
           "symbol": "CoreStoreTests.test_dependency_invalidation_uses_fields_and_half_open_ranges",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_execution.py",
+          "symbol": "ExecutionTests.test_revise_only_unstarted_node_preserves_checkpoint_and_executes_new_graph",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         },
         {
@@ -15670,8 +16086,8 @@
       "module": "harness",
       "label": "技能版本登记与适配",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "H09-R1",
@@ -15695,21 +16111,34 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/harness/runtime",
+          "POST /api/v1/harness/dispatch",
+          "POST /api/v1/harness/qualify"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "静态能力目录、版本化合同及 SkillVersion 等记录。",
-      "remaining_scope": "没有全部协议发现/握手、技能安装与签名、底座对比评测及迁移验证。",
+      "implemented_subset": "固定版本的本地工作流配方通过实际资格检查后可登记、派发；拒绝未核验记录或冒充已合格的技能。",
+      "remaining_scope": "没有任意第三方代码安装、供应链签名或操作系统级插件隔离。",
       "code": [
         "app/api.py",
         "app/catalog.py",
-        "app/schemas.py"
+        "app/harness_qualification.py",
+        "app/schemas.py",
+        "web/harness-runtime.js"
       ],
       "test_files": [
-        "tests/test_core.py"
+        "tests/test_core.py",
+        "tests/test_harness_qualification.py"
       ],
-      "test_definitions": [],
+      "test_definitions": [
+        {
+          "file": "tests/test_harness_qualification.py",
+          "symbol": "QualificationTests.test_qualified_workflow_dispatch_and_runtime_drift",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        }
+      ],
       "verification_runs": [],
       "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
       "full_business_acceptance": false,
@@ -15965,8 +16394,8 @@
       "module": "learn",
       "label": "评测套件与故障注入",
       "catalog_present": true,
-      "status": "generic_framework_only",
-      "status_label": "通用基础/配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "X08-R1",
@@ -15990,7 +16419,11 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/harness/runtime",
+          "POST /api/v1/harness/dispatch",
+          "POST /api/v1/harness/qualify"
+        ],
         "control_plane_commands": [
           {
             "endpoint": "POST /api/v1/commands",
@@ -15999,18 +16432,27 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "仓库测试与故障注入定义、EvaluationSuite 可登记。",
-      "remaining_scope": "尚无产品内完整评测套件编排、候选比较、坏样本保留和业务回归准入。",
+      "implemented_subset": "产品内执行资格套件，检查已绑定版本、工具合同、负向图和可用后端，保留失败证据并阻断有问题的配方。",
+      "remaining_scope": "未覆盖所有模型、内容质量、长程环境交互及领域验收指标。",
       "code": [
         "app/api.py",
+        "app/harness_qualification.py",
         "tests/test_core.py",
         "tests/test_media.py",
-        "tests/test_production.py"
+        "tests/test_production.py",
+        "web/harness-runtime.js"
       ],
       "test_files": [
-        "tests/test_core.py"
+        "tests/test_core.py",
+        "tests/test_harness_qualification.py"
       ],
-      "test_definitions": [],
+      "test_definitions": [
+        {
+          "file": "tests/test_harness_qualification.py",
+          "symbol": "QualificationTests.test_qualified_workflow_dispatch_and_runtime_drift",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        }
+      ],
       "verification_runs": [],
       "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
       "full_business_acceptance": false,
@@ -16558,8 +17000,8 @@
       "module": "publish",
       "label": "版本漂移与在途发布迁移",
       "catalog_present": true,
-      "status": "contract_and_configuration_only",
-      "status_label": "仅合同配置",
+      "status": "local_business_subset",
+      "status_label": "真实局部路径",
       "source_route_count": 3,
       "source_route_ids": [
         "F09-R1",
@@ -16583,25 +17025,32 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "POST /api/v1/production/publication-lifecycle/{pid}/cancel",
+          "POST /api/v1/production/publication-lifecycle/{pid}/change",
+          "POST /api/v1/production/publication-lifecycle/{pid}/observe"
+        ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "原文功能、三条路线、控件与配置存档；发起配置任务不伪报执行完成。",
-      "remaining_scope": "专用业务执行和该功能的原文验收尚未实现；通用实体 CRUD 不能代替。",
+      "implemented_subset": "变更排程创建后继版本，保留原始帖子与指标；原尝试晚到成功会阻断后继发布。",
+      "remaining_scope": "没有对所有平台在途二进制上传执行无缝迁移。",
       "code": [
         "app/catalog.py",
+        "app/publication_lifecycle.py",
         "app/schemas.py",
-        "web/controls.js"
+        "web/controls.js",
+        "web/publication-lifecycle.js"
       ],
       "test_files": [
-        "scripts/check_contracts.py"
+        "scripts/check_contracts.py",
+        "tests/test_publication_lifecycle.py"
       ],
       "test_definitions": [
         {
-          "file": "scripts/check_contracts.py",
-          "symbol": "check",
-          "scope": "仅源定义/合同结构检查，没有专用业务完成证据"
+          "file": "tests/test_publication_lifecycle.py",
+          "symbol": "PublicationLifecycleTests.test_changed_schedule_races_and_predecessor_late_evidence_blocks_successor",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -16672,7 +17121,9 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "GET /api/v1/production/post-reviews/placement-performance",
           "GET /api/v1/production/trace/{record_id}",
+          "POST /api/v1/production/post-reviews/retention-mapping",
           "POST /api/v1/production/time-map/trace"
         ],
         "control_plane_commands": [],
@@ -16681,17 +17132,32 @@
       "implemented_subset": "实际引用谱系查询及 TimeMap 反查接口，保留原始事实。",
       "remaining_scope": "没有平台再编辑的完整映射、全生产动作时间线和跨平台指标逐帧因果归因。",
       "code": [
+        "app/edit_feedback.py",
         "app/media.py",
+        "app/placement_performance.py",
         "app/production.py",
-        "app/store.py"
+        "app/retention.py",
+        "app/store.py",
+        "web/placement-performance.js"
       ],
       "test_files": [
+        "tests/test_auto_edits.py",
         "tests/test_production.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_production.py",
           "symbol": "RealMediaCrossDomainTests.test_actual_render_timemap_and_replay_resolve_immutable_bytes",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -17449,23 +17915,30 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "GET /api/v1/production/post-reviews/placement-performance",
           "POST /api/v1/production/post-reviews/archive",
-          "POST /api/v1/production/post-reviews/compare"
+          "POST /api/v1/production/post-reviews/compare",
+          "POST /api/v1/production/post-reviews/retention-mapping"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "校验并留存 CSV 来源与行级指标修订，以成熟且同口径的数据比较同账号的两个帖子；保存反证、下一次实验与停止规则，迟到数据不会覆盖旧复盘。",
-      "remaining_scope": "暂无成片与平台最终媒体的逐段映射、异构模型复盘、生产连接器或逐镜因果归因。",
+      "implemented_subset": "从已登记帖子回到实际导出及 TimeMap，把留存观察按时间区间映射至片段与原素材；同成片位置可按原片版本和角色比较使用次数、帖子数、条件留存及同区间多素材帖子数，保留反证。",
+      "remaining_scope": "需要发布端提供可信曲线及实际成片对应，观察结果尚不能排除题材、投放或发布时间的影响。",
       "code": [
         "app/catalog.py",
+        "app/edit_feedback.py",
+        "app/placement_performance.py",
         "app/post_reviews.py",
+        "app/retention.py",
         "app/schemas.py",
         "web/controls.js",
+        "web/placement-performance.js",
         "web/post-reviews.js"
       ],
       "test_files": [
         "scripts/check_contracts.py",
+        "tests/test_auto_edits.py",
         "tests/test_post_reviews.py"
       ],
       "test_definitions": [
@@ -17477,6 +17950,16 @@
         {
           "file": "tests/test_post_reviews.py",
           "symbol": "PostReviewTests.test_missing_latest_ambiguous_time_and_incomparable_rejected",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],

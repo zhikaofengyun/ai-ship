@@ -269,6 +269,324 @@ class AutoEditTests(ProductionBase):
         self.assertEqual(len(seen), 3)
         self.assertEqual(len(self.store.list("local", kind="Cost")), 3)
 
+    def test_bitemporal_project_preferences_feed_model_and_enforce_withdrawal(self):
+        def submit(key, mode, expected, value, **fields):
+            b = {
+                "project_id": self.pid,
+                "request_id": uuid4().hex,
+                "key": key,
+                "mode": mode,
+                "action": "set" if value else "revoke",
+                "expected_version": expected,
+                "reason": "明确的品牌剪辑选择",
+                "valid_from": "2025-01-01T00:00:00Z",
+                **fields,
+            }
+            if value:
+                b["value"] = value
+            response = self.client.post("/api/v1/execution/edit-preferences", json=b)
+            self.assertEqual(response.status_code, 200, response.text)
+            return response.json()["data"]
+
+        def recall(mode="model", **times):
+            res = self.client.get(
+                "/api/v1/execution/edit-preferences",
+                params={"project_id": self.pid, "mode": mode, **times},
+            )
+            self.assertEqual(res.status_code, 200, res.text)
+            return res.json()["data"]
+
+        first = submit("pace", "all", 0, "短镜头")
+        second = submit("pace", "all", 1, "舒缓", valid_from="2026-01-01T00:00:00Z")
+        self.assertEqual(
+            recall(
+                valid_at="2026-03-01T00:00:00Z", known_at=first["memory"]["data"]["observed_time"]
+            )["preferences"][0]["value"],
+            "短镜头",
+        )
+        self.assertEqual(
+            recall(valid_at="2025-03-01T00:00:00Z")["preferences"][0]["value"], "短镜头"
+        )
+        self.assertEqual(recall(valid_at="2026-03-01T00:00:00Z")["preferences"][0]["value"], "舒缓")
+        submit("pace", "team", 0, "先慢后快")
+        self.assertEqual(recall("team")["preferences"][0]["mode"], "team")
+        self.assertEqual(recall("model")["preferences"][0]["mode"], "all")
+        proposal = {
+            "title": "Export",
+            "approach": "measured",
+            "missing": [],
+            "shots": [
+                {
+                    "asset_id": self.assets[0]["id"],
+                    "source_in": 0,
+                    "source_out": 1,
+                    "reason": "retained",
+                }
+            ],
+        }
+        seen, team = self.endpoint([proposal, proposal])
+        body = {
+            k: v for k, v in team.items() if k not in {"judge_profile_id", "reviewer_profile_id"}
+        }
+        body.update(mode="model", use_project_preferences=True)
+        rr = self.post("", body)
+        self.assertEqual(
+            rr["session"]["data"]["stage"], "review", rr["session"]["data"].get("issue")
+        )
+        self.post("", {**body, "idempotency_key": uuid4().hex})
+        self.assertEqual(recall()["preferences"][0]["current_run_uses"], 2)
+        payload = json.loads(seen[0][1]["messages"][-1]["content"])
+        self.assertEqual(
+            payload["explicit_edit_preferences"][0]["profile"]["id"], second["profile"]["id"]
+        )
+        submit("pace", "all", 2, None)
+        current = recall()
+        self.assertEqual(current["preferences"], [])
+        self.assertIn({"key": "pace", "mode": "all", "latest_version": 3}, current["current_heads"])
+        self.assertEqual(
+            recall(known_at=second["memory"]["data"]["observed_time"])["preferences"][0]["value"],
+            "舒缓",
+        )
+        refusal = self.post(
+            "/" + rr["session"]["id"] + "/approve",
+            {"expected_revision": rr["session"]["version"]},
+            409,
+        )
+        self.assertEqual(refusal["code"], "PREFERENCE_CHANGED")
+        for rid in (first["memory"]["id"], second["profile"]["id"]):
+            self.assertEqual(
+                self.client.patch(
+                    "/api/v1/records/" + rid,
+                    json={
+                        "expected_revision": 1,
+                        "data": {"name": "generic change"},
+                        "reason": "test",
+                    },
+                ).status_code,
+                403,
+            )
+
+    def test_durable_second_director_turn_consumes_failure_and_keeps_original(self):
+        from app import auto_edits
+
+        source = self.create("Source", {"name": "Frozen trend provenance"})
+        trend = self.create(
+            "Trend",
+            {"title": "Product reveal", "observations": {"format": "closeup"}},
+            [{"id": source["id"], "version": 1}],
+        )
+        sid = self.assets[0]["id"]
+
+        def plan(offset):
+            return {
+                "title": "Cut",
+                "approach": "verified cut",
+                "missing": [],
+                "shots": [
+                    {
+                        "asset_id": sid,
+                        "source_in": offset,
+                        "source_out": offset + 1,
+                        "reason": "chosen in source bounds",
+                    }
+                ],
+            }
+
+        def review(decision, reason):
+            return {
+                "evidence_id": "D1",
+                "observed_value": "1.6",
+                "decision": decision,
+                "reason": reason,
+            }
+
+        seen, body = self.endpoint(
+            [
+                plan(0),
+                review("revise", "Review the 1.6 second source."),
+                review("revise", "Check the final interval in this 1.6 second source."),
+                plan(0.2),
+                review("accept", "New interval stays within 1.6 seconds."),
+                review("accept", "The 1.6 second source covers the requested replacement."),
+            ]
+        )
+        body.update(max_review_rounds=2, feedback_evidence=[{"id": trend["id"], "version": 1}])
+        build = auto_edits.build
+
+        def interrupt(*args):
+            if args[2]["data"].get("review_rounds"):
+                raise RuntimeError("simulated process interruption between rounds")
+            return build(*args)
+
+        with (
+            patch.object(auto_edits, "build", interrupt),
+            self.assertRaisesRegex(RuntimeError, "interruption"),
+        ):
+            self.post("", body)
+        self.assertEqual(len(seen), 3)
+        result = self.post("", body)
+        self.assertEqual(
+            result["session"]["data"]["stage"], "review", result["session"]["data"].get("issue")
+        )
+        history = result["plan"]["data"]["review_rounds"]
+        self.assertEqual([r["decision"] for r in history], ["revise", "review"])
+        original = self.store.get(history[0]["plan_ref"]["id"], "local")
+        self.assertEqual(original["data"]["shots"][0]["source_in"], 0)
+        self.assertEqual(result["plan"]["data"]["shots"][0]["source_in"], 0.2)
+        self.assertEqual(len(seen), 6)
+        payload = json.loads(seen[3][1]["messages"][-1]["content"])
+        self.assertEqual(payload["revision_feedback"]["prior_plan"]["id"], original["id"])
+        self.assertEqual(payload["creative_evidence"][0]["content_hash"], trend["hash"])
+        self.assertFalse(payload["creative_evidence"][0]["causal_claim"])
+        all_calls = result["session"]["data"]["call_refs"]
+        self.assertEqual([r["round"] for r in all_calls], [1, 1, 1, 2, 2, 2])
+        self.assertTrue(all(r["prompt_hash"] and r["context_hash"] for r in all_calls))
+        costs = self.store.list("local", kind="Cost", project_id=self.pid)
+        self.assertAlmostEqual(
+            sum(c["data"]["limits"]["max_cost"] for c in costs), body.get("max_cost", 0.1)
+        )
+        self.assertEqual(self.post("", body)["plan"]["hash"], result["plan"]["hash"])
+        self.assertEqual(len(seen), 6)
+
+    def test_retention_maps_actual_render_to_frozen_edit_feedback(self):
+        from app.edit_feedback import feedback_context
+        from app.selection import ChosenVersion
+        from tests.test_selection import pin
+
+        data = self.post("", self.body)
+        rid = data["session"]["id"]
+        draft = self.post(f"/{rid}/approve", {"expected_revision": data["session"]["version"]})
+        rendered = self.post(
+            f"/{rid}/render",
+            {
+                "expected_revision": draft["session"]["version"],
+                "timeline_revision": draft["timeline"]["version"],
+            },
+        )
+        artifact = rendered["artifact"]
+        path = Path(self.temp.name) / "post-download.mp4"
+        path.write_bytes(
+            self.client.get("/api/v1/media/artifacts/" + artifact["id"] + "/file").content
+        )
+        downloaded = import_saved_file(self.store, LOCAL_ACTOR, self.pid, path.name, path)[
+            "version"
+        ]
+
+        def action(route, payload, status=200):
+            r = self.client.post("/api/v1/production/" + route, json=payload)
+            self.assertEqual(r.status_code, status, r.text)
+            return r.json().get("data") or r.json()["error"]
+
+        pub = action(
+            "publications",
+            {
+                "project_id": self.pid,
+                "artifact_id": artifact["id"],
+                "account_id": self.account["id"],
+                "title": "fixture",
+            },
+        )
+        post = action(
+            "publications/" + pub["id"] + "/receipt",
+            {
+                "expected_revision": 1,
+                "platform_post_id": "synthetic",
+                "post_url": "https://example.test/synthetic",
+                "observed_at": "2026-01-01T00:00:00Z",
+                "evidence": "fixture ledger",
+            },
+        )["post"]
+        inputs = {
+            "project_id": self.pid,
+            "request_id": uuid4().hex,
+            "post": pin(post),
+            "source": "synthetic frozen first-play analytics file",
+            "denominator": 1000,
+            "traffic": "organic",
+            "window_start": "2026-01-01T00:00:00Z",
+            "window_end": "2026-01-02T00:00:00Z",
+            "observed_at": "2026-01-03T00:00:00Z",
+            "points": [
+                {"at_seconds": 0, "retained": 960},
+                {"at_seconds": 1.1, "retained": 720},
+                {"at_seconds": 2, "retained": 480},
+            ],
+        }
+        self.assertEqual(
+            action("post-reviews/retention-mapping", inputs, 409)["code"], "POST_MAPPING_REQUIRED"
+        )
+        mapped = action(
+            "assets/post-mapping",
+            {
+                "project_id": self.pid,
+                "request_id": uuid4().hex,
+                "post": pin(post),
+                "observed_file": pin(downloaded),
+                "published_at": "2026-01-01T00:00:00Z",
+                "evidence": "synthetic round-trip recovered exact rendered bytes",
+            },
+        )
+        inputs["post"] = pin(mapped["post"])
+        insight = action("post-reviews/retention-mapping", inputs)["insight"]
+        self.assertEqual(insight["data"]["intervals"][0]["change_percentage_points"], -24.0)
+        self.assertTrue(insight["data"]["intervals"][0]["contributors"])
+        self.assertFalse(insight["data"]["causal_claim"])
+        self.assertEqual(
+            action("post-reviews/retention-mapping", inputs)["insight"]["id"], insight["id"]
+        )
+
+        def placements(**options):
+            filters = dict(
+                project_id=self.pid, account_id=self.account["id"], start_seconds=0, end_seconds=2
+            )
+            result = self.client.get(
+                "/api/v1/production/post-reviews/placement-performance",
+                params={**filters, **options},
+            )
+            self.assertEqual(result.status_code, 200, result.text)
+            return result.json()["data"]
+
+        # A corrected observation supersedes the same post/window and preserves
+        # the old evidence. Paid traffic and incomplete intervals stay separate.
+        corrected = {
+            **inputs,
+            "request_id": uuid4().hex,
+            "observed_at": "2026-01-04T00:00:00Z",
+            "points": [*inputs["points"][:-1], {"at_seconds": 2, "retained": 384}],
+        }
+        fixed = action("post-reviews/retention-mapping", corrected)["insight"]
+        positions = placements()
+        self.assertEqual(positions["matching_posts"], 1)
+        self.assertGreater(positions["total"], 0)
+        for row in positions["items"]:
+            self.assertAlmostEqual(row["mean_post_retention"], 0.4)
+            self.assertEqual(row["posts"], 1)
+            self.assertEqual(row["example_evidence"][0]["insight"], fixed["id"])
+        self.assertEqual(placements(traffic="paid")["total"], 0)
+        self.assertEqual(placements(cohort_hours=48)["matching_posts"], 0)
+        self.assertEqual(placements(end_seconds=0.5)["missing_boundary_points"], 1)
+        feedback = feedback_context(LOCAL_ACTOR, self.pid, [ChosenVersion(**pin(insight))])
+        self.assertIn("largest_observed_drop", feedback[0]["data_excerpt"])
+        invalid = {
+            **inputs,
+            "request_id": uuid4().hex,
+            "points": [{"at_seconds": 0, "retained": 2}, {"at_seconds": 1, "retained": 3}],
+        }
+        self.assertEqual(
+            action("post-reviews/retention-mapping", invalid, 422)["code"], "RETENTION_COHORT"
+        )
+        self.assertEqual(
+            action(
+                "post-reviews/retention-mapping",
+                {
+                    **invalid,
+                    "points": [{"at_seconds": 0, "retained": 2}, {"at_seconds": 20, "retained": 1}],
+                },
+                422,
+            )["code"],
+            "RETENTION_TIME_RANGE",
+        )
+
     def test_evidence_mismatch_blocks_even_when_real_protocol_roles_vote_accept(self):
         proposal = {
             "title": "混剪",

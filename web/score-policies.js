@@ -65,7 +65,7 @@ async function proposal(ctx) {
     .records("Policy")
     .find((r) => r.id === ptr?.data.active.id);
   const baseline = active?.data.typed_config?.weights;
-  operation(
+  const dialog = operation(
     ctx,
     "propose",
     "提出评分策略候选",
@@ -83,7 +83,7 @@ async function proposal(ctx) {
           ),
         )
         .join("") +
-      "</div>",
+      '</div><button type="button" data-fit class="button secondary">从评分样本拟合权重</button>',
     (v) => ({
       name: v.name,
       hypothesis: v.hypothesis,
@@ -93,8 +93,10 @@ async function proposal(ctx) {
       ),
     }),
   );
+  dialog.querySelector("[data-fit]").onclick = () =>
+    evaluate(ctx, true).catch((e) => toast(e.message, "error"));
 }
-async function evaluate(ctx) {
+async function evaluate(ctx, fit = false) {
   const ptr = await current(ctx);
   const candidates = (r) =>
     managed(r) && r.data.base_pointer_version === ptr?.version;
@@ -113,14 +115,25 @@ async function evaluate(ctx) {
     `<fieldset data-case>${select("应排在前面的素材", "preferred", [["", "选择评价"], ...scores], "", "required")}${select("与其对照的素材", "comparison", [["", "选择评价"], ...scores], "", "required")}${field("人工排序依据", "reason", "", "text", "required")}<button type="button" data-remove class="button ghost">移除本组</button></fieldset>`;
   const dialog = operation(
     ctx,
-    "evaluate",
-    "回放素材评分",
-    choice(ctx, "Policy", "当前基线的候选", "candidate", candidates) +
+    fit ? "optimize" : "evaluate",
+    fit ? "拟合候选权重" : "回放素材评分",
+    (fit
+      ? field("候选名称", "name", "", "text", "required") +
+        area("排序改善假设", "hypothesis", "", "required")
+      : choice(ctx, "Policy", "当前基线的候选", "candidate", candidates)) +
       "<p>至少两组，素材互不重复。候选须通过每组排序，并纠正至少一个基线结果。所有使用的维度均须有观测。</p>" +
       `<div data-cases>${row()}${row()}</div><button type="button" data-add class="button secondary">增加对照组</button>`,
     (v, f) => ({
-      candidate: fact(ctx, "Policy", v.candidate),
-      cases: [...f.querySelectorAll("[data-case]")].map((r) => ({
+      ...(fit
+        ? {
+            name: v.name,
+            hypothesis: v.hypothesis,
+            expected_pointer_version: ptr?.version || 0,
+          }
+        : { candidate: fact(ctx, "Policy", v.candidate) }),
+      [fit ? "training_cases" : "cases"]: [
+        ...f.querySelectorAll("[data-case]"),
+      ].map((r) => ({
         preferred: fact(
           ctx,
           "AssetScore",
@@ -135,20 +148,25 @@ async function evaluate(ctx) {
       })),
     }),
     (result) =>
-      receipt(
-        "素材排序回归",
-        (result.data.result.passed ? "通过" : "未通过") +
-          " · " +
-          result.data.result.cases
-            .map(
-              (c, i) =>
-                "第" +
-                (i + 1) +
-                "组 " +
-                (c.candidate.ordered ? "符合" : "未满足"),
-            )
-            .join("，"),
-      ),
+      fit
+        ? receipt(
+            "已保存候选权重",
+            `训练样本排序从 ${result.data.optimizer.baseline_correct} 组正确提升至 ${result.data.optimizer.candidate_correct} 组。请用独立样本回放后审批。`,
+          )
+        : receipt(
+            "素材排序回归",
+            (result.data.result.passed ? "通过" : "未通过") +
+              " · " +
+              result.data.result.cases
+                .map(
+                  (c, i) =>
+                    "第" +
+                    (i + 1) +
+                    "组 " +
+                    (c.candidate.ordered ? "符合" : "未满足"),
+                )
+                .join("，"),
+          ),
   );
   const rows = dialog.querySelector("[data-cases]");
   dialog.querySelector("[data-add]").onclick = () =>
@@ -291,7 +309,7 @@ async function rollback(ctx) {
 }
 export const scorePolicyActions = {
   X02: ["提出评分策略候选", proposal],
-  X03: ["回放冻结评分样本", evaluate],
+  X03: ["回放冻结评分样本", (ctx) => evaluate(ctx)],
   X06: ["审批与生效", promotion],
   X07: ["回滚或暂停", rollback],
 };

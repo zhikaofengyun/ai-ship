@@ -105,14 +105,12 @@ export function installSidebarResize(shell) {
         ]
       : [144, Math.max(144, Math.min(480, window.innerWidth - 490))];
   const apply = () => {
-    const [min, max] = limits(),
-      value = prefs[mode()];
-    if (Number.isFinite(value))
-      shell.style.setProperty(
-        "--preferred-nav-width",
-        clamp(value, min, max) + "px",
-      );
-    else shell.style.removeProperty("--preferred-nav-width");
+    for (const mode of ["desktop", "drawer"]) {
+      const property = "--nav-" + mode + "-width";
+      if (Number.isFinite(prefs[mode]))
+        shell.style.setProperty(property, prefs[mode] + "px");
+      else shell.style.removeProperty(property);
+    }
   };
   apply();
   const measure = makeDivider(
@@ -236,4 +234,74 @@ export function installProductionResize(work) {
     window.removeEventListener("resize", schedule);
     cancelAnimationFrame(frame);
   };
+}
+
+// Supplementary inspectors share one stored layout per workspace. A compact
+// window stacks the detail below the canvas and keeps the same disclosure.
+export function installInspectorLayout(grid, toolbar, key, label) {
+  const pane = grid.querySelector("[data-inspector]");
+  const prefs = loadView(key);
+  const toggle = toolbar.querySelector("[data-pane-toggle]");
+  const move = toolbar.querySelector("[data-pane-move]");
+  const limits = () => {
+    const available = grid.clientWidth;
+    const max = Math.max(250, Math.min(640, available - 304));
+    return {
+      min: 250,
+      max,
+      width: clamp(Number(prefs.width) || 320, 250, max),
+    };
+  };
+  let measured = () => {};
+  function update() {
+    const wide = grid.clientWidth >= 610;
+    grid.dataset.split = String(wide);
+    grid.dataset.side = prefs.side === "left" ? "left" : "right";
+    pane.hidden = !!prefs.hidden;
+    toggle.setAttribute("aria-expanded", String(!pane.hidden));
+    toggle.textContent = (pane.hidden ? "展开" : "收起") + label;
+    move.hidden = !wide || pane.hidden;
+    move.textContent = grid.dataset.side === "right" ? "移至左侧" : "移至右侧";
+    grid.style.setProperty("--inspector-width", limits().width + "px");
+    measured();
+  }
+  measured = makeDivider(
+    grid,
+    "inspector",
+    "调整" + label + "宽度",
+    "vertical",
+    () => {
+      const { min, max, width } = limits();
+      return {
+        value: width,
+        min,
+        max,
+        sign: prefs.side === "left" ? 1 : -1,
+        set(n, commit) {
+          prefs.width = n;
+          update();
+          if (commit) storeView(key, prefs);
+        },
+        reset() {
+          delete prefs.width;
+          update();
+          storeView(key, prefs);
+        },
+      };
+    },
+  );
+  toggle.onclick = () => {
+    prefs.hidden = !prefs.hidden;
+    storeView(key, prefs);
+    update();
+  };
+  move.onclick = () => {
+    prefs.side = grid.dataset.side === "right" ? "left" : "right";
+    storeView(key, prefs);
+    update();
+  };
+  const observer = new ResizeObserver(update);
+  observer.observe(grid);
+  update();
+  return () => observer.disconnect();
 }

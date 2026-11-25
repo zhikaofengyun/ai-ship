@@ -137,6 +137,29 @@ class BudgetIntegrationTests(unittest.TestCase):
         )
         return chat(body, self.actor, InjectedTransport)
 
+    def test_old_call_and_liability_remain_visible_after_two_thousand_records(self):
+        first = self.model_call()
+        self.reserve(8)
+        with self.store.transaction():
+            for n in range(2001):
+                self.store.create(
+                    "Cost",
+                    {"currency": "USD", "actual": 0, "status": "settled"},
+                    tenant_id="local",
+                    project_id=self.pid,
+                )
+                if n < 501:
+                    self.store.create(
+                        "ToolCall", {"outcome": "succeeded"}, tenant_id="local", project_id=self.pid
+                    )
+        self.assertEqual(self.model_call()["call"]["id"], first["call"]["id"])
+        self.assertEqual(self.calls, 1)
+        self.assertEqual(self.model_call(key="new-model-request")["status"], "succeeded")
+        self.assertEqual(self.calls, 2)
+        with self.assertRaises(DomainError) as error:
+            self.reserve(3)
+        self.assertEqual(error.exception.code, "BUDGET_EXCEEDED")
+
     def test_manual_reservation_blocks_model_before_network_then_releases_exact_hold(self):
         cost = self.reserve(10)["record"]
         self.assertEqual(cost["data"]["reserved"], 10)

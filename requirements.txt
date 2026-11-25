@@ -2,6 +2,6 @@
 fastapi==0.141.1
 uvicorn==0.52.1
 pydantic==2.13.4
-httpx==0.28.1
+httpx[socks]==0.28.1
 jsonschema==4.26.0
 opentimelineio==0.18.1

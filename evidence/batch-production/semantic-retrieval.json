@@ -1,0 +1,25 @@
+{
+  "space": "text-mean-v1/66fc00f5f29afcaff34092e1bdd20008ca3918265a82fb9695a551e510cc4ebc/b60b6b43406a48bf3638526314f3d232d97058bc93472ff2de930d43686fa441",
+  "indexed": 4,
+  "queries": [
+    {
+      "query": "制作拿铁前研磨咖啡豆",
+      "first": "A barista grinds roasted coffee beans before brewing espresso",
+      "cosine": 0.567088,
+      "literal_matches": []
+    },
+    {
+      "query": "给自行车换轮胎",
+      "first": "A mechanic changes a flat bicycle tire",
+      "cosine": 0.758316,
+      "literal_matches": []
+    },
+    {
+      "query": "在积雪的山路上远足",
+      "first": "A hiker reaches a snow-covered mountain pass",
+      "cosine": 0.743209,
+      "literal_matches": []
+    }
+  ],
+  "revoked_result_excluded": true
+}

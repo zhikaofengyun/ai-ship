@@ -15,6 +15,7 @@ from pydantic import Field, StrictInt, model_validator
 
 from .api import ok
 from .auth import Actor, current_actor, require_approval
+from .asset_lifecycle import records as project_records
 from . import auto_edits
 from .errors import DomainError
 from .media import check_revision, probe_media, resolve_media
@@ -139,7 +140,6 @@ def interval_key(cut):
 
 
 def family_state(actor, project, evidence, body, plan, run):
-    store = get_store()
     days = body.history_days
     since = datetime.now(timezone.utc) - timedelta(days=days)
     usage = Counter()
@@ -167,20 +167,20 @@ def family_state(actor, project, evidence, body, plan, run):
         quota = min(ceiling, quota) if quota else ceiling
         refs[policy["id"]] = ref(policy)
     # Only record actual rendered contributions. Reservations and drafts are not exposure.
-    for u in (
-        store.list(actor.tenant_id, kind="Usage", project_id=project, limit=2000) if days else []
-    ):
+    for u in (project_records(actor, project, "Usage") if days else []):
         d = u["data"]
-        src = d.get("asset_id") or d.get("asset_version_ref", {}).get("id")
+        version = d.get("asset_version_ref")
+        version_id = version.get("id") if isinstance(version, dict) else version
+        matching = {d.get("asset_id"), version_id} & evidence.keys()
         if (
-            src in evidence
+            matching
             and d.get("status") == "rendered"
             and d.get("artifact_id")
             and timestamp(u["created_at"]) >= since
         ):
-            usage[src] += 1
+            usage.update(matching)
             used_refs.append(ref(u))
-    for cluster in store.list(actor.tenant_id, kind="Cluster", project_id=project, limit=2000):
+    for cluster in project_records(actor, project, "Cluster"):
         d = cluster["data"]
         if d.get("comparison_scope") == "segments" or d.get("status") in {
             "retired",
@@ -206,13 +206,11 @@ def product_coverage(actor, project, products, evidence):
     if not products:
         return {}
     by_version = {}
-    for item in get_store().list(
-        actor.tenant_id, kind="AssetVersion", project_id=project, limit=2000
-    ):
+    for item in project_records(actor, project, "AssetVersion"):
         if item["data"].get("variant") == "original":
             by_version[item["id"]] = item["data"].get("asset_id")
     tags = {}
-    for tag in get_store().list(actor.tenant_id, kind="Tag", project_id=project, limit=2000):
+    for tag in project_records(actor, project, "Tag"):
         d = tag["data"]
         if (
             d.get("entity") != "SKU"
@@ -341,7 +339,7 @@ def historical_neighbors(actor, project, run, days):
         return neighbors, 0
     since = datetime.now(timezone.utc) - timedelta(days=days)
     skipped = 0
-    for old in get_store().list(actor.tenant_id, kind="Run", project_id=project, limit=2000):
+    for old in project_records(actor, project, "Run", run_type=FAMILY):
         d = old["data"]
         if d.get("run_type") != FAMILY or timestamp(old["created_at"]) < since:
             continue
@@ -619,7 +617,7 @@ def load_family(actor, run, fid):
 @router.get("/{run_id}")
 def list_families(run_id: str, request: Request, actor: Actor = Depends(current_actor)):
     base = auto_edits.load_session(actor, run_id)
-    items = get_store().list(actor.tenant_id, kind="Run", project_id=base["project_id"], limit=2000)
+    items = project_records(actor, base["project_id"], "Run", run_type=FAMILY, base_session=run_id)
     return ok(
         {
             "families": [
@@ -787,6 +785,8 @@ def choose(
                 "plan_ref": ref(pd_record),
                 "evidence": sources,
                 "variant_dependency_refs": pins,
+                "project_preferences": parent["data"].get("project_preferences", []),
+                "feedback_evidence": parent["data"].get("feedback_evidence", []),
                 "variant_family_ref": ref(family),
                 "review_note": body.review_note.strip(),
                 "reviewer": actor.actor_id,

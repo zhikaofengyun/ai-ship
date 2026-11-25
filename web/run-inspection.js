@@ -1,3 +1,4 @@
+import { mountExecutionControls } from "./execution-controls.js";
 import { chooseContextPack } from "./context-pack.js";
 import {
   $,
@@ -13,6 +14,8 @@ import {
   toast,
   date,
   formData,
+  select,
+  uid,
 } from "./ui.js";
 
 export function chooseAudioAnalysis(ctx) {
@@ -114,7 +117,13 @@ async function inspectRun(ctx, pid, id, getName) {
   const rows = nodes
     .map((n) => {
       const node = steps[n.id] || {};
-      return `<div class="list-row"><span class="list-row-body"><strong>${esc(name(n))}</strong>${node.error?.message ? `<small>${esc(node.error.message)}</small>` : ""}</span><span>${esc(states[node.status] || statusLabel(node.status))}</span></div>`;
+      const editable =
+        ["queued", "paused", "blocked"].includes(run.data.status) &&
+        !run.data.worker_active &&
+        !run.data.outcome_unknown &&
+        ["pending", "blocked"].includes(node.status) &&
+        node.attempts === 0;
+      return `<div class="list-row"><span class="list-row-body"><strong>${esc(name(n))}</strong>${node.error?.message ? `<small>${esc(node.error.message)}</small>` : ""}</span><span>${esc(states[node.status] || statusLabel(node.status))}</span>${editable ? `<button type="button" class="button small secondary" data-revise="${esc(n.id)}">修改节点</button>` : ""}</div>`;
     })
     .join("");
   const unknown = nodes.filter(
@@ -129,6 +138,94 @@ async function inspectRun(ctx, pid, id, getName) {
   const panel = modal(
     getName(run),
     `<div class="surface-title"><h3>执行步骤</h3><span>${esc(states[run.data.status] || statusLabel(run.data.status))}</span></div>${rows}<div class="dialog-actions">${unknown.map((n) => `<button type="button" class="button secondary" data-check-node="${esc(n.id)}">核对${esc(name(n))}</button>`).join("")}${btn("固定恢复证据", "context-pack", "flow", "button secondary")}${resumable ? btn("从检查点继续", "resume", "play", "button primary") : ""}</div>`,
+  );
+  $$("[data-revise]", panel).forEach(
+    (b) =>
+      (b.onclick = async () => {
+        try {
+          const caps = (ctx.state.executionCapabilities ||= await ctx.api(
+            "/execution/capabilities",
+          )).handlers;
+          const node = nodes.find((n) => n.id === b.dataset.revise);
+          const f = ctx.state.catalog.features.find(
+            (f) => f.id === node.feature_id,
+          );
+          const choices = f.routes.filter((r) => caps[r.id]);
+          if (!choices.length)
+            throw new Error("此功能尚没有可本地执行的替代路线。");
+          const edges = (workflow.data.DAG || workflow.data).edges || [];
+          const ancestors = new Set(),
+            work = [node.id];
+          while (work.length) {
+            const target = work.pop();
+            for (const edge of edges)
+              if (edge.target === target && !ancestors.has(edge.source)) {
+                ancestors.add(edge.source);
+                work.push(edge.source);
+              }
+          }
+          let fields,
+            prior = "",
+            token = "";
+          const d = modal(
+            "修改待执行节点",
+            `<form data-form class="form-stack">${select(
+              "执行路线",
+              "route",
+              choices.map((r) => [r.id, r.label]),
+              node.route_id,
+              "required",
+            )}
+        <div data-inputs></div>${area("修改依据", "reason", "", "required")}<button type="submit" class="button primary">保存检查点改动</button></form>`,
+            async (form) => {
+              const body = {
+                project_id: pid,
+                expected_revision: run.version,
+                base_spec_hash: run.data.spec_hash,
+                node_id: node.id,
+                route_id: form.elements.route.value,
+                reason: form.elements.reason.value,
+                ...fields.collect(),
+              };
+              const intent = JSON.stringify(body);
+              if (intent !== prior) {
+                prior = intent;
+                token = uid();
+              }
+              await ctx.api(base + "/revise-node", {
+                method: "POST",
+                body: { ...body, request_id: token },
+              });
+              await ctx.reloadData();
+              await inspectRun(ctx, pid, id, getName);
+            },
+          );
+          const routes = $("[name=route]", d);
+          function setup() {
+            const data =
+              routes.value === node.route_id
+                ? node
+                : { operation_args: {}, input_bindings: {} };
+            fields = mountExecutionControls(
+              $("[data-inputs]", d),
+              caps[routes.value],
+              data,
+              {
+                records: ctx.state.records,
+                upstream: nodes.filter((n) => ancestors.has(n.id)),
+                capabilities: caps,
+                feature: (id) =>
+                  ctx.state.catalog.features.find((f) => f.id === id),
+                inline: true,
+              },
+            );
+          }
+          routes.onchange = setup;
+          setup();
+        } catch (err) {
+          toast(err.message, "error");
+        }
+      }),
   );
   $("[data-action=context-pack]", panel).onclick = () =>
     chooseContextPack(ctx, run);

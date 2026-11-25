@@ -21,7 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt
 
 from .auth import Actor, current_actor, require_write, actor_still_authorized
 from .errors import DomainError
-from .budget import is_unpriced_local_compute, committed_amount, project_cap
+from .budget import project_commitments, project_cap
 from .store import get_store
 from .api import ok
 from .production import digest, now, record, ref, save, revise, current_dependency_problem
@@ -248,6 +248,21 @@ def unresolved_same_request(calls: list[dict], semantic_hash: str, payload: dict
     return None
 
 
+# Each predicate below is a fixed, server-owned JSON expression. Match only the
+# current revision; old pending versions must not shadow a settled call.
+CURRENT_PROVIDER_FACTS = """SELECT r.id,r.kind,r.project_id,r.tenant_id,v.*
+    FROM revisions v JOIN records r ON r.tenant_id=v.tenant_id AND r.id=v.record_id
+      AND r.latest_version=v.version
+    WHERE r.tenant_id=? AND r.project_id=? AND r.kind=? AND """
+
+
+def provider_facts(store, tenant, project, kind, predicate, values=()):
+    rows = store._local.conn.execute(
+        CURRENT_PROVIDER_FACTS + predicate, (tenant, project, kind, *values)
+    )
+    return (store._row_record(row) for row in rows)
+
+
 @router.get("/availability")
 def availability(request: Request, actor: Actor = Depends(current_actor)):
     result = []
@@ -356,9 +371,15 @@ def chat(body: ChatInput, actor: Actor, client_factory=None, *, response_schema=
     )
     key_hash = hashlib.sha256(body.idempotency_key.encode()).hexdigest()
     with store.transaction():
-        calls = store.list(actor.tenant_id, kind="ToolCall", project_id=body.project_id, limit=500)
         old = next(
-            (x for x in calls if x["data"].get("idempotency_scope") == "model_chat:" + key_hash),
+            provider_facts(
+                store,
+                actor.tenant_id,
+                body.project_id,
+                "ToolCall",
+                "json_extract(v.data_json,'$.idempotency_scope')=?",
+                ("model_chat:" + key_hash,),
+            ),
             None,
         )
         if old:
@@ -373,7 +394,17 @@ def chat(body: ChatInput, actor: Actor, client_factory=None, *, response_schema=
                 "status": old["data"].get("outcome"),
                 "not_reissued": True,
             }
-        unresolved = unresolved_same_request(calls, semantic_hash, payload)
+        pending = provider_facts(
+            store,
+            actor.tenant_id,
+            body.project_id,
+            "ToolCall",
+            "json_extract(v.data_json,'$.outcome') IN ('pending','outcome_unknown') AND "
+            "(json_extract(v.data_json,'$.request_semantic_hash')=? OR "
+            "json_extract(v.data_json,'$.request_semantic_hash_version') IS NOT 2)",
+            (semantic_hash,),
+        )
+        unresolved = unresolved_same_request(pending, semantic_hash, payload)
         if unresolved:
             raise DomainError(
                 "RECONCILE_FIRST",
@@ -381,32 +412,10 @@ def chat(body: ChatInput, actor: Actor, client_factory=None, *, response_schema=
                 409,
                 {"call_id": unresolved["id"]},
             )
-        if len(calls) >= 500:
-            raise DomainError(
-                "LEDGER_SCAN_LIMIT", "当前项目模型调用账本达到本机检查上限，需归档分区后继续。", 409
-            )
-        costs = store.list(actor.tenant_id, kind="Cost", project_id=body.project_id, limit=500)
-        if len(costs) >= 500:
-            raise DomainError("COST_SCAN_LIMIT", "费用账本达到本机检查上限。", 409)
         cap = project_cap(project["data"], currency)
-        committed, unpriced = Decimal(0), []
-        for item in costs:
-            data = item["data"]
-            if data.get("currency") != currency:
-                continue
-            amount = committed_amount(data)
-            if amount is None:
-                if is_unpriced_local_compute(data):
-                    unpriced.append(item["id"])
-                else:
-                    raise DomainError(
-                        "COST_AMOUNT_UNRESOLVED",
-                        "存在金额未核实的货币费用，不能按零继续准入。",
-                        409,
-                        {"cost_id": item["id"]},
-                    )
-            else:
-                committed += amount
+        committed, unpriced = project_commitments(
+            store, actor.tenant_id, body.project_id, currency, "COST_AMOUNT_UNRESOLVED"
+        )
         if cap is not None and committed + estimate > cap:
             raise DomainError("PROJECT_COST_BUDGET", "已记录费用和未结预留超过项目预算。", 409)
         cost = save(
@@ -690,14 +699,21 @@ def run_team(body: TeamInput, request: Request, actor: Actor = Depends(current_a
         )
     key = "team:" + digest(body.idempotency_key)
     with get_store().transaction():
-        runs = get_store().list(actor.tenant_id, kind="Run", project_id=body.project_id, limit=500)
-        previous = next((r for r in runs if r["data"].get("team_key") == key), None)
+        previous = next(
+            provider_facts(
+                get_store(),
+                actor.tenant_id,
+                body.project_id,
+                "Run",
+                "json_extract(v.data_json,'$.team_key')=?",
+                (key,),
+            ),
+            None,
+        )
         if previous:
             if previous["data"].get("input_hash") != digest(body.model_dump()):
                 raise DomainError("IDEMPOTENCY_CONFLICT", "团队任务幂等键冲突。", 409)
             return ok({"run": previous, "replayed": True}, request)
-        if len(runs) >= 500:
-            raise DomainError("RUN_SCAN_LIMIT", "团队运行账本达到本机检查上限。", 409)
         role_records = [
             save(
                 actor,

@@ -440,6 +440,8 @@ def check_current_media_rights(
     blocked = {"revoked", "deleted", "deleting", "restricted", "denied"}
     explicit_links = {
         "source_id": {"Source"},
+        "blob_location_id": {"BlobLocation"},
+        "cold_location_id": {"BlobLocation"},
         "asset_id": {"Asset"},
         "asset_version_id": {"AssetVersion"},
         "parent_asset_version_ids": {"AssetVersion"},
@@ -453,6 +455,11 @@ def check_current_media_rights(
     }
     checked_at = datetime.now(timezone.utc)
     verified_sources = set()
+    with store.connection() as conn:
+        check_restored = conn.execute(
+            "SELECT 1 FROM media_restore_restrictions WHERE tenant=? LIMIT 1",
+            (actor.tenant_id,),
+        ).fetchone()
 
     def boundary(value: Any, field: str, owner: dict) -> datetime | None:
         if value is None or value == "":
@@ -491,6 +498,23 @@ def check_current_media_rights(
             current = store.get(pinned["id"], actor.tenant_id)
             current_by_id[pinned["id"]] = current
         data = current["data"]
+        if check_restored:
+            with store.connection() as conn:
+                hold = conn.execute(
+                    "SELECT reason FROM media_restore_restrictions WHERE tenant=? AND record_id=?",
+                    (actor.tenant_id, current["id"]),
+                ).fetchone()
+            if hold:
+                raise DomainError(
+                    "MEDIA_RESTORE_HOLD",
+                    "恢复后与现行授权或来源对象不一致，已隔离。",
+                    403,
+                    {"record_id": current["id"], "reason": hold[0]},
+                )
+        if current["kind"] == "Source":
+            from .media_admission import check_admission
+
+            check_admission(store, actor, current, purpose, checked_at)
         statuses = {str(data.get("status", "")).lower(), str(data.get("rights_status", "")).lower()}
         if statuses & blocked or data.get("revoked_at") or data.get("deleted_at"):
             raise DomainError(
@@ -673,6 +697,7 @@ def import_saved_file(
     import_batch: dict | None = None,
     generated_by: dict | None = None,
     held_from: dict | None = None,
+    source_media: dict | None = None,
 ) -> dict:
     require_project(store, actor, project_id)
     filename = safe_filename(filename)
@@ -692,7 +717,13 @@ def import_saved_file(
                     "intake_mode": (
                         "still_hold"
                         if held_from
-                        else ("generated_candidate" if generated_by else "browser_file_selection")
+                        else (
+                            "source_connector"
+                            if source_media
+                            else (
+                                "generated_candidate" if generated_by else "browser_file_selection"
+                            )
+                        )
                     ),
                     "status": "failed",
                     "file_count": 1,
@@ -768,7 +799,11 @@ def import_saved_file(
                 "intake_mode": (
                     "still_hold"
                     if held_from
-                    else ("generated_candidate" if generated_by else "browser_file_selection")
+                    else (
+                        "source_connector"
+                        if source_media
+                        else ("generated_candidate" if generated_by else "browser_file_selection")
+                    )
                 ),
                 "status": "completed",
                 "file_count": 1,
@@ -782,10 +817,28 @@ def import_saved_file(
                 "kind": (
                     "timed_still_derivative"
                     if held_from
-                    else ("generated_candidate" if generated_by else "local_upload")
+                    else (
+                        "wikimedia_commons"
+                        if source_media
+                        else ("generated_candidate" if generated_by else "local_upload")
+                    )
                 ),
                 "relative_path": filename,
-                "original_url": None,
+                "original_url": source_media["description_url"] if source_media else None,
+                **(
+                    {
+                        "canonical_url": source_media["description_url"],
+                        "provenance": source_media,
+                        "license_snapshot": {
+                            "label": source_media["license"],
+                            "url": source_media["license_url"],
+                            "author": source_media["author"],
+                            "credit": source_media["credit"],
+                        },
+                    }
+                    if source_media
+                    else {}
+                ),
                 "rights_status": "unverified",
                 "rights_note": source_note[:2000],
                 "content_hash": checksum,

@@ -8,6 +8,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Request
 from pydantic import Field
 
+from . import text_vectors
 from .api import Body, ok
 from .auth import Actor, current_actor, require_write
 from .errors import DomainError
@@ -37,6 +38,7 @@ class Query(Body):
     project_id: str
     text: str = Field(default="", max_length=300)
     channel: Literal["indexed", "source", "semantic"] = "indexed"
+    semantic_threshold: float = Field(default=0.30, ge=-1, le=1)
     media_type: Literal["any", "video", "audio", "image"] = "any"
     min_seconds: float = Field(default=0, ge=0)
     limit: int = Field(default=30, ge=1, le=200)
@@ -264,11 +266,79 @@ def switch(body: Switch, request: Request, actor: Actor = Depends(current_actor)
         return ok(head(c, actor, project), request)
 
 
+class Embed(Body):
+    project_id: str
+    limit: int = Field(default=128, ge=1, le=256)
+
+
+@router.post("/embed")
+def embed(body: Embed, request: Request, actor: Actor = Depends(current_actor)):
+    require_write(actor)
+    store = get_store()
+    require_project(store, actor, body.project_id)
+    model = text_vectors.local_model()
+    if not model:
+        raise DomainError("TEXT_MODEL_UNAVAILABLE", "尚未配置本地 ONNX 语义模型。", 503)
+    space = model[0]
+    with store.read_snapshot() as db:
+        rows = source_rows(store, db, actor, body.project_id)
+        existing = dict(
+            db.execute(
+                "SELECT version_id,pin FROM media_text_vectors WHERE tenant=? AND project=? AND space=?",
+                (actor.tenant_id, body.project_id, space),
+            )
+        )
+        pending = []
+        for vid, (pin, payload, version) in rows.items():
+            if existing.get(vid) == pin:
+                continue
+            try:
+                check_current_media_rights(store, actor, version, purpose="process")
+            except DomainError:
+                continue
+            pending.append((vid, pin, payload["terms"]))
+    selected = pending[: body.limit]
+    encoded = []
+    for i in range(0, len(selected), 16):
+        chunk = selected[i : i + 16]
+        vectors = text_vectors.encode(model, [v[2] for v in chunk])
+        encoded.extend(
+            (v[0], v[1], vector.tobytes()) for v, vector in zip(chunk, vectors, strict=True)
+        )
+    saved = 0
+    with store.transaction(), store.connection() as db:
+        current = source_rows(store, db, actor, body.project_id)
+        for vid, pin, vector in encoded:
+            entry = current.get(vid)
+            if not entry or entry[0] != pin:
+                continue
+            try:
+                check_current_media_rights(store, actor, entry[2], purpose="process")
+            except DomainError:
+                continue
+            db.execute(
+                "INSERT INTO media_text_vectors VALUES(?,?,?,?,?,?) ON CONFLICT(tenant,project,space,version_id) DO UPDATE SET pin=excluded.pin,embedding=excluded.embedding",
+                (actor.tenant_id, body.project_id, space, vid, pin, vector),
+            )
+            saved += 1
+    return ok({"processed": saved, "remaining": len(pending) - saved, "space": space}, request)
+
+
 @router.post("/query")
 def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
     store, project = get_store(), body.project_id
     require_project(store, actor, project)
     terms = tuple(dict.fromkeys(re.findall(r"[^\W_]+", body.text.casefold(), re.UNICODE)))
+    model = None
+    query_vector = None
+    semantic_error = None
+    if body.channel == "semantic" and terms:
+        try:
+            model = text_vectors.local_model()
+            if model:
+                query_vector = text_vectors.encode(model, [body.text])[0]
+        except DomainError as exc:
+            semantic_error = exc.message
     with store.read_snapshot() as c:
         current = head(c, actor, project)
         rows = source_rows(store, c, actor, project)
@@ -292,6 +362,18 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                         (expression, active),
                     )
                 )
+        scores = {}
+        if query_vector is not None:
+            import numpy as np
+
+            for vid, pin, blob in c.execute(
+                "SELECT version_id,pin,embedding FROM media_text_vectors WHERE tenant=? AND project=? AND space=?",
+                (actor.tenant_id, project, model[0]),
+            ):
+                if vid in rows and rows[vid][0] == pin and len(blob) == query_vector.nbytes:
+                    scores[vid] = float(
+                        np.clip(np.dot(query_vector, np.frombuffer(blob, dtype="<f4")), -1, 1)
+                    )
         hits = []
         for key, (pin, payload, version) in rows.items():
             if body.media_type != "any" and body.media_type != payload["media_type"]:
@@ -299,7 +381,7 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
             if (payload["seconds"] or 0) < body.min_seconds:
                 continue
             found = [t for t in terms if t in payload["terms"]]
-            if terms and not found:
+            if terms and not found and (key not in scores or scores[key] < body.semantic_threshold):
                 continue
             try:
                 check_current_media_rights(store, actor, version, purpose="process")
@@ -310,6 +392,7 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                 {
                     **{k: v for k, v in payload.items() if k != "terms"},
                     "matched": found,
+                    **({"semantic_score": round(scores[key], 6)} if key in scores else {}),
                     "source": "index" if is_current else "source",
                     "coverage": len(found) / len(terms) if terms else 1,
                     "rank": round(float(ranked.get(key, 0)), 9) if is_current else 0,
@@ -324,6 +407,37 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                 r["version_id"],
             )
         )
+        if scores:
+            literal = {
+                r["version_id"]: i for i, r in enumerate((r for r in hits if r["matched"]), 1)
+            }
+            dense = {
+                r["version_id"]: i
+                for i, r in enumerate(
+                    sorted(
+                        (
+                            r
+                            for r in hits
+                            if "semantic_score" in r
+                            and r["semantic_score"] >= body.semantic_threshold
+                        ),
+                        key=lambda r: (-r["semantic_score"], r["version_id"]),
+                    ),
+                    1,
+                )
+            }
+            for r in hits:
+                k = r["version_id"]
+                r["fusion_score"] = sum(
+                    1 / (60 + rank[k]) for rank in (literal, dense) if k in rank
+                )
+            hits.sort(
+                key=lambda r: (
+                    r["storage_tier"] == "low_priority",
+                    -r["fusion_score"],
+                    r["version_id"],
+                )
+            )
         view = digest(
             [
                 current,
@@ -331,6 +445,7 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                 body.media_type,
                 body.channel,
                 body.min_seconds,
+                [model[0], body.semantic_threshold] if scores else None,
                 [(h["version_id"], rows[h["version_id"]][0], h["source"]) for h in hits],
             ]
         )
@@ -338,8 +453,12 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
             raise DomainError("RESULT_SET_CHANGED", "素材、权限或索引已变化，请重新检索。", 409)
         end = body.offset + body.limit
         fallback = None
-        if body.channel == "semantic":
-            fallback = "未登记兼容的向量模型，已按素材名和有效人工标注检索。"
+        if body.channel == "semantic" and not scores:
+            fallback = semantic_error or (
+                "本项目没有与当前模型匹配的向量，已按素材名和有效标注检索。"
+                if model
+                else "未登记兼容的向量模型，已按素材名和有效人工标注检索。"
+            )
         elif body.channel == "indexed" and not active:
             fallback = "尚未启用项目索引，已直接检索素材。"
         return ok(
@@ -351,7 +470,8 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                 "view": view,
                 "offset": body.offset,
                 "next_offset": end if end < len(hits) else None,
-                "vector_available": False,
+                "vector_available": bool(scores),
+                "vector_space": model[0] if scores else None,
                 "requested_channel": body.channel,
                 "fallback": fallback,
             },

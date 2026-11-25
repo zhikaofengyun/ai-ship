@@ -250,6 +250,110 @@ def candidate_for_pointer(actor, project, chosen, ptr):
     return candidate
 
 
+class FitCandidate(ProjectRequest):
+    name: Label
+    hypothesis: Note
+    expected_pointer_version: int = Field(ge=0)
+    training_cases: list[ReviewCase] = Field(min_length=2, max_length=100)
+
+
+def sample_keys(asset):
+    keys = {"asset:" + (asset["data"].get("asset_id") or asset["id"])}
+    if asset["data"].get("content_hash"):
+        keys.add("bytes:" + asset["data"]["content_hash"])
+    return keys
+
+
+def examples(actor, project, cases, exclude=()):
+    seen = set(exclude)
+    for case in cases:
+        a, aa = versioned_score(actor, project, case.preferred)
+        b, ba = versioned_score(actor, project, case.comparison)
+        for asset in (aa, ba):
+            ids = sample_keys(asset)
+            if seen & ids:
+                raise DomainError("DUPLICATE_SAMPLE", "训练与验收样本须使用不重复的素材和原件。")
+            seen.update(ids)
+        yield case, a, aa, b, ba
+
+
+@router.post("/optimize")
+def fit_candidate(body: FitCandidate, request: Request, actor: Actor = Depends(current_actor)):
+    """Learn only a scoring configuration. Existing evaluation and release guards own promotion."""
+    require_approval(actor)
+
+    def apply():
+        ptr = pointer(actor, body.project_id)
+        if (ptr["version"] if ptr else 0) != body.expected_pointer_version:
+            raise DomainError("REVISION_CONFLICT", "活动策略已变化，请重新核对。", 409)
+        ptr = ptr or pointer(actor, body.project_id, initialize=True)
+        baseline = current(actor, body.project_id, ptr["data"]["active"], "Policy")
+        weights = baseline["data"]["typed_config"]["weights"]
+        total = sum(weights.values())
+        base = {d: weights.get(d, 0) / total for d in DIMENSIONS}
+        diffs, pins, used = [], [], set()
+        for _, a, aa, b, ba in examples(actor, body.project_id, body.training_cases):
+            pair = [s["data"].get("dimension_scores", {}) for s in (a, b)]
+            if any(any(v.get(d) is None for d in DIMENSIONS) for v in pair):
+                raise DomainError(
+                    "INCOMPLETE_TRAINING_CASE", "冻结训练样本需要完整维度，缺测保持未知。"
+                )
+            diffs.append(
+                {d: number(pair[0][d], d, 0, 1) - number(pair[1][d], d, 0, 1) for d in DIMENSIONS}
+            )
+            pins.extend(ref(v) for v in (a, aa, b, ba))
+            used.update(sample_keys(aa) | sample_keys(ba))
+
+        def correct(candidate):
+            return sum(
+                sum(weights * row[d] for d, weights in candidate.items()) > 1e-12 for row in diffs
+            )
+
+        # Prefer the smallest change from the active baseline that improves the
+        # number of correctly ordered training pairs. The grid is deterministic.
+        best_weights, best_correct = base, correct(base)
+        evaluations = 1
+        for share in (0.25, 0.5, 0.75, 1.0):
+            for axis in DIMENSIONS:
+                trial = {d: base[d] * (1 - share) + share * (axis == d) for d in DIMENSIONS}
+                observed = correct(trial)
+                evaluations += 1
+                if observed > best_correct:
+                    best_weights, best_correct = trial, observed
+        if best_correct <= correct(base):
+            raise DomainError(
+                "NO_TRAINING_IMPROVEMENT", "在冻结样本上未找到排序优于基线的权重。", 409
+            )
+        return managed(
+            actor,
+            "Policy",
+            body.project_id,
+            {
+                "name": body.name,
+                "hypothesis": body.hypothesis,
+                "parent": ref(baseline),
+                "release_state": "draft",
+                "supported_schema": "asset_score_weights_v1",
+                "typed_config": {"weights": best_weights},
+                "base_pointer_version": ptr["version"],
+                "optimizer": {
+                    "method": "bounded_pairwise_coordinate_grid_v1",
+                    "evaluations": evaluations,
+                    "baseline_correct": correct(base),
+                    "candidate_correct": best_correct,
+                    "cases": [c.model_dump() for c in body.training_cases],
+                    "asset_keys": sorted(used),
+                    "training_refs": pins,
+                    "objective": "strict_pairwise_preference",
+                    "causal_claim": False,
+                },
+            },
+            [ref(baseline), ref(ptr), *pins],
+        )
+
+    return ok(on_request("score-policy-optimize", body, actor, apply), request)
+
+
 @router.post("/evaluate")
 def evaluate(body: Evaluation, request: Request, actor: Actor = Depends(current_actor)):
     require_approval(actor)
@@ -259,15 +363,14 @@ def evaluate(body: Evaluation, request: Request, actor: Actor = Depends(current_
         candidate = candidate_for_pointer(actor, body.project_id, body.candidate, ptr)
         baseline = current(actor, body.project_id, ptr["data"]["active"], "Policy")
         policies = {"baseline": baseline, "candidate": candidate}
-        cases, refs, used = [], [ref(candidate), ref(baseline)], set()
-        for case in body.cases:
-            a, aa = versioned_score(actor, body.project_id, case.preferred)
-            b, ba = versioned_score(actor, body.project_id, case.comparison)
-            for asset in (aa, ba):
-                asset_id = asset["data"].get("asset_id") or asset["id"]
-                if asset_id in used:
-                    raise DomainError("DUPLICATE_SAMPLE", "每一个素材只能出现在一个对照位置。")
-                used.add(asset_id)
+        optimizer = candidate["data"].get("optimizer") or {}
+        training_refs = optimizer.get("training_refs", [])
+        for link in training_refs:
+            current(actor, body.project_id, link, link["kind"])
+        cases, refs = [], [ref(candidate), ref(baseline), *training_refs]
+        for case, a, aa, b, ba in examples(
+            actor, body.project_id, body.cases, optimizer.get("asset_keys", [])
+        ):
             verdicts = {}
             for role, policy in policies.items():
                 weights = policy["data"]["typed_config"]["weights"]

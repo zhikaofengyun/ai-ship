@@ -523,3 +523,50 @@ class GenerationTests(ProductionBase):
         )
         self.assertEqual(self.submits, 1)
         self.assertEqual(self.paths.count("/upload/image"), 1)
+
+    def test_generated_workflow_parks_and_resumes_same_request_with_one_attempt(self):
+        node = {
+            "id": "generate",
+            "feature_id": "G03",
+            "route_id": "G03-R2",
+            "parameters": {},
+            "operation_args": {"profile_id": "demo", "prompt": "test clip", "seed": 7},
+        }
+        flow = self.create(
+            "Workflow",
+            {
+                "name": "生成剪辑工作流",
+                "DAG": {
+                    "nodes": [node],
+                    "edges": [],
+                    "max_steps": 1,
+                    "max_attempts": 1,
+                    "budget": 0,
+                    "max_seconds": 90,
+                },
+            },
+        )
+
+        def endpoint(path, data):
+            response = self.client.post("/api/v1/execution/" + path, json=data)
+            self.assertEqual(response.status_code, 200, response.text)
+            return response.json()["data"]
+
+        started = endpoint(
+            "start",
+            {"workflow_id": flow["id"], "expected_revision": 1, "idempotency_key": uuid4().hex},
+        )
+        self.assertEqual(started["status"], "waiting_receipt", started["run"]["data"])
+
+        def resume(result):
+            run = result["run"]
+            return endpoint(run["id"] + "/resume", {"expected_revision": run["version"]})
+
+        pending = resume(started)
+        self.assertEqual(pending["status"], "waiting_receipt")
+        self.status = "done"
+        done = resume(pending)
+        self.assertEqual(done["status"], "completed", done["run"]["data"])
+        step = done["run"]["data"]["checkpoint"]["nodes"]["generate"]
+        self.assertEqual((step["attempts"], self.submits), (1, 1))
+        self.assertEqual(step["outputs"]["asset"]["kind"], "Asset")

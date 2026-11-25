@@ -1,3 +1,10 @@
+import { batchObservability } from "./batch-observability.js";
+import { sourceAdmission } from "./source-admission.js";
+import { managePublication } from "./publication-lifecycle.js";
+import { harnessRuntime } from "./harness-runtime.js";
+import { chooseRecovery } from "./run-inspection.js";
+import { editPreferences } from "./edit-preferences.js";
+import { acquireCommons } from "./source-media.js";
 import { commercialHandoff } from "./commercial-handoff.js";
 import { postReview } from "./post-reviews.js";
 import { compare, families } from "./asset-families.js";
@@ -147,6 +154,40 @@ function products(ctx) {
   toggle();
 }
 function trends(ctx) {
+  const project_id = ctx.requireProject();
+  const d = form(
+    "同步热点",
+    select("数据源", "provider", [
+      ["google_trends", "Google Trends"],
+      ["youtube_most_popular", "YouTube 热门视频"],
+    ]) +
+      field(
+        "国家或地区代码",
+        "region",
+        "US",
+        "text",
+        'required minlength="2" maxlength="2" pattern="[A-Za-z]{2}"',
+      ) +
+      numeric("最多读取", "limit", 10, 'min="1" max="50" required') +
+      '<div class="span2"><button type="button" class="button ghost" data-manual>手动记录来源</button></div>',
+    "获取并保存",
+    async (v) => {
+      const result = await post(ctx, "trends/sync", {
+        project_id,
+        provider: v.provider,
+        region: v.region.toUpperCase(),
+        limit: Number(v.limit),
+      });
+      await ctx.reloadData();
+      modal(
+        "热点同步结果",
+        `<p>已核对 ${esc(result.items.length)} 条 · 跳过 ${esc(result.skipped)} 条</p><ol class="batch-observations">${result.items.map((item) => `<li>${esc(item.title)} <small>v${esc(item.version)}</small></li>`).join("")}</ol><small>${esc(result.fetched_at)}</small>`,
+      );
+    },
+  );
+  d.querySelector("[data-manual]").onclick = () => manualTrend(ctx);
+}
+function manualTrend(ctx) {
   const pid = ctx.requireProject();
   form(
     "记录热点来源",
@@ -490,12 +531,29 @@ function replay(ctx) {
   );
 }
 const actions = {
+  D04: ["查看项目剪辑偏好", editPreferences],
+  W08: ["查看项目剪辑偏好", editPreferences],
+  A03: ["管理素材来源", acquireCommons],
+  O04: ["查看批次健康", (ctx) => batchObservability(ctx, ctx.requireProject())],
+  O05: [
+    "比较批次执行效果",
+    (ctx) => batchObservability(ctx, ctx.requireProject()),
+  ],
+  I05: ["核对来源用途与隔离", sourceAdmission],
+  D06: ["核对保留期限与核销", (ctx) => sourceAdmission(ctx, "reconcile")],
+  F05: ["管理交接结果", managePublication],
+  F07: ["调整或取消发布意图", managePublication],
+  F09: ["登记发布后的观察", managePublication],
+  H08: ["实测运行环境", harnessRuntime],
+  H09: ["登记与运行配方", harnessRuntime],
+  C10: ["在检查点调整运行", chooseRecovery],
+  A02: ["检索并导入公开素材", acquireCommons],
   F03: ["商品绑定与交接", commercialHandoff],
   ...scorePolicyActions,
   M04: ["评论与洞察", feedback],
   M09: ["比较帖子与登记改版假设", postReview],
   P02: ["导入商品 CSV", products],
-  T01: ["记录热点来源", trends],
+  T01: ["同步或记录热点", trends],
   L02: ["标注镜头主体", tags],
   L03: ["标注场景与动作", tags],
   L05: ["标注剪辑用途", tags],

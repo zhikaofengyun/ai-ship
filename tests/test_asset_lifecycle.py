@@ -69,6 +69,217 @@ class AssetLifecycleTests(ProductionBase):
         self.assertEqual(res.status_code, status, res.text)
         return res.json().get("data") or res.json()["error"]
 
+    def test_source_admission_expiry_reconciles_real_derivative_and_preserves_shared_bytes(self):
+        version = self.media("green", quality=None, proof=False)
+        asset = self.store.get(version["data"]["asset_id"], "local")
+        source = self.store.get(asset["data"]["source_id"], "local")
+        base = {"source": pin(source), "reason": "核对入库单与使用范围"}
+        file_endpoint = "/api/v1/media/" + asset["id"] + "/file"
+
+        self.call("admission", **base, action="reject", expected_revision=0)
+        self.assertEqual(self.client.get(file_endpoint).status_code, 200)
+        self.assertEqual(self.client.get(file_endpoint + "?download=true").status_code, 403)
+        self.call(
+            "admission",
+            409,
+            **base,
+            action="approve",
+            allowed_purposes=["process"],
+            expected_revision=1,
+        )
+        self.call("admission", **base, action="review", expected_revision=1)
+        self.call(
+            "admission",
+            **base,
+            action="restrict",
+            allowed_purposes=["process", "inspect"],
+            expected_revision=2,
+        )
+        from app.media import transform_asset
+
+        version = self.store.get(version["id"], "local")
+        self.assertEqual(version["data"]["admission_projection"]["scope_status"], "restrict")
+        child = transform_asset(
+            self.store,
+            LOCAL_ACTOR,
+            version["id"],
+            {
+                "project_id": self.pid,
+                "expected_revision": version["version"],
+                "recipe": {"width": 80, "height": 44},
+            },
+        )["version"]
+        self.assertEqual(
+            self.client.get("/api/v1/media/" + child["id"] + "/file?download=true").status_code, 403
+        )
+        self.call("retention-reconcile", 409, **base, expected_revision=3)
+
+        project2 = self.create("Project", {"name": "Independent rights for same verified bytes"})
+        path = Path(self.temp.name) / "green.mp4"
+        unrelated = import_saved_file(
+            self.store, LOCAL_ACTOR, project2["id"], path.name, path, "Independent upload"
+        )
+        self.assertEqual(unrelated["asset"]["data"]["content_hash"], asset["data"]["content_hash"])
+        self.create("Post", {"status": "published"}, [pin(child)])
+        self.call("admission", 409, **base, action="quarantine", expected_revision=2)
+        expired = self.call(
+            "admission",
+            **base,
+            action="approve",
+            allowed_purposes=["inspect", "process", "export"],
+            retain_until="2020-01-01T00:00:00Z",
+            expected_revision=3,
+        )
+        self.assertEqual(expired["scope_status"], "expired")
+        for item in [asset, child]:
+            self.assertEqual(
+                self.client.get("/api/v1/media/" + item["id"] + "/file").status_code, 403
+            )
+        body = {"project_id": self.pid, "request_id": uuid4().hex, **base, "expected_revision": 4}
+        result = self.post("/production/assets/retention-reconcile", body)
+        again = self.post("/production/assets/retention-reconcile", body)
+        self.assertTrue(again["idempotent_replay"])
+        self.assertEqual(result["audit"]["id"], again["audit"]["id"])
+        summary = result["summary"]
+        self.assertGreaterEqual(summary["counts_by_kind"]["AssetVersion"], 2)
+        self.assertEqual(summary["shared_objects_retained"], 1)
+        self.assertEqual(summary["physical_objects_removed"], 0)
+        self.assertEqual(summary["external_verification_pending"], 1)
+        self.assertEqual(
+            self.client.get("/api/v1/media/" + unrelated["asset"]["id"] + "/file").status_code, 200
+        )
+        url = "/api/v1/production/assets/retention-reconcile/" + result["audit"]["id"]
+        first = self.client.get(url, params={"project_id": self.pid, "limit": 1}).json()["data"]
+        self.assertEqual((len(first["items"]), first["next_offset"]), (1, 1))
+        details = self.client.get(url, params={"project_id": self.pid}).json()["data"]["items"]
+        self.assertIn(child["id"], [i["id"] for i in details])
+        self.assertEqual(len(details), summary["total_versions"])
+        self.call("admission", 409, **base, action="review", expected_revision=5)
+        head = self.client.get(
+            "/api/v1/production/assets/admission",
+            params={"project_id": self.pid, "source_id": source["id"]},
+        )
+        self.assertEqual(head.json()["data"]["scope_status"], "reconciled")
+
+    def test_restore_reconciled_tombstone_and_fence_preexisting_worker(self):
+        from scripts.restore import restore
+        from app.store import Store
+
+        version = self.media("gold", quality=None, proof=False)
+        asset = self.store.get(version["data"]["asset_id"], "local")
+        source = self.store.get(asset["data"]["source_id"], "local")
+        base = {"source": pin(source), "reason": "Retire permanently"}
+        self.call(
+            "admission",
+            **base,
+            action="approve",
+            allowed_purposes=["inspect", "process"],
+            expected_revision=0,
+        )
+        with self.store.transaction(), self.store.connection() as db:
+            db.execute(
+                "INSERT INTO leases VALUES(?,?,?,?,?)",
+                ("local", "run-historical", "worker", 3, "2099-01-01T00:00:00Z"),
+            )
+        archive = Path(self.temp.name) / "before-retirement.zip"
+        subprocess.run(
+            [sys.executable, "scripts/backup.py", "--output", str(archive)],
+            check=True,
+            capture_output=True,
+        )
+        self.call("admission", **base, action="quarantine", expected_revision=1)
+        original = self.call("retention-reconcile", **base, expected_revision=2)
+        with self.store.transaction(), self.store.connection() as db:
+            db.execute("UPDATE leases SET fencing_token=8")
+        target = Path(self.temp.name) / "after-retirement"
+        result = restore(archive, target, current_db=self.store.path)
+        self.assertEqual(
+            result["governance"],
+            {
+                "sources_checked": 1,
+                "media_or_grants_held": 0,
+                "sources_isolated": 1,
+                "leases_fenced": 1,
+                "authority_available": True,
+            },
+        )
+        restored = Store(target / "ai-ship.sqlite3")
+        with self.assertRaises(DomainError) as exc:
+            resolve_media(restored, LOCAL_ACTOR, version["id"], purpose="inspect")
+        self.assertEqual(exc.exception.code, "MEDIA_RETENTION_BLOCK")
+        with restored.connection() as db:
+            row = db.execute(
+                "SELECT fencing_token,expires_at FROM leases WHERE resource_id='run-historical'"
+            ).fetchone()
+            self.assertGreater(row[0], 8)
+            self.assertLess(row[1], "2000")
+            decision_id = db.execute(
+                "SELECT decision_id FROM media_admission_log ORDER BY revision DESC LIMIT 1"
+            ).fetchone()[0]
+        decision = restored.get(decision_id, "local")["data"]
+        self.assertEqual(decision["action"], "reconciled")
+        self.assertEqual(
+            decision["current_decision_id"], original["audit"]["data"]["decision_ref"]["id"]
+        )
+
+    def test_restore_blocks_changed_grant_through_unchanged_source_and_dedup_resolves_owner(self):
+        from scripts.restore import restore
+        from app.store import Store
+
+        a = self.media("cyan", quality=None, proof=False)
+        b = self.media("blue", quality=None, proof=False)
+        asset = self.store.get(a["data"]["asset_id"], "local")
+        src = self.store.get(asset["data"]["source_id"], "local")
+        grant = self.create("Grant", {"status": "active"})
+        source = self.store.update(
+            src["id"],
+            {**src["data"], "grant_ids": [grant["id"]]},
+            tenant_id="local",
+            expected_revision=1,
+            refs=[pin(grant)],
+        )
+        path = Path(self.temp.name) / "cyan.mp4"
+        duplicate = import_saved_file(
+            self.store, LOCAL_ACTOR, self.pid, path.name, path, "Repeated import"
+        )
+        alias = duplicate["import_entry"]["data"]["source_id"]
+        state = self.client.get(
+            "/api/v1/production/assets/admission",
+            params={"project_id": self.pid, "source_id": alias},
+        ).json()["data"]
+        self.assertEqual(state["requested_source"]["id"], alias)
+        self.assertEqual(state["source"]["id"], source["id"])
+        self.assertEqual(
+            self.call(
+                "admission",
+                409,
+                source={"id": alias, "version": 1},
+                expected_revision=0,
+                action="review",
+                reason="Check alias",
+            )["code"],
+            "ADMISSION_CANONICAL_SOURCE",
+        )
+        archive = Path(self.temp.name) / "pre-grant-change.zip"
+        subprocess.run(
+            [sys.executable, "scripts/backup.py", "--output", str(archive)],
+            check=True,
+            capture_output=True,
+        )
+        self.store.update(
+            grant["id"], {"status": "revoked"}, tenant_id="local", expected_revision=1
+        )
+        target = Path(self.temp.name) / "restore-grant"
+        result = restore(archive, target, current_db=self.store.path)
+        self.assertEqual(result["governance"]["media_or_grants_held"], 1)
+        restored = Store(target / "ai-ship.sqlite3")
+        with self.assertRaises(DomainError) as exc:
+            resolve_media(restored, LOCAL_ACTOR, a["id"], purpose="export")
+        self.assertEqual(exc.exception.code, "MEDIA_RESTORE_HOLD")
+        self.assertEqual(exc.exception.details["record_id"], grant["id"])
+        with patch.dict(os.environ, {"AI_SHIP_DATA_DIR": str(target)}):
+            self.assertEqual(resolve_media(restored, LOCAL_ACTOR, b["id"])[0]["id"], b["id"])
+
     def usage(self, v, artifact=None, status="rendered"):
         data = {"asset_version_ref": pin(v), "clip_use_id": uuid4().hex, "status": status}
         if artifact:

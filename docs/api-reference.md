@@ -73,6 +73,10 @@
 | POST | `/api/v1/media/captions/export` | Export Captions | `ExportCaptions` |
 | POST | `/api/v1/production/selection/brief` | Approve Brief | `ReviewBrief` |
 | POST | `/api/v1/production/selection/shot` | Select Shot | `SelectShot` |
+| GET | `/api/v1/production/assets/admission` | Read Admission | `—` |
+| POST | `/api/v1/production/assets/admission` | Decide | `Admission` |
+| POST | `/api/v1/production/assets/retention-reconcile` | Reconcile | `SourceCommand` |
+| GET | `/api/v1/production/assets/retention-reconcile/{audit_id}` | Read Targets | `—` |
 | POST | `/api/v1/production/assets/cooldown` | Cooldown | `Cooldown` |
 | POST | `/api/v1/production/assets/post-mapping` | Verify Post | `VerifyPost` |
 | POST | `/api/v1/production/assets/processing-evidence` | Processing Evidence | `ProcessingEvidence` |
@@ -84,7 +88,15 @@
 | POST | `/api/v1/production/creative/match` | Match Topic | `TopicMatch` |
 | POST | `/api/v1/production/creative/directions` | Propose Directions | `Directions` |
 | POST | `/api/v1/production/creative/preflight` | Creative Preflight | `Preflight` |
+| POST | `/api/v1/production/trends/sync` | Sync | `FeedSync` |
+| GET | `/api/v1/production/tiktok/accounts/{account_id}/connection` | Show Connection | `—` |
+| POST | `/api/v1/production/tiktok/accounts/{account_id}/connection` | Change Connection | `ConnectionAction` |
+| POST | `/api/v1/production/tiktok/metrics` | Sync Metrics | `SyncMetrics` |
 | POST | `/api/v1/production/acquisition/changes` | Amend Sources | `Manifest` |
+| GET | `/api/v1/production/source-media/settings` | Read Settings | `—` |
+| POST | `/api/v1/production/source-media/settings` | Configure | `SourceSettings` |
+| GET | `/api/v1/production/source-media/search` | Search | `—` |
+| POST | `/api/v1/production/source-media/import` | Acquire | `Acquisition` |
 | POST | `/api/v1/production/music/markers` | Save Markers | `ManualRhythm` |
 | GET | `/api/v1/providers/availability` | Availability | `—` |
 | POST | `/api/v1/providers/chat` | Chat Route | `ChatInput` |
@@ -117,8 +129,12 @@
 | POST | `/api/v1/production/commerce/bindings` | Bind | `Bind` |
 | POST | `/api/v1/production/commerce/observations` | Observe | `Attachment` |
 | POST | `/api/v1/production/commerce/receipts` | Receive | `Collect` |
+| POST | `/api/v1/production/publication-lifecycle/{pid}/cancel` | Cancel | `Mutation` |
+| POST | `/api/v1/production/publication-lifecycle/{pid}/change` | Change | `Change` |
+| POST | `/api/v1/production/publication-lifecycle/{pid}/observe` | Observe | `app__publication_lifecycle__Observation` |
 | GET | `/api/v1/production/score-policies/{project_id}` | Read Pointer | `—` |
 | POST | `/api/v1/production/score-policies/propose` | Propose | `Proposal` |
+| POST | `/api/v1/production/score-policies/optimize` | Fit Candidate | `FitCandidate` |
 | POST | `/api/v1/production/score-policies/evaluate` | Evaluate | `Evaluation` |
 | POST | `/api/v1/production/score-policies/approve` | Approve | `ApprovalRequest` |
 | POST | `/api/v1/production/score-policies/activate` | Activate | `Activate` |
@@ -127,6 +143,8 @@
 | GET | `/api/v1/production/comment-feedback/{project_id}/{comment_id}/body` | Get Body | `—` |
 | POST | `/api/v1/production/comment-feedback/classify` | Classify | `Classification` |
 | GET | `/api/v1/production/comment-feedback/{project_id}/summary` | Summary | `—` |
+| POST | `/api/v1/production/post-reviews/retention-mapping` | Map Retention | `RetentionMapping` |
+| GET | `/api/v1/production/post-reviews/placement-performance` | Performance | `—` |
 | POST | `/api/v1/production/post-reviews/archive` | Import Archive | `Archive` |
 | POST | `/api/v1/production/post-reviews/compare` | Compare | `Comparison` |
 | GET | `/api/v1/production/auto-edits` | List Edits | `—` |
@@ -135,6 +153,16 @@
 | POST | `/api/v1/production/auto-edits/{run_id}/approve` | Approve Edit | `AcceptEdit` |
 | POST | `/api/v1/production/auto-edits/{run_id}/render` | Render Edit | `RenderEdit` |
 | POST | `/api/v1/production/auto-edits/{run_id}/replace-shot` | Replace Shot | `ReplaceShot` |
+| GET | `/api/v1/production/batches/observability/health` | Health | `—` |
+| GET | `/api/v1/production/batches/observability/compare` | Compare | `—` |
+| POST | `/api/v1/production/batches/contracts` | Create Contract | `ContractInput` |
+| GET | `/api/v1/production/batches/contracts` | List Contracts | `—` |
+| POST | `/api/v1/production/batches/market-briefs` | Create | `MarketBrief` |
+| GET | `/api/v1/production/batches/market-briefs` | List Briefs | `—` |
+| POST | `/api/v1/production/batches` | Enqueue | `Recipe` |
+| GET | `/api/v1/production/batches` | List Batches | `—` |
+| GET | `/api/v1/production/batches/{bid}` | Get Batch | `—` |
+| POST | `/api/v1/production/batches/{bid}/{action}` | Control | `—` |
 | GET | `/api/v1/production/generation/profiles` | Available | `—` |
 | GET | `/api/v1/production/generation` | Jobs | `—` |
 | POST | `/api/v1/production/generation` | Generate | `Generate` |
@@ -146,6 +174,12 @@
 | POST | `/api/v1/execution/{run_id}/resume` | Resume Endpoint | `ResumeInput` |
 | GET | `/api/v1/execution/{run_id}/recovery` | Recovery | `—` |
 | POST | `/api/v1/execution/{run_id}/reconcile` | Reconcile | `ReconcileInput` |
+| GET | `/api/v1/harness/runtime` | Catalog | `—` |
+| POST | `/api/v1/harness/qualify` | Qualify | `Qualify` |
+| POST | `/api/v1/harness/dispatch` | Dispatch | `Dispatch` |
+| POST | `/api/v1/execution/edit-preferences` | Write Preference | `EditPreference` |
+| GET | `/api/v1/execution/edit-preferences` | Read Preferences | `—` |
+| POST | `/api/v1/execution/{run_id}/revise-node` | Revise Node | `NodeChange` |
 | POST | `/api/v1/execution/context-packs` | Pin Context | `PackInput` |
 | GET | `/api/v1/execution/{run_id}/context-pack` | Read Context | `—` |
 | POST | `/api/v1/projects/{project_id}/timeline-exchange/export` | Export Timeline | `ExportInput` |
@@ -154,6 +188,7 @@
 | GET | `/api/v1/production/asset-index/history` | History | `—` |
 | POST | `/api/v1/production/asset-index/build` | Build | `Build` |
 | POST | `/api/v1/production/asset-index/switch` | Switch | `Switch` |
+| POST | `/api/v1/production/asset-index/embed` | Embed | `Embed` |
 | POST | `/api/v1/production/asset-index/query` | Query | `Query` |
 | POST | `/api/v1/production/voice-studio/maps` | Make Map | `MapInput` |
 | POST | `/api/v1/production/voice-studio/observations` | Observe | `app__voice_studio__Observation` |
@@ -174,7 +209,7 @@
 | POST | `/api/v1/production/soundtrack/remove-music` | Remove Music | `RemoveMusic` |
 | POST | `/api/v1/production/soundtrack/listen-review` | Listen Review | `ListeningReview` |
 
-共 145 个 HTTP 操作。完整 path/query/header 条件、枚举、范围、错误与二进制声明在 OpenAPI 中。
+共 180 个 HTTP 操作。完整 path/query/header 条件、枚举、范围、错误与二进制声明在 OpenAPI 中。
 
 ## 工作流和组件扩展
 

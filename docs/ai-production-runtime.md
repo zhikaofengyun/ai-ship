@@ -101,3 +101,19 @@ N01 的简报确定创作意图，N02 区分镜头的必须证据和排序偏好
 ### 保留模型选片的成片
 
 在同一份 FRESH LIME 简报上，Qwen2.5 1.5B 从两个真实候选中选择了先播目标标题卡的版本。获准的测试客户端明确采用这份未经改剪的提案，服务按锁版时间线渲染。对下载 MP4 首帧、第 0.8 秒和第 2.4 秒的源画面分别做 OCR，读到 FRESH LIME、FRESH LIME 和 SAMPLE。完整画面与原片逐像素比较亦吻合。Qwen2.5 的自由入出点提案超出原片范围，被拒绝。另一套真实权重 Qwen3 4B 选择了相反顺序，尽管其理由声称已让目标卡在前。三次原始结果、整帧 OCR 的黑边误识别以及正确与错误的原版成片均可检查。[两套导演模型的实际选择与成片](../evidence/ai-production/director-model-comparison/README.md)
+
+## 用制作结果指导下一轮
+
+模型或团队导演可在创建 `POST /api/v1/production/auto-edits` 时指定最多八份本项目的 `feedback_evidence`，每份提供 `id` 和整数 `version`。支持有固定 Source 的 Trend，以及通过帖子复盘或留存映射生成的 Insight。每个角色的 ToolCall 固定输入版本，保留实际发出的消息。来源过期、撤回或证据修订冲突会阻止使用。单份观察摘录上限为 1,800 个 UTF-8 字节，截断标志和原件摘要随摘录保留。
+
+| 操作 | 接口和可核对结果 |
+| --- | --- |
+| 团队返工 | 在同一创建请求设置 `max_review_rounds` 为 1 到 4，默认 1。独立复核或首镜硬约束要求修改时，下一轮导演收到前一轮镜头区间、实际异议与证据。每轮独立保存 Plan、三角色调用及系统提示和上下文摘要。总费用上限按轮数与角色数分配。进程在轮间中断后，重发原始请求从持久检查点继续。未知外部结果停在原尝试等待核对。 |
+| 固定项目偏好 | `POST /api/v1/execution/edit-preferences` 写入明确的项目偏好或撤回，支持语气、节奏、开头、构图、字幕、音乐六类。PreferenceProfile 保存授权角色、依据、适用模式及有效期。Memory 索引指向该修订。读取接口支持 `valid_at` 和 `known_at`，分别选择业务生效时点与当时系统已知的版本。项目偏好由 `use_project_preferences: true` 带入模型制作。运行记录与调用保存实际使用的版本，当前简报和硬约束优先。 |
+| 修改待运行节点 | `POST /api/v1/execution/{run_id}/revise-node` 接受当前运行版本、图摘要、节点及修改原因。可修改零次尝试的待办节点的执行参数、输入绑定或同一功能的已注册路线。系统在一个事务中冻结新 Workflow 和 RunGraph，记录 ChangeSet，保留已完成节点、费用、时限与原图。使用原运行的 resume 入口继续。运行中、未决回执、冲突版本、人工锁和已尝试节点会返回具体阻塞原因。 |
+| 观测留存位置 | `POST /api/v1/production/post-reviews/retention-mapping` 接收同一首播队列人数、时间点、共同分母、流量类型、来源和观测窗口。帖子下载件必须先经 `/production/assets/post-mapping` 与实际成片逐字节核对。每两个观测点产生一行留存变化（百分点），关联实际渲染时间图中的画面与音轨、源区间和成片区间；重叠素材共享该观测，逐镜曝光和因果贡献保持未知。平台只有整帖播放量时，使用整帖比较入口。 |
+| 提出和验收排序权重 | `POST /api/v1/production/score-policies/optimize` 对人工排序的冻结素材对评估一个基线和 24 个坐标候选。至少应比基线多排对一对素材，否则返回明确的无改善结果。训练所得 Policy 先保存为草稿。原有 evaluate 入口使用另组素材，重复资产或已知相同字节不能作为留出样本。独立回归通过、批准、启用后，本项目的后续评分才使用新权重。训练或验收依据撤回时，已有回退机制重新核验前版并处理。 |
+
+**开源设计依据。** 持久检查点、已完成节点不重跑和预算跨恢复保留，对应 LangGraph 的 checkpoint 合同及 OpenAI Agents SDK 的 runner 生命周期。质询产生的具体反馈和冻结验收集借鉴 DSPy 的 GEPA 文档。当前权重学习器使用实现内的有界坐标搜索。项目偏好使用关系库保存业务有效时间和系统观察时间，保留 Graphiti 强调的来源与历史时点语义。这些路径运行在 AI Ship 现有 FastAPI、SQLite、FFmpeg 和模型适配层。 [LangGraph checkpoint](https://github.com/langchain-ai/langgraph/blob/main/libs/checkpoint/README.md) · [OpenAI Agents SDK runner](https://github.com/openai/openai-agents-python/blob/main/.agents/references/runner-lifecycle.md) · [DSPy GEPA](https://github.com/stanfordnlp/dspy/blob/main/docs/docs/diving-deeper/gepa-in-depth.md) · [Graphiti](https://github.com/getzep/graphiti)
+
+**复现范围。** `tests/test_auto_edits.py` 用真实本地 HTTP 协议应答端和 FFmpeg 验证返工、断点、最终成片映射和偏好撤回。协议测试使用合成应答，外部模型画质与获批平台的留存导出需分别验证。`tests/test_score_policies.py` 验证训练、留出、晋升和训练证据撤回。`tests/test_execution.py` 验证已冻结的双节点工作流在修订后保留首节点产物，只执行修改的节点。`tests/test_budget.py` 在项目具有 2,001 笔额外费用及 501 条额外工具记录时核对旧收据、预算和新增调用。

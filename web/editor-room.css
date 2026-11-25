@@ -1010,6 +1010,13 @@
   z-index: 33;
 }
 @media (min-width: 761px) {
+  .shell {
+    --preferred-nav-width: clamp(
+      144px,
+      var(--nav-desktop-width, var(--sidebar)),
+      min(480px, calc(100vw - 490px))
+    );
+  }
   .shell:not(.compact-nav) {
     grid-template-columns: var(--preferred-nav-width, var(--sidebar)) minmax(
         0,
@@ -1021,6 +1028,13 @@
   }
 }
 @media (max-width: 760px) {
+  .shell {
+    --preferred-nav-width: clamp(
+      156px,
+      var(--nav-drawer-width, min(278px, 82vw)),
+      min(470px, 92vw)
+    );
+  }
   .shell.sidebar-open .sidebar {
     width: var(--preferred-nav-width, min(278px, 82vw));
   }

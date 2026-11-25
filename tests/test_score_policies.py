@@ -105,6 +105,46 @@ class ScorePolicyTests(ProductionBase):
             ],
         )
 
+    def test_fit_draft_holdout_and_production_release(self):
+        training, held_out = self.cases(), self.cases()
+        fitted = self.call(
+            "optimize",
+            training_cases=training,
+            name="质量权重回归",
+            hypothesis="清晰度更接近此批人工顺序",
+            expected_pointer_version=0,
+        )
+        self.assertEqual(fitted["data"]["optimizer"]["evaluations"], 25)
+        self.assertEqual(fitted["data"]["optimizer"]["candidate_correct"], 2)
+        self.assertEqual(fitted["data"]["release_state"], "draft")
+        self.assertEqual(
+            self.call("evaluate", candidate=self.pin(fitted), cases=training, code=422)["error"][
+                "code"
+            ],
+            "DUPLICATE_SAMPLE",
+        )
+        evaluated = self.call("evaluate", candidate=self.pin(fitted), cases=held_out)
+        self.assertTrue(evaluated["data"]["result"]["passed"])
+        proof = self.call(
+            "approve",
+            candidate=self.pin(fitted),
+            evaluation=self.pin(evaluated),
+            expires_at="2099-01-01T00:00:00Z",
+            reason="独立样本审阅",
+        )
+        ptr = self.call("activate", approval=self.pin(proof))
+        self.assertEqual(ptr["data"]["active"]["id"], fitted["id"])
+        consumed = self.score(0.7, 0.5)
+        self.assertEqual(consumed["data"]["score_policy"]["id"], fitted["id"])
+        row = self.store.get(training[0]["preferred"]["id"], "local")
+        self.store.update(
+            row["id"],
+            {**row["data"], "status": "revoked"},
+            tenant_id="local",
+            expected_revision=row["version"],
+        )
+        self.assertNotEqual(self.score(0.7, 0.5)["data"]["score_policy"]["id"], fitted["id"])
+
     def test_incomplete_duplicate_or_failed_case_blocks_approval(self):
         cand = self.propose()
         cases = self.cases()

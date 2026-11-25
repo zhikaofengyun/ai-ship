@@ -6,6 +6,7 @@ from collections import Counter
 import hashlib
 import json
 import re
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 atlas = json.loads((ROOT / "contracts" / "atlas.json").read_text())
@@ -20,25 +21,24 @@ STATUS_LABELS = {
 # Explicit audited v6.0 sets. A new source ID never defaults to implemented.
 STATUS_IDS = {
     "local_business_subset": frozenset("""
-        A01 A04 A05 A06 A07 B01 B02 B03 B04 B05 B06 C01 C03 C04 C06 C07 C09 C11 D01 D02 D03 D05 D07
-        D08 E01 E02 E03 E04 E05 E06 E07 E08 E09 F01 F02 F03 F04 F06 F08 G01 G02 G03 G04 G05 G06 H01
-        H03 H04 H05 H06 H07 H10 H11 H12 I01 I02 I03 I04 I06 I07 J03 J04 J05 J06 K01 K02 K03 K04 K05 K06
-        L01 L02 L03 L04 L05 L06 L07 M01 M02 M03 M04 M05 M06 M07 M08 M09 N01 N02 N03 N04 N06 N07 O01 O02
-        O03 O06 P01 P02 P05 P06 S01 S03 S04 S05 S06 T01 T02 T03 T04 T05 T06 U01 U02 U03 U04 U05 U06
-        U07 V01 V02 V03 V04 V05 V06 V07 V08 V09 W01 W02 W03 W04 W05 W07 W08 W09 X01 X02 X03 X04 X05 X06
-        X07 Y01 Y02 Y03 Y04 Y05 Y06 Y07 Y08 Y09
+        A01 A02 A03 A04 A05 A06 A07 B01 B02 B03 B04 B05 B06 C01 C02 C03 C04 C05 C06 C07 C08 C09
+        C10 C11 D01 D02 D03 D04 D05 D06 D07 D08 E01 E02 E03 E04 E05 E06 E07 E08 E09 F01 F02 F03
+        F04 F05 F06 F07 F08 F09 G01 G02 G03 G04 G05 G06 H01 H02 H03 H04 H05 H06 H07 H08 H09 H10
+        H11 H12 I01 I02 I03 I04 I05 I06 I07 J02 J03 J04 J05 J06 K01 K02 K03 K04 K05 K06 L01 L02
+        L03 L04 L05 L06 L07 M01 M02 M03 M04 M05 M06 M07 M08 M09 N01 N02 N03 N04 N05 N06 N07 O01
+        O02 O03 O04 O05 O06 O07 P01 P02 P03 P04 P05 P06 S01 S02 S03 S04 S05 S06 T01 T02 T03 T04 T05
+        T06 U01 U02 U03 U04 U05 U06 U07 V01 V02 V03 V04 V05 V06 V07 V08 V09 W01 W02 W03 W04 W05
+        W06 W07 W08 W09 X01 X02 X03 X04 X05 X06 X07 X08 Y01 Y02 Y03 Y04 Y05 Y06 Y07 Y08 Y09
     """.split()),
-    "generic_framework_only": frozenset("""
-        C02 C05 C08 C10 H02 H08 H09 N05 O04 O05 O07 P03 P04 S02 W06 X08
+    "generic_framework_only": frozenset(),
+    "external_adapter_unverified": frozenset("""
+        J01 J07
     """.split()),
-    "external_adapter_unverified": frozenset(),
-    "contract_and_configuration_only": frozenset("""
-        A02 A03 D04 D06 F05 F07 F09 I05 J01 J02 J07
-    """.split()),
+    "contract_and_configuration_only": frozenset(),
 }
-EXPECTED_COUNTS = dict(zip(STATUS_LABELS, (151, 16, 0, 11)))
+EXPECTED_COUNTS = dict(zip(STATUS_LABELS, (176, 0, 2, 0)))
 EXPECTED_WORKFLOW_ROUTES = frozenset("""
-    I03-R2 I04-R1 I07-R2 L01-R1 L07-R1 V01-R3 V03-R2 E01-R1 E08-R1 Y03-R1 Y06-R2
+    G02-R2 G03-R2 E01-R3 I03-R2 I04-R1 I07-R2 L01-R1 L07-R1 V01-R3 V03-R2 E01-R1 E08-R1 Y03-R1 Y06-R2
 """.split())
 
 # Mappings indicate an implemented path within a feature, never every route/gate.
@@ -96,7 +96,7 @@ groups = [
         "S01 S02 S03 S06",
         ["app/production.py", "app/media.py"],
         "tests/test_production.py",
-        "结构化/全文降级检索、精确hash去重和命中证据；无向量近似判断",
+        "结构化/全文召回、精确字节去重以及命中证据；可选多语言文本索引见 S02",
     ),
     (
         "U01 U02 U03 U07",
@@ -946,6 +946,220 @@ TEST_GROUPS += [
 ]
 
 
+CURRENT_CODE_GROUPS += [
+    ("A02 A03", ["app/source_media.py", "web/source-media.js"]),
+    ("A03", ["app/source_media.py"]),
+    ("T01 T02", ["app/trend_feeds.py"]),
+    ("S02", ["app/text_vectors.py", "app/asset_index.py", "scripts/verify_semantic_search.py"]),
+    ("D04 C07", ["app/edit_memory.py", "app/context_pack.py", "web/edit-preferences.js"]),
+    ("D06 I05", ["app/media_admission.py", "scripts/restore.py"]),
+    ("F05 F07 F09", ["app/publication_lifecycle.py", "web/publication-lifecycle.js"]),
+    ("J01 J02 J07 M01", ["app/tiktok_metrics.py"]),
+    ("M01 M03", ["app/tiktok_metrics.py"]),
+    ("M09 M08 U03 X01", ["app/retention.py", "app/edit_feedback.py"]),
+    ("X03 X07", ["app/score_policies.py"]),
+    ("C07 C09 H05", ["app/auto_edits.py", "app/edit_feedback.py"]),
+    ("C05 C10", ["app/graph_revision.py", "app/execution.py"]),
+    ("H02 H08 H09 W06 O07 X08", ["app/harness_qualification.py", "web/harness-runtime.js"]),
+    ("O04 O05", ["app/batch_observability.py", "web/batch-observability.js"]),
+    (
+        "C02 O03 P05 Y03",
+        [
+            "app/batches.py",
+            "app/batch_queue.py",
+            "app/batch_workflows.py",
+            "web/batch-workspace.js",
+        ],
+    ),
+    ("C08 P04 N05", ["app/batch_acceptance.py", "web/batch-contracts.js"]),
+    ("G02 G03", ["app/generation.py", "app/execution.py"]),
+    ("E01", ["app/timeline_exchange.py", "app/execution.py"]),
+]
+TEST_GROUPS += [
+    (
+        "A02 A03",
+        "tests/test_source_media.py",
+        "SourceMediaTests.test_verified_bytes_source_and_idempotent_retry",
+    ),
+    (
+        "A03",
+        "tests/test_source_media.py",
+        "SourceMediaTests.test_disabling_connector_before_download_commit",
+    ),
+    (
+        "T01 T02",
+        "tests/test_trend_feeds.py",
+        "TrendFeedTests.test_rss_with_pinned_evidence_and_duplicate_sync",
+    ),
+    (
+        "S02",
+        "tests/test_asset_index.py",
+        "AssetIndexTests.test_missing_semantic_runtime_keeps_existing_literal_workflow",
+    ),
+    (
+        "D04 C07",
+        "tests/test_auto_edits.py",
+        "AutoEditTests.test_bitemporal_project_preferences_feed_model_and_enforce_withdrawal",
+    ),
+    (
+        "D06 I05",
+        "tests/test_asset_lifecycle.py",
+        "AssetLifecycleTests.test_source_admission_expiry_reconciles_real_derivative_and_preserves_shared_bytes",
+    ),
+    (
+        "F05 F07 F09",
+        "tests/test_publication_lifecycle.py",
+        "PublicationLifecycleTests.test_changed_schedule_races_and_predecessor_late_evidence_blocks_successor",
+    ),
+    (
+        "J01 J02 J07 M01",
+        "tests/test_tiktok_metrics.py",
+        "TikTokMetricsTests.test_identity_capability_probe_and_suspend",
+    ),
+    (
+        "M01 M03",
+        "tests/test_tiktok_metrics.py",
+        "TikTokMetricsTests.test_missing_post_zero_field_and_retry",
+    ),
+    (
+        "M09 M08 U03 X01",
+        "tests/test_auto_edits.py",
+        "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
+    ),
+    (
+        "X03 X07",
+        "tests/test_score_policies.py",
+        "ScorePolicyTests.test_fit_draft_holdout_and_production_release",
+    ),
+    (
+        "C07 C09 H05",
+        "tests/test_auto_edits.py",
+        "AutoEditTests.test_durable_second_director_turn_consumes_failure_and_keeps_original",
+    ),
+    (
+        "C05 C10",
+        "tests/test_execution.py",
+        "ExecutionTests.test_revise_only_unstarted_node_preserves_checkpoint_and_executes_new_graph",
+    ),
+    (
+        "H02 H08 H09 W06 O07 X08",
+        "tests/test_harness_qualification.py",
+        "QualificationTests.test_qualified_workflow_dispatch_and_runtime_drift",
+    ),
+    (
+        "O04 O05",
+        "tests/test_batch_observability.py",
+        "BatchObservabilityTests.test_comparison_same_outputs_with_fixed_sample_and_reject_mismatched_scope",
+    ),
+    (
+        "C02 O03 P05 Y03",
+        "tests/test_batches.py",
+        "BatchTests.test_batch_dispatches_frozen_dag_input_and_records_child_run",
+    ),
+    (
+        "C08 P04 N05",
+        "tests/test_batch_acceptance.py",
+        "BatchAcceptanceTests.test_versioned_preflight_and_actual_decoded_output",
+    ),
+    (
+        "G02 G03",
+        "tests/test_generation.py",
+        "GenerationTests.test_generated_workflow_parks_and_resumes_same_request_with_one_attempt",
+    ),
+    (
+        "E01",
+        "tests/test_timeline_exchange.py",
+        "TimelineExchangeTests.test_hand_edited_otio_is_a_dag_input",
+    ),
+]
+ENDPOINT_GROUPS += [
+    (
+        "A02 A03",
+        [
+            "GET /api/v1/production/source-media/search",
+            "POST /api/v1/production/source-media/import",
+        ],
+    ),
+    ("A03", ["POST /api/v1/production/source-media/settings"]),
+    ("T01 T02", ["POST /api/v1/production/trends/sync"]),
+    ("S02", ["POST /api/v1/production/asset-index/embed"]),
+    ("D04 C07", ["POST /api/v1/execution/edit-preferences"]),
+    (
+        "D06 I05",
+        [
+            "POST /api/v1/production/assets/admission",
+            "POST /api/v1/production/assets/retention-reconcile",
+        ],
+    ),
+    (
+        "F05 F07 F09",
+        [
+            "POST /api/v1/production/publication-lifecycle/{pid}/change",
+            "POST /api/v1/production/publication-lifecycle/{pid}/observe",
+            "POST /api/v1/production/publication-lifecycle/{pid}/cancel",
+        ],
+    ),
+    (
+        "J01 J02 J07 M01",
+        [
+            "GET /api/v1/production/tiktok/accounts/{account_id}/connection",
+            "POST /api/v1/production/tiktok/accounts/{account_id}/connection",
+        ],
+    ),
+    ("M01 M03", ["POST /api/v1/production/tiktok/metrics"]),
+    ("M09 M08 U03 X01", ["POST /api/v1/production/post-reviews/retention-mapping"]),
+    ("X03 X07", ["POST /api/v1/production/score-policies/optimize"]),
+    ("C05 C10", ["POST /api/v1/execution/{run_id}/revise-node"]),
+    (
+        "H02 H08 H09 W06 O07 X08",
+        [
+            "GET /api/v1/harness/runtime",
+            "POST /api/v1/harness/qualify",
+            "POST /api/v1/harness/dispatch",
+        ],
+    ),
+    (
+        "O04 O05",
+        [
+            "GET /api/v1/production/batches/observability/health",
+            "GET /api/v1/production/batches/observability/compare",
+        ],
+    ),
+    (
+        "C02 O03 P05 Y03",
+        ["POST /api/v1/production/batches", "GET /api/v1/production/batches/{bid}"],
+    ),
+    ("C08 P04 N05", ["POST /api/v1/production/batches/contracts"]),
+]
+
+
+CURRENT_CODE_GROUPS += [
+    ("P03", ["app/batch_market.py", "app/batches.py"]),
+    ("M03 M08 M09 U01 U03 X01", ["app/placement_performance.py", "web/placement-performance.js"]),
+]
+ENDPOINT_GROUPS += [
+    ("P03", ["POST /api/v1/production/batches/market-briefs"]),
+    ("M03 M08 M09 U01 U03 X01", ["GET /api/v1/production/post-reviews/placement-performance"]),
+]
+TEST_GROUPS += [
+    (
+        "P03",
+        "tests/test_batch_market.py",
+        "BatchMarketTests.test_market_scope_sku_number_and_prohibited_expression",
+    ),
+    (
+        "P03",
+        "tests/test_batch_market.py",
+        "BatchMarketTests.test_caption_binding_gate_and_live_evidence_drift_before_worker",
+    ),
+    (
+        "M03 M08 M09 U01 U03 X01",
+        "tests/test_auto_edits.py",
+        "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
+    ),
+]
+
+
 def read_audit_rows():
     rows = {}
     for line in (ROOT / "docs/source-coverage-review.md").read_text().splitlines():
@@ -1022,67 +1236,17 @@ def test_symbol_exists(path, symbol):
 
 
 def declared_api_endpoints():
-    endpoints = set()
-    for filename in (
-        "api",
-        "account_quota",
-        "commercial_handoff",
-        "context_pack",
-        "render_recovery",
-        "creative",
-        "post_reviews",
-        "asset_families",
-        "source_changes",
-        "narration",
-        "script_readings",
-        "comment_feedback",
-        "asset_index",
-        "voice_studio",
-        "variants",
-        "soundtrack",
-        "score_policies",
-        "asset_lifecycle",
-        "media",
-        "captions",
-        "rhythm",
-        "selection",
-        "production",
-        "providers",
-        "execution",
-        "timeline_exchange",
-        "auto_edits",
-        "generation",
-    ):
-        tree = ast.parse((ROOT / f"app/{filename}.py").read_text())
-        prefix = ""
-        for node in tree.body:
-            if (
-                isinstance(node, ast.Assign)
-                and any(isinstance(t, ast.Name) and t.id == "router" for t in node.targets)
-                and isinstance(node.value, ast.Call)
-            ):
-                prefix = next(
-                    (
-                        ast.literal_eval(kw.value)
-                        for kw in node.value.keywords
-                        if kw.arg == "prefix"
-                    ),
-                    "",
-                )
-            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                continue
-            for dec in node.decorator_list:
-                if (
-                    isinstance(dec, ast.Call)
-                    and isinstance(dec.func, ast.Attribute)
-                    and isinstance(dec.func.value, ast.Name)
-                    and dec.func.value.id == "router"
-                    and dec.args
-                ):
-                    endpoints.add(
-                        f"{dec.func.attr.upper()} /api/v1{prefix}{ast.literal_eval(dec.args[0])}"
-                    )
-    return endpoints
+    # Mounted routers may inherit several nested prefixes. Use the executable contract.
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from app.main import app
+
+    return {
+        f"{method.upper()} {path}"
+        for path, operations in app.openapi()["paths"].items()
+        for method in operations
+        if method in {"get", "post", "put", "patch", "delete"}
+    }
 
 
 def group_values(groups, fid):
@@ -1251,7 +1415,7 @@ def build_manifest():
         "schema_version": "implementation-2",
         "source_version": atlas["schemaVersion"],
         "source_html_sha256": SOURCE_SHA256,
-        "boundary": "178项目录完整；151真实业务子集/16通用框架/0仅有未实联适配器/11仅合同配置，整项验收0。分类不等于完成率，目录路线不等于已注册执行路线。",
+        "boundary": "178项目录完整；176真实业务子集/0通用框架/2仅有未实联适配器/0仅合同配置，整项验收0。分类不等于完成率，目录路线不等于已注册执行路线。",
         "status_definitions": STATUS_LABELS,
         "counts": {
             "features": len(features),
@@ -1292,7 +1456,7 @@ def render_markdown(report):
         "",
         report["boundary"],
         "",
-        "本表由 implementation-2 清单生成，与独立审计四类一致。151 项有真实局部路径、16 项通用基础/配置、0 项仅有未实联适配器、11 项仅合同配置；完整原文业务验收通过 0。历史 implementation-1 的 133 项‘局部路径’已拆成 105+21+7，不是已完成功能数。",
+        "本表由 implementation-2 清单生成，与独立审计四类一致。176 项有真实局部路径、0 项通用基础/配置、2 项仅有未实联适配器、0 项仅合同配置；完整原文业务验收通过 0。历史 implementation-1 的 133 项‘局部路径’已拆成 105+21+7，不是已完成功能数。",
         "",
         "配置保存到 View；ConfigureFeature 只登记任务合同；真实执行走专用 API、明确控制面命令或已注册工作流路线。每项原文路线另列 source_route_ids，不等同于已经可执行。",
         "",
@@ -1323,7 +1487,7 @@ def render_markdown(report):
         "",
         "结构化证据：contracts/implementation.json。test_definitions 是可复核测试定义，verification_runs 保持为空，不伪造任何本轮运行结果。实际执行报告应另行提供命令、环境、开始/结束时间、结果及未覆盖范围。",
         "",
-        "本地三角色 Qwen2.5 1.5B、Qwen2.5 0.5B 与 SmolLM2 360M 具有分别核验的真实调用，错引观测的两张接受票被拦截。独立的单导演、SD1.5 静帧及 AnimateDiff-Lightning + SD1.5 动态视频已通过真实权重推理。付费供应商、平台账号、自动 ASR、多语种 TTS、图像/视频的商品语义验收、向量检索、商业编辑器往返及生产容量仍缺独立验收。",
+        "本地三角色 Qwen2.5 1.5B、Qwen2.5 0.5B 与 SmolLM2 360M 具有分别核验的真实调用，错引观测的两张接受票被拦截。独立的单导演、SD1.5 静帧及 AnimateDiff-Lightning + SD1.5 动态视频已通过真实权重推理。付费供应商、平台账号、自动 ASR、多语种 TTS、图像/视频的商品语义验收、大规模跨模态检索、商业编辑器往返及生产容量仍缺独立验收。",
     ]
     return "\n".join(lines) + "\n"
 
