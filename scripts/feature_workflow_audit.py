@@ -125,6 +125,21 @@ def module_view(module, features, module_index, audited, group):
                     ],
                     "code": implementation["code"],
                     "test_definitions": implementation["test_definitions"],
+                    **(
+                        {
+                            "verification_runs": [
+                                {
+                                    "id": r["id"],
+                                    "path": r["path"],
+                                    "sha256": r["sha256"],
+                                    "checks": r["checks"],
+                                }
+                                for r in implementation["verification_runs"]
+                            ]
+                        }
+                        if implementation["verification_runs"]
+                        else {}
+                    ),
                     "full_business_acceptance": implementation["full_business_acceptance"],
                 },
             }
@@ -221,6 +236,18 @@ def render(report):
                     f"**当前能做的事**　{status['label']}。{status['operable_scope']}",
                     "",
                     f"**待验收范围**　{status['limits']}",
+                    *(
+                        [
+                            "",
+                            "**实测凭据**　"
+                            + " · ".join(
+                                f"[{', '.join(c['criterion'] for c in r['checks'])}](../{r['path']})"
+                                for r in status["verification_runs"]
+                            ),
+                        ]
+                        if status.get("verification_runs")
+                        else []
+                    ),
                     "",
                 ]
             )

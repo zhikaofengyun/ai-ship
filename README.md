@@ -106,9 +106,9 @@ python scripts/export_contracts.py --check
 python scripts/run_regression.py --webkit --round 1 --output evidence/my-round-1
 ```
 
-每轮重新创建隔离工作区，检查原文/Schema/OpenAPI、运行所有后端与真实媒体测试，检查全部浏览器模块，并用真实浏览器遍历 23 模块、178 功能与 534 路线，执行上传、剪辑、锁版、编码、下载和两节点工作流。不同轮次改变测试顺序和桌面/手机视口；重复运行不会覆写旧证据。浏览器安装受限时可通过 `AI_SHIP_CHROMIUM` 指定已安装的官方 Chromium 可执行文件，保持沙箱开启。
+每轮重新创建隔离工作区，检查原文/Schema/OpenAPI、运行所有后端与真实媒体测试，检查全部浏览器模块，并用真实浏览器遍历 23 个模块、178 项功能及 534 个路线选项。另外执行上传、剪辑、锁版、编码、下载和两节点工作流。不同轮次改变测试顺序和桌面/手机视口；重复运行不会覆写旧证据。浏览器安装受限时可通过 `AI_SHIP_CHROMIUM` 指定已安装的官方 Chromium 可执行文件，保持沙箱开启。
 
-[制作台五轮回归](docs/ai-production-regression.md)列出各轮结果、实际覆盖、失败修复和未验证项；原始日志、逐测试结果、截图、真实媒体及 SHA-256 位于 `evidence/ai-production/round-*`。这些是已实现范围的回归，不能用来声称原文全部业务已完成。GitHub Actions 的结果也单独记录，不用本地结果替代 CI 状态。
+[前一版制作台的五轮回归](docs/ai-production-regression.md)记录当时的冻结源码和运行结果。[本次批量制作验收](docs/bulk-video-release.md)记录当前提交的实测容量、模型、应用界面和缺口。[运行凭据索引](docs/feature-evidence.md)把已复核的报告关联到对应功能和条件。
 
 ## 目录与扩展约定
 

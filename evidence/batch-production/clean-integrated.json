@@ -1,0 +1,32 @@
+{
+  "commit": "28371cfc3c4ee842dc3bc987c5ce5af44f1e25c4",
+  "git_tree": "d5d62240e6a093a1349a4532c2360e5046648460",
+  "source": "Independent fresh HTTPS clone from GitHub main; default development test dependencies; no copied source or data.",
+  "unit": {
+    "tests_run": 311,
+    "unique_test_ids": true,
+    "order_seed": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": true
+  },
+  "unit_report_sha256": "bb8fbe16832a1b59e14d04d4de769c4c98098de763c6c41083a26a5b2d26dc6b",
+  "atlas": {
+    "passed": true,
+    "source_sha256": "65a0e6e7f19b0e087be4ff0adcd1166c7073211caa5988f739df05b47971dee4",
+    "source_roundtrip_equal": true,
+    "counts": {
+      "modules": 23,
+      "features": 178,
+      "entities": 64,
+      "machines": 12,
+      "routes": 534,
+      "controls": 742,
+      "quality_gates": 1104,
+      "failure_paths": 574,
+      "states": 126,
+      "transitions": 285
+    }
+  }
+}

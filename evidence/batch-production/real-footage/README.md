@@ -4,6 +4,8 @@
 
 本次通过工作台的 Commons 连接器获得《Traditional Ethiopian Coffee Roasting Ceremony》原件。原片有 30.066 秒。本机 llama.cpp b12671 实际载入 Qwen2.5-0.5B-Instruct Q4_K_M，读取这一项目的制作目标与实测素材候选，选择原片开头 0 至 9 秒。核看源画面后在隔离演示项目批准计划。成片通过工作台 FFmpeg 编码，经下载接口取得，再完整解码。最后只改写容器元数据加入署名、许可和出处，原始画面及声音编码流保留。两个文件摘要在证据中分别记录。
 
+同一节选另经过 100 条双镜头竖片测试。每条含完整原声，200 个剪点区间的原声关联逐项核对。可查看[真实批次数据](batch/result.json)和[复现脚本](batch/verify_coffee_batch.py)。
+
 ## 署名与许可
 
 原作 **Traditional Ethiopian Coffee Roasting Ceremony**，作者 **Keria T**。[原作说明页](https://commons.wikimedia.org/wiki/File:Traditional_Ethiopian_Coffee_Roasting_Ceremony.webm) · [作者](https://commons.wikimedia.org/wiki/User:Keria_T)

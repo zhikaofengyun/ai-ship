@@ -1407,6 +1407,10 @@ def build_manifest():
     scenario_rows = read_scenario_audit()
     handlers = workflow_registry()
     endpoints = declared_api_endpoints()
+    from scripts.feature_run_evidence import FLAGS, validate_index
+
+    index = json.loads((ROOT / "contracts/feature-evidence.json").read_text())
+    runs, reviews = validate_index(ROOT, atlas, index, SOURCE_SHA256)
     features = []
     for feature in atlas["features"]:
         fid = feature["id"]
@@ -1524,13 +1528,26 @@ def build_manifest():
                 "code": sorted(code),
                 "test_files": sorted(test_files),
                 "test_definitions": definitions,
-                "verification_runs": [],
-                "verification_boundary": "仅映射存在的测试定义，不生成测试通过记录；实际证据见独立运行报告",
-                "full_business_acceptance": False,
-                "production_verified": False,
-                "external_live_verified": False,
+                "verification_runs": runs.get(fid, []),
+                **({"acceptance_reviews": reviews[fid]} if fid in reviews else {}),
+                "verification_boundary": (
+                    "固定运行报告与原图谱条件逐项对应，适用范围见 checks。"
+                    if fid in runs
+                    else "尚未为该项绑定实际运行凭据。"
+                ),
+                **{
+                    flag: any(r["current"] for r in reviews.get(fid, {}).get(flag, []))
+                    for flag in FLAGS
+                },
                 "source_quality_gates": feature["operation"]["qualityGates"],
-                "acceptance_remaining": feature["operation"]["qualityGates"],
+                "acceptance_remaining": (
+                    []
+                    if any(
+                        r["current"]
+                        for r in reviews.get(fid, {}).get("full_business_acceptance", [])
+                    )
+                    else feature["operation"]["qualityGates"]
+                ),
                 "acceptance_boundary": "原文门槛完整保留，未以目录/结构测试推导逐门槛或整功能通过",
                 "requirement_ids": feature["requirements"],
                 "scenario_ids": [
@@ -1540,18 +1557,20 @@ def build_manifest():
         )
     counts = Counter(f["status"] for f in features)
     assert {status: counts[status] for status in STATUS_LABELS} == EXPECTED_COUNTS
+    decisions = {flag: sum(f[flag] for f in features) for flag in FLAGS}
+    run_features = sum(bool(f["verification_runs"]) for f in features)
     return {
         "schema_version": "implementation-2",
         "source_version": atlas["schemaVersion"],
         "source_html_sha256": SOURCE_SHA256,
-        "boundary": "178项目录完整；176真实业务子集/0通用框架/2仅有未实联适配器/0仅合同配置，整项验收0。分类不等于完成率，目录路线不等于已注册执行路线。",
+        "boundary": f"原图谱共 {len(features)} 项；{run_features} 项绑定已核对的运行凭据，{decisions['full_business_acceptance']} 项取得当前运行版本的独立整项验收。目录和实际可执行路线分别统计。",
         "status_definitions": STATUS_LABELS,
         "counts": {
             "features": len(features),
             "by_status": {status: counts[status] for status in STATUS_LABELS},
-            "full_business_acceptance": 0,
-            "production_verified": 0,
-            "external_live_verified": 0,
+            **decisions,
+            "pinned_execution_reports": len(index["runs"]),
+            "features_with_execution_reports": run_features,
         },
         "workflow_registry": {
             "source_file": "app/execution.py",
@@ -1563,7 +1582,7 @@ def build_manifest():
             "total": len(scenario_rows),
             "partial": list(scenario_rows.values()).count("partial"),
             "uncovered": list(scenario_rows.values()).count("uncovered"),
-            "full_acceptance_passed": 0,
+            "full_acceptance_passed": list(scenario_rows.values()).count("accepted"),
             "audit_document": "docs/scenario-coverage.md",
             "boundary": "部分仅指列出的子约束证据；逐场景完整验收另行核实",
         },
@@ -1585,7 +1604,7 @@ def render_markdown(report):
         "",
         report["boundary"],
         "",
-        "本表由 implementation-2 清单生成，与独立审计四类一致。176 项有真实局部路径、0 项通用基础/配置、2 项仅有未实联适配器、0 项仅合同配置；完整原文业务验收通过 0。历史 implementation-1 的 133 项‘局部路径’已拆成 105+21+7，不是已完成功能数。",
+        f"本表由 implementation-2 清单生成，与独立审计四类一致。176 项有真实局部路径、0 项通用基础/配置、2 项仅有未实联适配器、0 项仅合同配置；完整原文业务验收通过 {report['counts']['full_business_acceptance']}。历史 implementation-1 的 133 项‘局部路径’已拆成 105+21+7，不是已完成功能数。",
         "",
         "配置保存到 View；ConfigureFeature 只登记任务合同；真实执行走专用 API、明确控制面命令或已注册工作流路线。每项原文路线另列 source_route_ids，不等同于已经可执行。",
         "",
@@ -1593,7 +1612,7 @@ def render_markdown(report):
         + "、".join(report["workflow_registry"]["registered_routes"])
         + "。",
         "",
-        f"69 个原文场景：{report['scenario_coverage']['partial']} 部分覆盖、{report['scenario_coverage']['uncovered']} 未覆盖、0 全场景验收通过。具体测试定义与未覆盖项见 docs/scenario-coverage.md。",
+        f"69 个原文场景：{report['scenario_coverage']['partial']} 部分覆盖、{report['scenario_coverage']['uncovered']} 未覆盖、{report['scenario_coverage']['full_acceptance_passed']} 全场景验收通过。具体测试定义与未覆盖项见 docs/scenario-coverage.md。",
         "",
         "| ID | 功能 | 独立审计等级 | 当前真实子集 | 主要剩余范围 | 注册工作流路线 |",
         "|---|---|---|---|---|---|",
@@ -1614,7 +1633,7 @@ def render_markdown(report):
         )
     lines += [
         "",
-        "结构化证据：contracts/implementation.json。test_definitions 是可复核测试定义，verification_runs 保持为空，不伪造任何本轮运行结果。实际执行报告应另行提供命令、环境、开始/结束时间、结果及未覆盖范围。",
+        "测试定义见 test_definitions；实际运行的哈希、图谱条件、环境与核验范围见 verification_runs。[已核对的运行报告与晋级条件](feature-evidence.md)。",
         "",
         "本地三角色 Qwen2.5 1.5B、Qwen2.5 0.5B 与 SmolLM2 360M 具有分别核验的真实调用，错引观测的两张接受票被拦截。独立的单导演、SD1.5 静帧及 AnimateDiff-Lightning + SD1.5 动态视频已通过真实权重推理。付费供应商、平台账号、复杂声场 ASR、多语种 TTS、图像/视频的商品语义验收、大规模跨模态检索、商业编辑器往返及生产容量仍缺独立验收。",
     ]

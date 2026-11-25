@@ -103,13 +103,14 @@ def check():
         implementation_counts = implementation["counts"]
         for f in implementation["features"]:
             assert f["id"] in STATUS_IDS[f["status"]]
-            assert (
-                f["full_business_acceptance"] is False
-            ), "No unevidenced all-feature completion claims"
-            assert f["production_verified"] is False and f["external_live_verified"] is False
-            assert (
-                f["verification_runs"] == []
-            ), "A definition mapping cannot fabricate execution reports"
+            for flag in (
+                "full_business_acceptance",
+                "production_verified",
+                "external_live_verified",
+            ):
+                assert f[flag] == any(
+                    r["current"] for r in f.get("acceptance_reviews", {}).get(flag, [])
+                ), "Acceptance must derive from an independent current-runtime decision"
             assert f["source_route_ids"] == [r["id"] for r in FEATURES[f["id"]]["routes"]]
             assert f["source_quality_gates"] == FEATURES[f["id"]]["operation"]["qualityGates"]
             assert f["contract_request"]["executes_business_work"] is False

@@ -1,0 +1,312 @@
+{
+  "source_sha256": "49d9405d487c80ec6b034d29590778f32fa5c9fcaa95c6d7c24dd78c118e2c76",
+  "round": 4,
+  "started_at": "2026-11-25T15:24:06.970072+00:00",
+  "finished_at": "2026-11-25T15:29:38.566377+00:00",
+  "unchanged_during_round": true,
+  "passed": false,
+  "commit": "28371cfc3c4ee842dc3bc987c5ce5af44f1e25c4",
+  "checks_passed": 45,
+  "total": 46,
+  "backend": {
+    "tests_run": 311,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": true
+  },
+  "checks": [
+    {
+      "name": "source-contract-integrity",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 4.312
+    },
+    {
+      "name": "all-backend-media-cross-domain-tests",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 202.571
+    },
+    {
+      "name": "all-original-feature-workflow-crosswalk",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 0.317
+    },
+    {
+      "name": "new-module-production-forms",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 7.234
+    },
+    {
+      "name": "brief-shot-selection-and-editor-handoff",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 8.856
+    },
+    {
+      "name": "single-screen-edit-session",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 16.431
+    },
+    {
+      "name": "workspace-route-execution-and-revisions",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 8.218
+    },
+    {
+      "name": "all-browser-module-syntax",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 3.3
+    },
+    {
+      "name": "python-formatting",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 0.17
+    },
+    {
+      "name": "browser-formatting",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 1.93
+    },
+    {
+      "name": "openapi-snapshot-drift",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 1.287
+    },
+    {
+      "name": "typed-controls-and-imported-dom-boundaries",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 10.207
+    },
+    {
+      "name": "exhaustive-browser-and-real-media",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 23.196
+    },
+    {
+      "name": "batch-workbench",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 21.71
+    },
+    {
+      "name": "capture-directory",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 4.051
+    },
+    {
+      "name": "login-kit-browser",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 4.16
+    },
+    {
+      "name": "recorded-evidence-replay",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 3.453
+    },
+    {
+      "name": "scoring-policy-release",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 5.11
+    },
+    {
+      "name": "comment-feedback",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 4.449
+    },
+    {
+      "name": "webkit-batch-workbench",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 24.41
+    },
+    {
+      "name": "webkit-creative-and-source-manifest",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 8.98
+    },
+    {
+      "name": "webkit-single-screen-edit-session",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 25.502
+    },
+    {
+      "name": "chromium-ai-production",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 22.913
+    },
+    {
+      "name": "chromium-workspace-layout",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 8.857
+    },
+    {
+      "name": "chromium-visual-transitions",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 7.714
+    },
+    {
+      "name": "chromium-opening-text",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 14.378
+    },
+    {
+      "name": "chromium-storyboard-variants",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 10.669
+    },
+    {
+      "name": "chromium-voice-and-narration",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 12.709
+    },
+    {
+      "name": "chromium-module-and-source-layout",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 5.64
+    },
+    {
+      "name": "chromium-source-index-and-soundtrack",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 9.804
+    },
+    {
+      "name": "chromium-account-quota",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 4.313
+    },
+    {
+      "name": "chromium-render-recovery",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 5.331
+    },
+    {
+      "name": "chromium-commercial-handoff",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 5.281
+    },
+    {
+      "name": "chromium-asset-lifecycle-and-families",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 9.929
+    },
+    {
+      "name": "webkit-ai-production",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 28.978
+    },
+    {
+      "name": "webkit-workspace-layout",
+      "passed": false,
+      "exit_code": 1,
+      "seconds": 12.299
+    },
+    {
+      "name": "webkit-visual-transitions",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 11.22
+    },
+    {
+      "name": "webkit-opening-text",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 14.701
+    },
+    {
+      "name": "webkit-storyboard-variants",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 10.673
+    },
+    {
+      "name": "webkit-voice-and-narration",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 15.186
+    },
+    {
+      "name": "webkit-module-and-source-layout",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 8.573
+    },
+    {
+      "name": "webkit-source-index-and-soundtrack",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 11.992
+    },
+    {
+      "name": "webkit-account-quota",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 5.388
+    },
+    {
+      "name": "webkit-render-recovery",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 7.475
+    },
+    {
+      "name": "webkit-commercial-handoff",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 7.91
+    },
+    {
+      "name": "webkit-asset-lifecycle-and-families",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 11.169
+    }
+  ],
+  "report_sha256": "d96526a0d55d3fbf3a8665725d6b32b93494e0434dc13b73c5d99bb2e3cdc8f1",
+  "followup": "WebKit recorded cancelled same-origin requests when the layout test reloaded immediately after selecting a timeline. The test now waits for that revision before exercising reload; all page errors remain disallowed.",
+  "isolated_layout_rechecks": [
+    {
+      "seed": 4,
+      "passed": true,
+      "page_errors": [],
+      "checks": 10
+    },
+    {
+      "seed": 5,
+      "passed": true,
+      "page_errors": [],
+      "checks": 10
+    }
+  ]
+}

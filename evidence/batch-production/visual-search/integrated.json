@@ -1,0 +1,61 @@
+{
+  "passed": true,
+  "matches_feature_acceptance": true,
+  "queries": [
+    {
+      "text": "an astronaut wearing a space suit",
+      "file": "001.mp4",
+      "source_seconds": 0.0,
+      "sample_rgb_sha256": "f0ae879e56e22813fb627c3db8b341687ba688b8500cde3ef4f0a9d537d16e56",
+      "cosine": 0.267106,
+      "literal_matches": []
+    },
+    {
+      "text": "a cup of coffee",
+      "file": "001.mp4",
+      "source_seconds": 3.4,
+      "sample_rgb_sha256": "14c4e98c8af914d81e744b001d497caa1579f513cf7489bb108e835613906424",
+      "cosine": 0.286806,
+      "literal_matches": []
+    },
+    {
+      "text": "a bee visiting a flower",
+      "file": "002.mp4",
+      "source_seconds": 2.535867,
+      "sample_rgb_sha256": "6c941f949e3cefa7edf8bab00ffcf5bc18320ea8cfbc7f0f15a8e1c6d6e6a471",
+      "cosine": 0.229304,
+      "literal_matches": []
+    }
+  ],
+  "checks": {
+    "repeated_build_skips_indexed_sources": true,
+    "different_project_excluded": true,
+    "revoked_processing_grant_excluded": true,
+    "model_change_isolated": true,
+    "mismatched_frame_proof_rejected": true,
+    "literal_fallback_available": true
+  },
+  "browsers": [
+    {
+      "engine": "chromium",
+      "version": "158.0.8127.0",
+      "reviewed_tag_source_pts_us": 3400000,
+      "observed_seconds": 3.4,
+      "page_errors": [],
+      "editor_source_seconds": 3.4
+    },
+    {
+      "engine": "webkit",
+      "version": "26.5",
+      "reviewed_tag_source_pts_us": 3400000,
+      "observed_seconds": 3.4,
+      "page_errors": [],
+      "editor_source_seconds": 3.4
+    }
+  ],
+  "model_space": "clip-b32/98c718df886ac03f7aeb914c9c6e2a9850f141cb071cadd6f65cc7a812c4715d",
+  "report_sha256": {
+    "chromium": "ebdc0459e2b635ef5fe96fadf351c1424c6cf20b6dcbc02e60591cf61012b4c6",
+    "webkit": "c2c7f2590ef4c012158a979d86fb001b7e2c0c7d44a1c96df90575bac3a69518"
+  }
+}

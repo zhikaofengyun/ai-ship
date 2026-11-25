@@ -314,6 +314,7 @@ def run(output, engine, round_id):
                 loc('[data-timeline="' + newer["id"] + '"]').click()
                 expect(loc(".room-title h1")).to_have_text("另一个更新的剪辑")
                 page.goto(base + "/#editor/project-timeline/" + chosen["id"])
+                expect(loc(".room-title h1")).to_have_text("制作台选定剪辑的未保存修改")
                 page.reload()
                 expect(loc(".room-title h1")).to_have_text("制作台选定剪辑的未保存修改")
                 assert (

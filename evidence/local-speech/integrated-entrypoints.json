@@ -1,0 +1,54 @@
+{
+  "checks": [
+    {
+      "module": "voice",
+      "feature": "V04",
+      "button": "识别对白与逐句审核",
+      "dialog": "识别对白与逐句审核"
+    },
+    {
+      "action": "V04 secondary manual alignment",
+      "dialog": "对齐脚本与音轨"
+    },
+    {
+      "module": "label",
+      "feature": "L04",
+      "button": "识别对白与逐句审核",
+      "dialog": "识别对白与逐句审核"
+    },
+    {
+      "module": "voice",
+      "feature": "V03",
+      "button": "生成或导入口播",
+      "dialog": "口播录制与生成"
+    },
+    {
+      "module": "voice",
+      "feature": "V05",
+      "button": "编辑词句锚点",
+      "dialog": "对齐脚本与音轨"
+    },
+    {
+      "module": "music",
+      "feature": "B04",
+      "button": "剪配音乐",
+      "dialog": "声音与混音"
+    },
+    {
+      "module": "music",
+      "feature": "B05",
+      "button": "调整混音",
+      "dialog": "声音与混音"
+    },
+    {
+      "feature": "A05",
+      "coexisting_buttons": [
+        "采集目录",
+        "查看导入批次"
+      ],
+      "dialog": "采集目录"
+    }
+  ],
+  "page_errors": [],
+  "browser": "158.0.8127.0"
+}

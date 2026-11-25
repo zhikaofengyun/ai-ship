@@ -1,0 +1,156 @@
+{
+  "started_at": "2026-11-25T15:29:22.037276+00:00",
+  "finished_at": "2026-11-25T15:32:01.788668+00:00",
+  "source": {
+    "title": "File:Traditional Ethiopian Coffee Roasting Ceremony.webm",
+    "author": "Keria T",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Traditional_Ethiopian_Coffee_Roasting_Ceremony.webm",
+    "source_original_sha256": "d2e7783750d688838e83e79a24b865e2e7789d2357353ce9b749467d52a9af2d",
+    "excerpt_sha256": "afacd0313fdcd967f135c6220a326c47c84038cf987b59af9b655a50aec21b48",
+    "changes": "Excerpt of first 9 s of original; attribution retained in input. This benchmark trims and reorders it; no derived movies distributed."
+  },
+  "source_streams": {
+    "seconds": 9.0,
+    "fps": "25/1",
+    "video": "h264",
+    "width": 432,
+    "height": 768,
+    "audio": "aac",
+    "channels": 2,
+    "sample_rate": 48000
+  },
+  "environment": {
+    "host_logical_cpus": 9,
+    "initial_affinity_count": 9,
+    "allowed_cpu_ids": [
+      7,
+      8
+    ],
+    "workers": 2,
+    "per_ffmpeg_cpu_count": 1,
+    "per_worker_video_codec_threads": 1,
+    "ffmpeg": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "ffprobe": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "python": "3.12.14",
+    "repository": {
+      "git_commit": "28371cfc3c4ee842dc3bc987c5ce5af44f1e25c4",
+      "app_tree": "b5d49dcfe24e9ea69f81619b72126c581ee08bcc",
+      "app_tree_clean": true,
+      "observed_utc": "2026-11-25T15:30:19.721063+00:00"
+    }
+  },
+  "timing_seconds": {
+    "import_attribution_and_approval": 0.653,
+    "enqueue_response": 0.091,
+    "enqueue_through_terminal_status": 122.2,
+    "terminal_status_to_final_full_verification": 35.6,
+    "render_then_verify_wall": 157.8
+  },
+  "batch": {
+    "id": "batch_114d9e8c53d113434cbde1aaec50ecc4dbc06db1",
+    "output": "render",
+    "workers_configured": 2,
+    "peak_concurrently_running_items_observed": 2,
+    "requested": 100,
+    "counts": {
+      "queued": 0,
+      "running": 0,
+      "waiting": 0,
+      "succeeded": 100,
+      "failed": 0,
+      "cancelled": 0
+    },
+    "seed": 20261125,
+    "fps": 25,
+    "dimensions": [
+      432,
+      768
+    ],
+    "frames_per_slot": 38,
+    "slots": 2,
+    "candidate_start_frames_per_slot": [
+      0,
+      20,
+      40,
+      60,
+      80,
+      100,
+      120,
+      140,
+      160,
+      180
+    ],
+    "recipe_distinct_pairs": 100,
+    "forward_pairs": 45,
+    "reverse_pairs": 45,
+    "same_trim_pairs": 10
+  },
+  "rights": {
+    "source_id": "source_95b16fc2891c4d4b91fd0e5671ee3206",
+    "source_version": 2,
+    "admission_revision": 1,
+    "decision_id": "approval_9f7b34b68e6e40c9a45d4d375cc8ce4e",
+    "action": "approve",
+    "purposes": [
+      "export",
+      "inspect",
+      "process"
+    ],
+    "source_archive_rechecked_by_sha256": true,
+    "original_rights_evidence": "Versioned input provenance in repo, input MP4 attribution and source snapshot; no new remote verification in this run."
+  },
+  "verification": {
+    "downloads": 100,
+    "matched_stored_artifact_sha256": 100,
+    "distinct_timelines": 100,
+    "distinct_artifact_records": 100,
+    "unique_file_sha256": 100,
+    "unique_decoded_frame_sequence_sha256": 100,
+    "unique_decoded_mono_pcm_sha256": 100,
+    "video_stream": "H.264, 432x768 25 fps",
+    "audio_stream": "AAC",
+    "audio_stream_hz": [
+      48000
+    ],
+    "audio_stream_channels": [
+      2
+    ],
+    "duration_seconds": {
+      "min": 3.04,
+      "median": 3.04,
+      "max": 3.04
+    },
+    "video_frames_each": [
+      76
+    ],
+    "video_frames_total": 7600,
+    "decoded_mono_16khz_samples_each": {
+      "min": 48811,
+      "median": 48811.0,
+      "max": 48811
+    },
+    "download_bytes_total": 68164779,
+    "mono_rms_dbfs": {
+      "min": -17.79787,
+      "median": -15.85101,
+      "max": -15.02414
+    },
+    "source_audio_clip_correlations": {
+      "min": 0.8584,
+      "median": 0.98866,
+      "max": 0.99626
+    },
+    "source_audio_clip_count": 200,
+    "source_audio_clip_correlation_at_least_0_75": 200,
+    "ordered_hash_manifest_sha256": "9ae99ac433da8b6507236456b105ae23bcf3b16a0a8a6202fdcb0b896337b8c3"
+  },
+  "limitations": [
+    "One attributed 9 s source, deterministic two-slot recuts, 3.04 s duration. No model generation, public upload, subjective quality or audience-performance evaluation.",
+    "Single shared host, local SQLite and object storage, 2 workers with 2-CPU total affinity. Times reflect this run and co-scheduled processes.",
+    "Audio comparison uses decoded mono PCM downsampled to 4 kHz over a 1 s interior window per slot and optimizes normalized correlation over ±32 ms. Full frame/audio streams are decoded for hashes.",
+    "Output files existed only in the temporary application store. Download verification reused one temporary filename; no derived movies are retained or distributed."
+  ]
+}
