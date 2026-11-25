@@ -1,0 +1,37 @@
+{
+  "commit": "d3d79eae28e56e4f989a1cd8672a2ceaab002639",
+  "git_tree": "0627de4726607efcf4f2e28ca196a2a89e58c245",
+  "source": "independent HTTPS Git clone, isolated local data",
+  "unit": {
+    "tests_run": 294,
+    "unique_test_ids": true,
+    "order_seed": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": true
+  },
+  "unit_report_sha256": "5bc6e1815ebf55c5a2ac3123834ef522647f1ba4c12a27a7b745addc5ccd80d4",
+  "atlas": {
+    "passed": true,
+    "source_sha256": "65a0e6e7f19b0e087be4ff0adcd1166c7073211caa5988f739df05b47971dee4",
+    "source_roundtrip_equal": true,
+    "counts": {
+      "modules": 23,
+      "features": 178,
+      "entities": 64,
+      "machines": 12,
+      "routes": 534,
+      "controls": 742,
+      "quality_gates": 1104,
+      "failure_paths": 574,
+      "states": 126,
+      "transitions": 285
+    }
+  },
+  "openapi": {
+    "paths": 164,
+    "operations": 180,
+    "verified_no_drift": true
+  }
+}

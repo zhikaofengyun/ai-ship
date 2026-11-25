@@ -10,23 +10,23 @@
   "evidence": [
     {
       "conditional_retention": "80.0%",
-      "post": "post_896c135e2c0243ef8574c9249088fd7a",
-      "insight": "insight_b9af93bf49414b01b8da33df068229fb"
+      "post": "post_8c1cf17310e949879c9e762eb4b581f4",
+      "insight": "insight_9ca801e83e07489bada3ab78a0590250"
     },
     {
       "conditional_retention": "55.0%",
-      "post": "post_4650babacc5140518e53114adfac0257",
-      "insight": "insight_40f1d571c68b4c0c827940e291bab3ab"
+      "post": "post_b949ec0114374dc7b96eeb545c1d23e1",
+      "insight": "insight_fbde4ea01e67429aa79ae60798732f76"
     }
   ],
   "requests": [
     {
       "method": "GET",
-      "query": "account_id=account_2961d6df0e5a424dba2655a6b9eb367a&traffic=paid&start_seconds=0&end_seconds=0.5&cohort_after_hours=0&cohort_hours=24&project_id=project_e980bc613ca64d4a8e3e85ab51a950af&offset=0&limit=25"
+      "query": "account_id=account_a51cf00e8907471481c306cb555f4296&traffic=paid&start_seconds=0&end_seconds=0.5&cohort_after_hours=0&cohort_hours=24&project_id=project_65db16981d72455cac8daf51565f9ada&offset=0&limit=25"
     },
     {
       "method": "GET",
-      "query": "account_id=account_2961d6df0e5a424dba2655a6b9eb367a&traffic=organic&start_seconds=0&end_seconds=0.5&cohort_after_hours=0&cohort_hours=24&project_id=project_e980bc613ca64d4a8e3e85ab51a950af&offset=0&limit=25"
+      "query": "account_id=account_a51cf00e8907471481c306cb555f4296&traffic=organic&start_seconds=0&end_seconds=0.5&cohort_after_hours=0&cohort_hours=24&project_id=project_65db16981d72455cac8daf51565f9ada&offset=0&limit=25"
     }
   ],
   "filters_persisted": true,

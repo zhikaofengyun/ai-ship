@@ -37,6 +37,7 @@ python scripts/run.py
 | --- | --- |
 | [LangGraph durable execution](https://docs.langchain.com/oss/python/langgraph/durable-execution) | 在外部生成请求前持久化身份和输入；用原请求恢复等待，保留已完成节点。变更未开始节点时冻结图修订及运行前提 |
 | [OpenAI Agents SDK tracing](https://openai.github.io/openai-agents-python/tracing/) | 运行、节点、模型调用、具体工具输入、产物与上游证据分层记录；可核对单次失败、预算和恢复位置 |
+| [DSPy](https://github.com/stanfordnlp/dspy) 和 [Context engineering](https://docs.langchain.com/oss/python/langchain/context-engineering) | 把硬目标、可用工具、可引用的观测、剪辑偏好与上一轮驳回分开传入角色，保留输入版本、调用记录、结构化输出及失败原因。提示词的取舍可用同一组任务复验 |
 | [GEPA](https://github.com/gepa-ai/gepa) | 参考利用执行反馈改进候选的做法。产品支持有界编辑修订和评分参数搜索，训练与留出样本分开，保留旧策略和人工发布环节 |
 | [OpenTimelineIO](https://github.com/AcademySoftwareFoundation/OpenTimelineIO) | 可把人工剪辑导出的 OTIO 作为图节点输入，校验可解析的来源时间范围和支持的效果 |
 | [Sentence Transformers](https://github.com/huggingface/sentence-transformers) | 名称和已核验片段标签编码为向量，与字面检索合并；命中后重新核对当前权限 |
@@ -47,6 +48,6 @@ python scripts/run.py
 
 ## 验证入口
 
-[批次说明](batch-production.md) · [各项功能与剩余门槛](source-coverage-review.md) · [实测容量](../evidence/batch-production/capacity.json) · [真实网络观察](../evidence/batch-production/network-observations.json) · [桌面、移动端和浏览器断言](../evidence/batch-production/browser)
+[批次说明](batch-production.md) · [各项功能与剩余门槛](source-coverage-review.md) · [实测容量](../evidence/batch-production/capacity.json) · [千条编码](../evidence/batch-production/thousand-renders.json) · [竖片核对](../evidence/batch-production/portrait-capacity.json) · [真实网络观察](../evidence/batch-production/network-observations.json) · [桌面、移动端和浏览器断言](../evidence/batch-production/browser)
 
-复核时分开计算队列完成、生成回执、已生成时间线、实际编码产物、下载解码和真实平台表现。10,000 条时间线与 120 条测试短片是两组独立实测。当前环境没有多主机、长视频万条编码、真实广告账户回传或生产级投放收益证据。
+复核时分开计算队列完成、生成回执、已生成时间线、实际编码产物、下载解码和真实平台表现。10,000 条时间线、120 条和 1,000 条短片、三条带声 1080×1920 竖片分别实测。短片有逐文件下载、解码和唯一摘要，竖片另有独立的解码画面和音频摘要。当前环境没有多主机、长视频万条编码、真实广告账户回传或生产级投放收益证据。

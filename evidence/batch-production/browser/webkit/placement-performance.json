@@ -1,0 +1,34 @@
+{
+  "browser": "26.5",
+  "fixture": "Two local FFmpeg MP4s, each independently downloaded and verified against its synthetic post and observed first-play cohort.",
+  "interval_seconds": [
+    0,
+    0.5
+  ],
+  "paid_posts": 0,
+  "organic_posts": 2,
+  "evidence": [
+    {
+      "conditional_retention": "80.0%",
+      "post": "post_68e5d51ffb1e439fa53385aa3180a97d",
+      "insight": "insight_b78eb584ae4c4b849fc4397f1be54d37"
+    },
+    {
+      "conditional_retention": "55.0%",
+      "post": "post_1afb164ca7074aeda0b57be7b52feaa6",
+      "insight": "insight_3bde94dde1dc4532a764c80a50a97f4a"
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "query": "account_id=account_dd9d233688a2499c8a64d66e6be4980f&traffic=paid&start_seconds=0&end_seconds=0.5&cohort_after_hours=0&cohort_hours=24&project_id=project_35a3d93a94f141a5aca1755205fbd16c&offset=0&limit=25"
+    },
+    {
+      "method": "GET",
+      "query": "account_id=account_dd9d233688a2499c8a64d66e6be4980f&traffic=organic&start_seconds=0&end_seconds=0.5&cohort_after_hours=0&cohort_hours=24&project_id=project_35a3d93a94f141a5aca1755205fbd16c&offset=0&limit=25"
+    }
+  ],
+  "filters_persisted": true,
+  "returned_to_post_review": true
+}

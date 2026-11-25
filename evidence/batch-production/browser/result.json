@@ -1,4 +1,6 @@
 {
+  "engine": "chromium",
+  "browser": "158.0.8127.0",
   "checks": [
     "real batch of two distinct FFmpeg outputs, result links and determinate progress",
     "versioned output contract with real per-file decode receipts",
@@ -14,6 +16,7 @@
     "effective project preference set, observed and revoked with version checks",
     "qualify and run an exact Workflow version from the harness view",
     "persist a project TikTok read-connection suspension with no outbound publication",
+    "M09 placement comparison filters paid traffic to an empty state, then verifies 80.0% and 55.0% against two actual rendered files and pinned synthetic post/Insight receipts; returns to conditions and the review entry",
     "version-bound source usage decision submitted from I05"
   ],
   "page_errors": [],
