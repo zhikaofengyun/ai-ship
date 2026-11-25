@@ -143,11 +143,17 @@ OPERATION_SCHEMAS = {
             "profile_id": {"type": "string", "minLength": 1, "title": "本地生成配置"},
             "prompt": {"type": "string", "minLength": 1, "maxLength": 6000, "title": "镜头提示词"},
             "seed": {"type": "integer", "minimum": 0, "maximum": 2147483647, "title": "种子"},
+            "reference_time_seconds": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMaximum": 3600,
+                "title": "视频参考帧源时码（秒）",
+            },
             "reference": {
                 "type": "object",
                 "required": ["id", "version"],
                 "properties": {"id": _REF_INPUT, "version": {"type": "integer", "minimum": 1}},
-                "title": "参考原图版本",
+                "title": "项目参考图片或视频版本",
             },
         },
     },
@@ -674,6 +680,7 @@ def _call_handler(store, actor, run, node, args, input_refs):
             idempotency_key="dag:" + digest([run["id"], node["id"]]),
             reference_asset_id=reference.get("id"),
             reference_asset_version=reference.get("version"),
+            reference_time_seconds=args.get("reference_time_seconds"),
         )
         result = generation.generate(body, None, actor)["data"]
         job = result["job"]

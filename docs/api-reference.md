@@ -176,6 +176,8 @@
 | GET | `/api/v1/production/generation/profiles` | Available | `—` |
 | GET | `/api/v1/production/generation` | Jobs | `—` |
 | POST | `/api/v1/production/generation` | Generate | `Generate` |
+| GET | `/api/v1/production/generation/reference/assets` | Reference Assets | `—` |
+| GET | `/api/v1/production/generation/reference/frame` | Preview Frame | `—` |
 | POST | `/api/v1/production/generation/{id}/refresh` | Refresh | `—` |
 | POST | `/api/v1/production/generation/{id}/cancel` | Cancel | `—` |
 | POST | `/api/v1/production/generation/{id}/hold` | Hold Still | `Hold` |
@@ -226,7 +228,7 @@
 | POST | `/api/v1/production/soundtrack/remove-music` | Remove Music | `RemoveMusic` |
 | POST | `/api/v1/production/soundtrack/listen-review` | Listen Review | `ListeningReview` |
 
-共 197 个 HTTP 操作。完整 path/query/header 条件、枚举、范围、错误与二进制声明在 OpenAPI 中。
+共 199 个 HTTP 操作。完整 path/query/header 条件、枚举、范围、错误与二进制声明在 OpenAPI 中。
 
 ## 工作流和组件扩展
 

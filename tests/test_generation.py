@@ -570,3 +570,281 @@ class GenerationTests(ProductionBase):
         step = done["run"]["data"]["checkpoint"]["nodes"]["generate"]
         self.assertEqual((step["attempts"], self.submits), (1, 1))
         self.assertEqual(step["outputs"]["asset"]["kind"], "Asset")
+
+    def test_real_camera_frame_pts_png_scope_idempotency_and_revocation(self):
+        _, base = self.reference_setup()
+        video = Path(self.temp.name) / "two-scenes.mp4"
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-f",
+                "lavfi",
+                "-i",
+                "color=red:s=96x64:r=10:d=0.5",
+                "-f",
+                "lavfi",
+                "-i",
+                "color=blue:s=96x64:r=10:d=0.5",
+                "-filter_complex",
+                "[0:v][1:v]concat=n=2:v=1:a=0",
+                "-c:v",
+                "libx264",
+                "-threads",
+                "1",
+                str(video),
+            ],
+            check=True,
+        )
+        movie = self.client.post(
+            "/api/v1/media/import",
+            params={"project_id": self.pid, "filename": video.name},
+            content=video.read_bytes(),
+        ).json()["data"]["asset"]
+
+        def data(at, key=None):
+            return {
+                **base,
+                "reference_asset_id": movie["id"],
+                "reference_asset_version": movie["version"],
+                "reference_time_seconds": at,
+                "idempotency_key": key or uuid4().hex,
+            }
+
+        def view(at, **changes):
+            return self.client.get(
+                self.base + "/reference/frame",
+                params={
+                    "project_id": self.pid,
+                    "asset_id": movie["id"],
+                    "version": 1,
+                    "time_seconds": at,
+                    **changes,
+                },
+            )
+
+        def rgb(png):
+            return subprocess.check_output(
+                [
+                    "ffmpeg",
+                    "-v",
+                    "error",
+                    "-i",
+                    "pipe:0",
+                    "-vf",
+                    "scale=1:1",
+                    "-pix_fmt",
+                    "rgb24",
+                    "-frames:v",
+                    "1",
+                    "-f",
+                    "rawvideo",
+                    "pipe:1",
+                ],
+                input=png,
+            )
+
+        first = view(0.15)
+        last = view(0.999)
+        self.assertEqual(
+            (first.status_code, last.status_code), (200, 200), (first.text[:150], last.text[:150])
+        )
+        r, g, b = rgb(first.content)
+        self.assertTrue(r > 220 and b < 25)
+        r, g, b = rgb(last.content)
+        self.assertTrue(b > 220 and r < 25)
+        self.assertAlmostEqual(float(first.headers["X-Frame-PTS"]), 0.1)
+        self.assertAlmostEqual(float(last.headers["X-Frame-PTS"]), 0.9)
+        for invalid in (-0.1, 1, 100):
+            self.assertEqual(view(invalid).status_code, 422)
+            self.post(data=data(invalid), status=422)
+        self.assertEqual(view(0, version=2).status_code, 409)
+        other = self.client.post("/api/v1/projects", json={"name": "isolated"}).json()["data"]
+        self.assertEqual(view(0, project_id=other["id"]).status_code, 403)
+        self.post(data={**base, "reference_time_seconds": 0}, status=422)
+        self.assertFalse(self.paths)
+        body = data(0.999)
+        job = self.post(data=body)["job"]
+        self.assertEqual(job["data"]["stage"], "queued", job["data"].get("issue"))
+        evidence = job["data"]["reference_input"]
+        self.assertEqual(evidence["kind"], "video_frame")
+        self.assertEqual(
+            evidence["original_sha256"], hashlib.sha256(video.read_bytes()).hexdigest()
+        )
+        self.assertEqual(evidence["png_sha256"], last.headers["X-Frame-SHA256"])
+        self.assertEqual(self.input_files[evidence["filename"]], last.content)
+        self.assertEqual(evidence["asset_ref"]["id"], movie["id"])
+        frame = self.store.get(evidence["frame_ref"]["id"], "local")
+        self.assertTrue(
+            any(
+                all(pin.get(k) == v for k, v in evidence["frame_ref"].items())
+                for pin in job["refs"]
+            )
+        )
+        self.assertEqual(frame["data"]["generation_reference_frame"]["source_time_seconds"], 0.999)
+        self.assertEqual(self.post(data=body)["job"]["id"], job["id"])
+        self.post(data={**body, "reference_time_seconds": 0.15}, status=409)
+        self.assertEqual(self.submits, 1)
+        self.status = "done"
+        ready = self.post("/" + job["id"] + "/refresh")
+        self.assertEqual(ready["job"]["data"]["stage"], "ready")
+        src = self.store.get(ready["asset"]["data"]["source_id"], "local")
+        self.assertIn(job["id"], [r["id"] for r in src["refs"]])
+        self.on_upload = lambda: self.store.update(
+            movie["data"]["source_id"],
+            {"status": "revoked"},
+            tenant_id="local",
+            expected_revision=1,
+        )
+        refused = self.post(data=data(0.15))["job"]
+        self.assertEqual(refused["data"]["issue"]["code"], "MEDIA_REVOKED")
+        self.assertEqual(self.submits, 1)
+        self.assertEqual(view(0.999).status_code, 403)
+
+    def test_variable_frame_rate_and_nonzero_origin_use_presentation_timestamps(self):
+        from app.generation_frames import decode
+
+        video = Path(self.temp.name) / "vfr-offset.mp4"
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-f",
+                "lavfi",
+                "-i",
+                "testsrc2=size=96x64:rate=10:duration=1",
+                "-vf",
+                "select='eq(n,0)+eq(n,4)+eq(n,9)'",
+                "-fps_mode",
+                "vfr",
+                "-threads",
+                "1",
+                "-output_ts_offset",
+                "5",
+                "-c:v",
+                "libx264",
+                str(video),
+            ],
+            check=True,
+        )
+        first, early = decode(video, 0.399)
+        mid, held = decode(video, 0.819)
+        last, tail = decode(video, 0.999)
+        self.assertEqual(
+            [early["frame_pts_seconds"], held["frame_pts_seconds"], tail["frame_pts_seconds"]],
+            [0, 0.4, 0.9],
+        )
+        self.assertEqual(
+            [early["frame_end_seconds"], held["frame_end_seconds"], tail["frame_end_seconds"]],
+            [0.4, 0.9, 1.0],
+        )
+        self.assertEqual(early["source_start_seconds"], 5)
+        self.assertEqual(len({first, mid, last}), 3)
+
+    def test_full_project_reference_search_paginates_and_restores_older_originals(self):
+        still, _ = self.reference_setup()
+
+        def upload(name):
+            return self.client.post(
+                "/api/v1/media/import",
+                params={"project_id": self.pid, "filename": name},
+                content=self.video,
+            ).json()["data"]["asset"]
+
+        first = upload("old-camera.mp4")
+        # Preserve both physical originals; the public ingest correctly deduplicates exact bytes.
+        other = Path(self.temp.name) / "another.mp4"
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-f",
+                "lavfi",
+                "-i",
+                "color=red:s=64x64:r=10:d=0.3",
+                "-threads",
+                "1",
+                "-c:v",
+                "libx264",
+                str(other),
+            ],
+            check=True,
+        )
+        second = self.client.post(
+            "/api/v1/media/import",
+            params={"project_id": self.pid, "filename": "another.mp4"},
+            content=other.read_bytes(),
+        ).json()["data"]["asset"]
+        with self.store.transaction():
+            for i in range(505):
+                self.create("Script", {"text": f"intervening-{i}"})
+        recent = self.client.get(
+            "/api/v1/records", params={"project_id": self.pid, "limit": 500}
+        ).json()["data"]
+        self.assertNotIn(first["id"], [r["id"] for r in recent])
+
+        def search(media_type="video", **kw):
+            return self.client.get(
+                self.base + "/reference/assets",
+                params={"project_id": self.pid, "media_type": media_type, **kw},
+            )
+
+        page = search(limit=1).json()["data"]
+        self.assertEqual([r["id"] for r in page["items"]], [second["id"]])
+        following = search(limit=1, after=page["next_after"]).json()["data"]
+        self.assertEqual([r["id"] for r in following["items"]], [first["id"]])
+        self.assertIsNone(following["next_after"])
+        self.assertEqual(search(q="old-camera").json()["data"]["items"][0]["version"], 1)
+        self.assertEqual(search(q=first["id"]).json()["data"]["items"][0]["id"], first["id"])
+        self.assertEqual([r["id"] for r in search("image").json()["data"]["items"]], [still["id"]])
+        foreign = self.client.post("/api/v1/projects", json={"name": "foreign"}).json()["data"]
+        self.assertEqual(
+            search(q=first["id"], project_id=foreign["id"]).json()["data"]["items"], []
+        )
+        self.assertEqual(search(after=first["id"], project_id=foreign["id"]).status_code, 422)
+
+        def revise(row_id, updates):
+            latest = self.store.get(row_id, "local")
+            return self.store.update(
+                row_id,
+                {**latest["data"], **updates},
+                tenant_id="local",
+                expected_revision=latest["version"],
+            )
+
+        def denied_page():
+            denied = search(limit=1).json()["data"]
+            self.assertEqual(denied["items"], [])
+            self.assertEqual(denied["next_after"], second["id"])
+            remaining = search(limit=1, after=denied["next_after"]).json()["data"]
+            self.assertEqual([r["id"] for r in remaining["items"]], [first["id"]])
+            self.assertEqual(search(q=second["id"]).json()["data"]["items"], [])
+
+        source_id = second["data"]["source_id"]
+        revise(source_id, {"status": "revoked"})
+        denied_page()
+        revise(source_id, {"status": "active", "valid_until": "2020-01-01T00:00:00Z"})
+        denied_page()
+        revise(source_id, {"valid_until": None})
+        for tier in ["quarantine", "local_cold"]:
+            revise(second["id"], {"storage_tier": tier})
+            denied_page()
+        revise(second["id"], {"storage_tier": "online"})
+        source = self.store.get(source_id, "local")
+        result = self.client.post(
+            "/api/v1/production/assets/admission",
+            json={
+                "project_id": self.pid,
+                "request_id": "restrict-frame-references",
+                "source": {"id": source_id, "version": source["version"]},
+                "reason": "该原件仅供浏览",
+                "action": "restrict",
+                "allowed_purposes": ["inspect"],
+                "expected_revision": 0,
+            },
+        )
+        self.assertEqual(result.status_code, 200, result.text)
+        denied_page()

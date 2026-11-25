@@ -18591,6 +18591,326 @@
         "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
       }
     },
+    "/api/v1/production/generation/reference/assets": {
+      "get": {
+        "tags": [
+          "local-video-generation"
+        ],
+        "summary": "Reference Assets",
+        "operationId": "reference_assets_api_v1_production_generation_reference_assets_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "media_type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "image",
+                "video"
+              ],
+              "type": "string",
+              "title": "Media Type"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 300,
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 180,
+              "default": "",
+              "title": "After"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
+    "/api/v1/production/generation/reference/frame": {
+      "get": {
+        "tags": [
+          "local-video-generation"
+        ],
+        "summary": "Preview Frame",
+        "operationId": "preview_frame_api_v1_production_generation_reference_frame_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Asset Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Version"
+            }
+          },
+          {
+            "name": "time_seconds",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMaximum": 3600,
+              "title": "Time Seconds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "真实媒体字节；不包装 JSON",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "类型、语义或路线条件不满足",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "其余领域或服务端错误也使用统一错误信封。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "身份缺失或会话失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "角色、租户、同源或授权拒绝",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "对象或字节不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突、锁或未核对的结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "输入资源上限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "能力或依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerIdentity": []
+          },
+          {
+            "BrowserSession": []
+          }
+        ],
+        "x-local-mode": "Loopback-only development mode requires no token; Host and Origin are checked."
+      }
+    },
     "/api/v1/production/generation/{id}/refresh": {
       "post": {
         "tags": [
@@ -27631,6 +27951,19 @@
             ],
             "title": "Reference Asset Version"
           },
+          "reference_time_seconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMaximum": 3600.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Time Seconds"
+          },
           "prompt": {
             "type": "string",
             "maxLength": 6000,
@@ -27709,6 +28042,19 @@
               }
             ],
             "title": "Reference Asset Version"
+          },
+          "reference_time_seconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMaximum": 3600.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Time Seconds"
           }
         },
         "additionalProperties": false,
@@ -68441,6 +68787,12 @@
           "maximum": 2147483647,
           "title": "种子"
         },
+        "reference_time_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 3600,
+          "title": "视频参考帧源时码（秒）"
+        },
         "reference": {
           "type": "object",
           "required": [
@@ -68458,7 +68810,7 @@
               "minimum": 1
             }
           },
-          "title": "参考原图版本"
+          "title": "项目参考图片或视频版本"
         }
       }
     },

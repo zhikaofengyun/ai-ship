@@ -1,3 +1,11 @@
+import {
+  referenceSource,
+  frameFields,
+  framePreview,
+  chooseReference,
+  recentReferences,
+  pinnedReference,
+} from "./reference-frame.js";
 import { uploadFile } from "./upload.js";
 import { mediaType } from "./media.js";
 import { $, $$, btn, esc, field, icon, select, uid } from "./ui.js";
@@ -40,11 +48,13 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
   };
   const jobById = (id) => jobs.find((j) => j.id === id);
   const recentStills = new Map();
+  const selectedBySearch = new Map();
   const pin = (a) => JSON.stringify([a.id, a.version]);
   const stills = () => {
-    const unique = new Map(recentStills);
-    for (const a of ctx.records("Asset"))
-      if (a.project_id === projectId && mediaType(a) === "image")
+    const mode = prefs.reference_mode || "image";
+    const unique = mode === "image" ? new Map(recentStills) : new Map();
+    for (const a of selectedBySearch.values())
+      if (a.project_id === projectId && mediaType(a) === mode)
         unique.set(a.id, a);
     return [...unique.values()];
   };
@@ -55,7 +65,8 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
     if (!profile()?.requires_reference) return "";
     const items = stills(),
       a = imageByPin(prefs.reference_pin);
-    return `<div class="generation-reference">${select("项目参考图", "reference_pin", [["", "选择参考图"], ...items.map((r) => [pin(r), (r.data.name || r.data.filename || "项目图片") + " · v" + r.version])], a ? pin(a) : "", "required")}${btn("导入参考图", "gen-import-reference", "upload", "button small ghost")}<input type="file" data-reference-file accept="image/png,image/jpeg,image/webp" hidden>${a ? `<img class="generation-still" alt="选中的项目参考图" src="${esc(ctx.assetUrl(a))}">` : ""}</div>`;
+    const mode = prefs.reference_mode || "image";
+    return `<div class="generation-reference">${referenceSource(mode)}${select(mode === "video" ? "项目参考视频" : "项目参考图", "reference_pin", [["", mode === "video" ? "选择视频" : "选择参考图"], ...items.map((r) => [pin(r), (r.data.name || r.data.filename || r.id) + " · v" + r.version])], a ? pin(a) : "", "required")}${btn("检索全部参考素材", "gen-search-reference", "search", "button small ghost")}${mode === "video" ? frameFields(projectId, a, prefs.reference_time_seconds ?? 0) : `${btn("导入参考图", "gen-import-reference", "upload", "button small ghost")}<input type="file" data-reference-file accept="image/png,image/jpeg,image/webp" hidden>${a ? `<img class="generation-still" alt="选中的项目参考图" src="${esc(ctx.assetUrl(a))}">` : ""}`}</div>`;
   }
   function jobMarkup(j) {
     const d = j.data,
@@ -128,20 +139,62 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
       const profileSelect = form.elements.profile_id;
       profileSelect.onchange = () => {
         prefs.profile_id = profileSelect.value;
+        delete prefs.reference_pin;
+        delete prefs.reference_time_seconds;
+        delete prefs.reference_mode;
         remember();
         repaint();
         host.querySelector("[name=profile_id]")?.focus({ preventScroll: true });
       };
+      const modeSelect = form.elements.reference_mode;
+      if (modeSelect)
+        modeSelect.onchange = () => {
+          prefs.reference_mode = modeSelect.value;
+          delete prefs.reference_pin;
+          delete prefs.reference_time_seconds;
+          remember();
+          repaint();
+        };
+      const timeField = form.elements.reference_time_seconds;
+      if (timeField)
+        timeField.onchange = () => {
+          prefs.reference_time_seconds = timeField.value;
+          remember();
+          form.querySelector("[data-reference-preview]").innerHTML =
+            framePreview(
+              projectId,
+              imageByPin(prefs.reference_pin),
+              timeField.value,
+            );
+        };
       const reference = form.elements.reference_pin;
       if (reference)
         reference.onchange = () => {
           prefs.reference_pin = reference.value;
+          delete prefs.reference_time_seconds;
           remember();
           repaint();
           host
             .querySelector("[name=reference_pin]")
             ?.focus({ preventScroll: true });
         };
+      const searchButton = form.querySelector(
+        "[data-action=gen-search-reference]",
+      );
+      if (searchButton)
+        searchButton.onclick = () =>
+          chooseReference(
+            ctx,
+            projectId,
+            prefs.reference_mode || "image",
+            (r) => {
+              selectedBySearch.set(r.id, r);
+              prefs.reference_pin = pin(r);
+              delete prefs.reference_time_seconds;
+              remember();
+              repaint();
+            },
+          );
       const fileInput = $("[data-reference-file]", form);
       if (fileInput)
         fileInput.onchange = () => {
@@ -176,6 +229,10 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
           }
           data.reference_asset_id = image.id;
           data.reference_asset_version = image.version;
+          if (prefs.reference_mode === "video")
+            data.reference_time_seconds = Number(
+              values.reference_time_seconds ?? 0,
+            );
         }
         if (values.slot.trim()) data.slot = values.slot.trim();
         if (prefs.source_run_id && prefs.source_run_id === currentRun)
@@ -300,26 +357,28 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
     ]);
     profiles = p.profiles;
     jobs = j.jobs;
-    const loadedIds = new Set(stills().map((a) => a.id));
-    const refs = new Set(
-      jobs
-        .filter(
-          (j) => j.data.stage === "ready" && j.data.output_kind === "image",
-        )
-        .map((j) => j.data.asset_ref?.id)
-        .filter((id) => id && !loadedIds.has(id)),
-    );
-    await Promise.all(
-      [...refs].map(async (id) => {
+    if (profiles.some((p) => p.requires_reference)) {
+      selectedBySearch.clear();
+      recentStills.clear();
+      for (const src of await recentReferences(ctx, projectId))
+        selectedBySearch.set(src.id, src);
+      if (prefs.reference_pin && !imageByPin(prefs.reference_pin)) {
+        let pair;
         try {
-          const a = await ctx.api("/records/" + encodeURIComponent(id));
-          if (a.project_id === projectId && mediaType(a) === "image")
-            recentStills.set(a.id, a);
-        } catch (err) {
-          if (![403, 404].includes(err.status)) throw err;
+          pair = JSON.parse(prefs.reference_pin);
+        } catch {}
+        if (Array.isArray(pair) && typeof pair[0] === "string") {
+          const src = await pinnedReference(
+            ctx,
+            projectId,
+            prefs.reference_mode,
+            pair[0],
+            pair[1],
+          );
+          if (src) selectedBySearch.set(src.id, src);
         }
-      }),
-    );
+      }
+    }
     loaded = true;
   }
   async function run(label, fn) {

@@ -1,0 +1,47 @@
+{
+  "engine": "chromium",
+  "source_sha256": "afacd0313fdcd967f135c6220a326c47c84038cf987b59af9b655a50aec21b48",
+  "author": "Keria T",
+  "license": "CC BY-SA 4.0",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Traditional_Ethiopian_Coffee_Roasting_Ceremony.webm",
+  "provider": "Local ComfyUI HTTP fixture returned the source video; this checks actual decoded input pixels and upload bytes, not inference quality.",
+  "page_errors": [],
+  "asset_lookup": {
+    "newer_project_scripts": 501,
+    "homepage_records": 500,
+    "source_in_homepage": false,
+    "single": "filename search",
+    "batch": "ID search",
+    "reopened_draft_preserved_pin_and_time": {
+      "single": true,
+      "batch": true
+    }
+  },
+  "browser_version": "158.0.8127.0",
+  "single": {
+    "requested_seconds": 1.239,
+    "frame_pts_seconds": 1.2,
+    "frame_number": 30,
+    "png_sha256": "697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59",
+    "preview_requested_seconds": 1.238,
+    "frame_asset": "assetversion_912587666fc158d299e04612dc48c6ab9cdabd27",
+    "job_id": "gen_a27b35542163d348e8debdcf09edb44bec11",
+    "provider_sha256": "697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59"
+  },
+  "batch": {
+    "requested_seconds": 6.717,
+    "frame_pts_seconds": 6.68,
+    "frame_number": 167,
+    "png_sha256": "c53bf8888b9588b908091b24fb9a96b6b37c27cebd219a8fe6e397b78fd62a19",
+    "preview_requested_seconds": 6.716,
+    "frame_asset": "assetversion_e4a4c0cf1bbcafe4043ad769a463aa6da961e430",
+    "job_id": "gen_10ad3ca5f8be2fad7454c4f5a290e4d60f83",
+    "provider_sha256": "c53bf8888b9588b908091b24fb9a96b6b37c27cebd219a8fe6e397b78fd62a19",
+    "batch_id": "batch_553991e011bab41b8f77b457c6a0adcad14d03e5",
+    "timeline_id": "timeline_4fa42317f7aa43ad98d9c9d8977ab030"
+  },
+  "one_click_submit_from_focused_time_field": {
+    "single": true,
+    "batch": true
+  }
+}

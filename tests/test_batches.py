@@ -416,3 +416,47 @@ class BatchGenerationTransport(unittest.TestCase):
         self.assertEqual(
             self.store.get(child, "local")["data"]["checkpoint"]["nodes"]["gen"]["attempts"], 1
         )
+
+    def test_camera_frame_batch_slot_mixed_with_original_clip(self):
+        t = self.transport
+        _, _ = t.reference_setup()
+        asset = t.client.post(
+            "/api/v1/media/import",
+            params={"project_id": t.pid, "filename": "camera.mp4"},
+            content=t.video,
+        ).json()["data"]["asset"]
+        spec = self.body(
+            {
+                "profile_id": "demo",
+                "prompt": "Reframe the shot",
+                "duration": 0.4,
+                "reference_asset_id": asset["id"],
+                "reference_asset_version": 1,
+                "reference_time_seconds": 0.31,
+            }
+        )
+        spec["slots"].insert(
+            0,
+            {
+                "choices": [
+                    {"asset_id": asset["id"], "version": 1, "source_in": 0, "source_out": 0.2}
+                ]
+            },
+        )
+        bad = deepcopy(spec)
+        bad["slots"][1]["generate"]["reference_time_seconds"] = 2
+        self.assertEqual(t.client.post(self.path, json=bad).status_code, 422)
+        response = t.client.post(self.path, json=spec)
+        self.assertEqual(response.status_code, 200, response.text)
+        bid = response.json()["data"]["id"]
+        self.cycle(bid)
+        t.status = "done"
+        complete = self.cycle(bid)
+        self.assertEqual(complete["status"], "completed", complete)
+        item = complete["items"][0]
+        trace = self.store.get(item["generation_jobs"][0]["generation_id"], "local")
+        self.assertEqual(trace["data"]["reference_input"]["source_time_seconds"], 0.31)
+        draft = self.store.get(item["timeline_id"], "local")
+        self.assertEqual(len(draft["data"]["clips"]), 2)
+        self.assertEqual(draft["data"]["clips"][0]["asset_id"], asset["id"])
+        self.assertEqual(t.submits, 1)

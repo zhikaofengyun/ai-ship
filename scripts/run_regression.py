@@ -197,6 +197,7 @@ def main():
     for name, script in [
         ("batch-workbench", "browser_batch_workbench.py"),
         ("capture-directory", "browser_directory_intake.py"),
+        ("camera-frame-reference", "browser_generation_frames.py"),
         ("login-kit-browser", "browser_tiktok_login.py"),
         ("recorded-evidence-replay", "browser_evidence_replay.py"),
         ("scoring-policy-release", "browser_score_policies.py"),
@@ -206,6 +207,20 @@ def main():
             (name, [sys.executable, "scripts/" + script, "--output", str(output / name)], 300)
         )
     if args.webkit:
+        commands.append(
+            (
+                "webkit-camera-frame-reference",
+                [
+                    sys.executable,
+                    "scripts/browser_generation_frames.py",
+                    "--engine",
+                    "webkit",
+                    "--output",
+                    str(output / "webkit-camera-frame-reference"),
+                ],
+                300,
+            )
+        )
         commands.append(
             (
                 "webkit-batch-workbench",

@@ -12,15 +12,18 @@ from typing import Literal
 import uuid
 
 import httpx
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import Response
 from pydantic import Field, StrictInt
 
+from . import generation_frames
 from .api import ok
 from .auth import Actor, current_actor
 from .auto_edits import producer, ensure_lease, require_live, load_session
 from .errors import DomainError
 from .media import (
     MAX_BYTES,
+    check_current_media_rights,
     import_saved_file,
     probe_media,
     technical_qc,
@@ -43,6 +46,7 @@ class Generate(Body):
     profile_id: str
     reference_asset_id: str | None = Field(default=None, min_length=1)
     reference_asset_version: StrictInt | None = Field(default=None, ge=1)
+    reference_time_seconds: float | None = Field(default=None, strict=True, ge=0, lt=3600)
     prompt: str = Field(min_length=1, max_length=6000)
     seed: StrictInt = Field(ge=0, le=2147483647)
     slot: str = Field(default="", max_length=160)
@@ -207,6 +211,71 @@ def jobs(project_id: str, request: Request, actor: Actor = Depends(current_actor
     )
 
 
+@router.get("/reference/assets")
+def reference_assets(
+    project_id: str,
+    media_type: Literal["image", "video"],
+    request: Request,
+    q: str = Query("", max_length=300),
+    after: str = Query("", max_length=180),
+    limit: int = Query(50, ge=1, le=100),
+    actor: Actor = Depends(current_actor),
+):
+    record(actor, project_id, "Project")
+    store = get_store()
+    kind = (
+        "json_extract(v.data_json,'$.probe.is_still')=1"
+        if media_type == "image"
+        else "json_extract(v.data_json,'$.probe.has_video')=1 AND coalesce(json_extract(v.data_json,'$.probe.is_still'),0)=0"
+    )
+    where = [
+        "r.tenant_id=?",
+        "r.project_id=?",
+        "r.kind='Asset'",
+        "json_type(v.data_json,'$.blob_location_id')='text'",
+        kind,
+    ]
+    params = [actor.tenant_id, project_id]
+    if q.strip():
+        where.append(
+            "(instr(lower(r.id),lower(?)) OR instr(lower(coalesce(json_extract(v.data_json,'$.name'),'')),lower(?)) OR instr(lower(coalesce(json_extract(v.data_json,'$.filename'),'')),lower(?)))"
+        )
+        params.extend([q.strip()] * 3)
+    with store.read_snapshot() as db:
+        if after:
+            anchor = db.execute(
+                "SELECT created_at FROM records WHERE tenant_id=? AND project_id=? AND kind='Asset' AND id=?",
+                (actor.tenant_id, project_id, after),
+            ).fetchone()
+            if not anchor:
+                raise DomainError("REFERENCE_CURSOR", "分页位置不属于当前项目。", 422)
+            where.append("(r.created_at < ? OR (r.created_at=? AND r.id<?))")
+            params.extend([anchor[0], anchor[0], after])
+        rows = db.execute(
+            "SELECT r.id FROM records r JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version WHERE "
+            + " AND ".join(where)
+            + " ORDER BY r.created_at DESC,r.id DESC LIMIT ?",
+            [*params, limit + 1],
+        ).fetchall()
+        items = []
+        for row in rows[:limit]:
+            asset = store.get(row["id"], actor.tenant_id)
+            if asset["data"].get("storage_tier") in {"local_cold", "quarantine"}:
+                continue
+            try:
+                check_current_media_rights(store, actor, asset, purpose="process")
+            except DomainError:
+                continue
+            items.append(asset)
+        return ok(
+            {
+                "items": items,
+                "next_after": rows[limit - 1]["id"] if len(rows) > limit else None,
+            },
+            request,
+        )
+
+
 def pinned_reference(actor, project, pin):
     if not pin:
         return
@@ -220,8 +289,74 @@ def pinned_reference(actor, project, pin):
     return item, blob, path
 
 
+def reference_filename(actor, project, sha):
+    return "atlas-ref-" + digest([actor.tenant_id, project])[:16] + "-" + sha + ".png"
+
+
+@router.get(
+    "/reference/frame", response_class=Response, responses={200: {"content": {"image/png": {}}}}
+)
+def preview_frame(
+    project_id: str,
+    asset_id: str,
+    version: int = Query(ge=1),
+    time_seconds: float = Query(ge=0, lt=3600, allow_inf_nan=False),
+    actor: Actor = Depends(current_actor),
+):
+    require_live(actor)
+    item, blob, path = pinned_reference(actor, project_id, {"id": asset_id, "version": version})
+    generation_frames.checked_time(item["data"]["probe"], time_seconds)
+    evidence, png = generation_frames.pixels(
+        actor, project_id, item, blob, path, time_seconds, persist=False
+    )
+    pinned_reference(actor, project_id, ref(item))
+    return Response(
+        png,
+        media_type="image/png",
+        headers={
+            "X-Frame-PTS": str(evidence["frame_pts_seconds"]),
+            "X-Frame-SHA256": evidence["png_sha256"],
+        },
+    )
+
+
+def bind_http(http, actor, job, *, cancel=False):
+    def guard(request):
+        require_live(actor)
+        if request.method == "POST" and request.url.path.rstrip("/").endswith(
+            ("/prompt", "/upload/image")
+        ):
+            active = load(actor, job["id"])["data"]
+            if active.get("cancel_requested") or active["stage"] in FINAL:
+                raise DomainError(
+                    "GENERATION_CANCELLED_BEFORE_PROMPT", "任务已停止，未继续提交推理。", 409
+                )
+        if digest(profile(job["data"]["profile_id"])) != job["data"]["profile_hash"]:
+            raise DomainError("GENERATOR_PROFILE_CHANGED", "生成配置已变化。", 409)
+        if not cancel:
+            p = job["data"].get("reference_input") or {}
+            if p:
+                _, blob, _ = pinned_reference(actor, job["project_id"], p["asset_ref"])
+                if blob["data"]["checksum"] != p["original_sha256"]:
+                    raise DomainError("REFERENCE_REVISION_CHANGED", "参考原件指纹已变化。", 409)
+                if p.get("frame_ref"):
+                    frame, b, _ = resolve_media(
+                        get_store(), actor, p["frame_ref"]["id"], project_id=job["project_id"]
+                    )
+                    if ref(frame) != p["frame_ref"] or b["data"]["checksum"] != p["png_sha256"]:
+                        raise DomainError(
+                            "REFERENCE_FRAME_CHANGED", "参考帧版本或指纹已变化。", 409
+                        )
+
+    http.event_hooks["request"].append(guard)
+
+
 def prepare_reference(actor, cfg, body):
-    selected = body.reference_asset_id is not None or body.reference_asset_version is not None
+    selected = (
+        body.reference_asset_id is not None
+        or body.reference_asset_version is not None
+        or body.reference_time_seconds is not None
+    )
     if "image_input" not in cfg:
         if selected:
             raise DomainError("REFERENCE_UNSUPPORTED", "此生成工作流未配置参考图。", 422)
@@ -230,6 +365,15 @@ def prepare_reference(actor, cfg, body):
         raise DomainError("REFERENCE_REQUIRED", "此工作流需要指定本项目参考图及其准确修订。", 422)
     pin = {"id": body.reference_asset_id, "version": body.reference_asset_version}
     item, blob, path = pinned_reference(actor, body.project_id, pin)
+    if body.reference_time_seconds is not None:
+        generation_frames.checked_time(item["data"].get("probe", {}), body.reference_time_seconds)
+        evidence, png = generation_frames.pixels(
+            actor, body.project_id, item, blob, path, body.reference_time_seconds, persist=True
+        )
+        return {
+            **evidence,
+            "filename": reference_filename(actor, body.project_id, evidence["png_sha256"]),
+        }, png
     probe = probe_media(path)
     if not probe["is_still"] or probe["video_codec"] not in {"png", "mjpeg", "webp", "bmp"}:
         raise DomainError("REFERENCE_IMAGE_REQUIRED", "参考素材须是可验证的单帧原图。", 422)
@@ -273,7 +417,7 @@ def prepare_reference(actor, cfg, body):
     if len(png) > 50 * 1024 * 1024 or png[:8] != bytes.fromhex("89504e470d0a1a0a"):
         raise DomainError("REFERENCE_IMAGE_LIMIT", "规范化参考图片超过工作器容量或编码无效。", 422)
     sha = hashlib.sha256(png).hexdigest()
-    filename = "atlas-ref-" + digest([actor.tenant_id, body.project_id])[:16] + "-" + sha + ".png"
+    filename = reference_filename(actor, body.project_id, sha)
     return {
         "asset_ref": ref(item),
         "original_sha256": blob["data"]["checksum"],
@@ -343,7 +487,9 @@ def generate(body: Generate, request: Request, actor: Actor = Depends(current_ac
     rid = "gen_" + digest([actor.tenant_id, body.project_id, body.idempotency_key])[:36]
     # Preserve request hashes created before optional image references were introduced.
     omitted = {
-        k for k in ("reference_asset_id", "reference_asset_version") if getattr(body, k) is None
+        k
+        for k in ("reference_asset_id", "reference_asset_version", "reference_time_seconds")
+        if getattr(body, k) is None
     }
     payload_hash = digest(body.model_dump(exclude=omitted))
 
@@ -397,6 +543,8 @@ def generate(body: Generate, request: Request, actor: Actor = Depends(current_ac
                 pins.append(parent["data"]["plan_ref"])
         if reference:
             pins.append(reference["asset_ref"])
+            if reference.get("frame_ref"):
+                pins.append(reference["frame_ref"])
         reqid = str(uuid.uuid4())
         job = store.create(
             "ToolCall",
@@ -434,6 +582,7 @@ def generate(body: Generate, request: Request, actor: Actor = Depends(current_ac
     try:
         require_live(actor)
         with client(cfg) as http:
+            bind_http(http, actor, job)
             if reference:
                 pinned_reference(actor, body.project_id, reference["asset_ref"])
                 receipt = upload_reference(http, reference, png)
@@ -710,6 +859,7 @@ def poll(actor, job, cancel):
         )
     data = job["data"]
     with client(cfg) as http:
+        bind_http(http, actor, job, cancel=cancel)
         remote, state, item = locate(http, data)
         if state == "unknown":
             return update(

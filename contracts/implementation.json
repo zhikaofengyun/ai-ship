@@ -1986,6 +1986,8 @@
         "direct_api_endpoints": [
           "GET /api/v1/production/generation",
           "GET /api/v1/production/generation/profiles",
+          "GET /api/v1/production/generation/reference/assets",
+          "GET /api/v1/production/generation/reference/frame",
           "POST /api/v1/production/generation",
           "POST /api/v1/production/generation/{id}/hold",
           "POST /api/v1/production/generation/{id}/refresh"
@@ -1993,17 +1995,21 @@
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "本地 ComfyUI 通过真实 SD1.5 权重生成 PNG 单帧，应用核验编码、帧数、尺寸并保留原件。该原件另按用户指定规格生成 24 帧、1 秒的定格视频。需参考图的配置接收项目原图与具体修订，验证上传、读回和图连接。",
+      "implemented_subset": "本地 ComfyUI 通过真实 SD1.5 权重生成 PNG 单帧，应用核验编码、帧数、尺寸并保留原件。该原件另按用户指定规格生成 24 帧、1 秒的定格视频。需参考图的配置接收项目原图与具体修订，验证上传、读回和图连接。也可指定拍摄视频的源时码，固定原片修订、实际显示帧时间与 PNG 摘要。",
       "remaining_scope": "静态生成中的参考边界、参考风格和商品身份分别需要内容评估。",
       "code": [
+        "app/batches.py",
         "app/catalog.py",
         "app/execution.py",
         "app/generation.py",
+        "app/generation_frames.py",
         "app/schemas.py",
         "web/controls.js",
-        "web/generation-controls.js"
+        "web/generation-controls.js",
+        "web/reference-frame.js"
       ],
       "test_files": [
+        "scripts/browser_generation_frames.py",
         "scripts/check_contracts.py",
         "scripts/verify_generation_worker.py",
         "tests/test_generation.py"
@@ -2026,7 +2032,27 @@
         },
         {
           "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_real_camera_frame_pts_png_scope_idempotency_and_revocation",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_full_project_reference_search_paginates_and_restores_older_originals",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_variable_frame_rate_and_nonzero_origin_use_presentation_timestamps",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
           "symbol": "GenerationTests.test_generated_workflow_parks_and_resumes_same_request_with_one_attempt",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_generation_frames.py",
+          "symbol": "run",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -2098,25 +2124,32 @@
         "direct_api_endpoints": [
           "GET /api/v1/production/generation",
           "GET /api/v1/production/generation/profiles",
+          "GET /api/v1/production/generation/reference/assets",
+          "GET /api/v1/production/generation/reference/frame",
           "POST /api/v1/production/generation",
           "POST /api/v1/production/generation/{id}/refresh"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "本地 ComfyUI 实际运行 AnimateDiff-Lightning 两步模型与 SD1.5，输入提示词和种子，取得含 8 个不同解码帧的 VP9 视频。原件入库后经过项目提案、批准及 H.264/AAC 输出全片解码，保存来源与成片摘要。参考图路线固定项目图像版本并将已读回校验的像素送到已连接的 LoadImage 节点。",
+      "implemented_subset": "本地 ComfyUI 实际运行 AnimateDiff-Lightning 两步模型与 SD1.5，输入提示词和种子，取得含 8 个不同解码帧的 VP9 视频。原件入库后经过项目提案、批准及 H.264/AAC 输出全片解码，保存来源与成片摘要。参考图路线固定项目图像版本并将已读回校验的像素送到已连接的 LoadImage 节点。批量与单条入口均可从实拍视频按显示时间取参考帧，双浏览器已验证实际像素与协议上传一致。",
       "remaining_scope": "双端帧控制、局部蒙版重绘、商品身份与跨镜头连续性尚需独立验收。",
       "code": [
+        "app/batches.py",
         "app/catalog.py",
         "app/execution.py",
         "app/generation.py",
+        "app/generation_frames.py",
         "app/schemas.py",
         "web/controls.js",
-        "web/generation-controls.js"
+        "web/generation-controls.js",
+        "web/reference-frame.js"
       ],
       "test_files": [
+        "scripts/browser_generation_frames.py",
         "scripts/check_contracts.py",
         "scripts/verify_generation_worker.py",
+        "tests/test_batches.py",
         "tests/test_generation.py"
       ],
       "test_definitions": [
@@ -2142,7 +2175,32 @@
         },
         {
           "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_real_camera_frame_pts_png_scope_idempotency_and_revocation",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_full_project_reference_search_paginates_and_restores_older_originals",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_variable_frame_rate_and_nonzero_origin_use_presentation_timestamps",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchGenerationTransport.test_camera_frame_batch_slot_mixed_with_original_clip",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
           "symbol": "GenerationTests.test_generated_workflow_parks_and_resumes_same_request_with_one_attempt",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_generation_frames.py",
+          "symbol": "run",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -6927,6 +6985,7 @@
       ],
       "test_files": [
         "tests/test_auto_edits.py",
+        "tests/test_batches.py",
         "tests/test_media.py",
         "tests/test_production.py"
       ],
@@ -6939,6 +6998,11 @@
         {
           "file": "tests/test_auto_edits.py",
           "symbol": "AutoEditTests.test_real_analysis_approval_render_decode_replay_and_listing",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchGenerationTransport.test_camera_frame_batch_slot_mixed_with_original_clip",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],

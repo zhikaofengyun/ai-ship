@@ -43,6 +43,7 @@ class GeneratedSlot(Body):
     duration: float = Field(ge=0.04, le=MAX_DURATION)
     reference_asset_id: str | None = None
     reference_asset_version: StrictInt | None = Field(default=None, ge=1)
+    reference_time_seconds: float | None = Field(default=None, strict=True, ge=0, lt=3600)
 
 
 class Slot(Body):
@@ -178,13 +179,19 @@ def freeze(actor, recipe):
                 raise DomainError(
                     "BATCH_REFERENCE_REQUIRED", "参考图及其版本须与生成配置要求一致。"
                 )
+            if gen.reference_time_seconds is not None and not gen.reference_asset_id:
+                raise DomainError("BATCH_REFERENCE_REQUIRED", "取帧须绑定项目视频及其精确版本。")
             if gen.reference_asset_id:
                 item, _, _ = generation.pinned_reference(
                     actor,
                     recipe.project_id,
                     {"id": gen.reference_asset_id, "version": gen.reference_asset_version},
                 )
-                if not item["data"].get("probe", {}).get("is_still"):
+                if gen.reference_time_seconds is not None:
+                    generation.generation_frames.checked_time(
+                        item["data"].get("probe", {}), gen.reference_time_seconds
+                    )
+                elif not item["data"].get("probe", {}).get("is_still"):
                     raise DomainError("REFERENCE_IMAGE_REQUIRED", "请选择单帧参考图。")
                 refs[item["id"]] = ref(item)
             cfg_hash[gen.profile_id] = digest(cfg)
@@ -230,6 +237,9 @@ def enqueue(body: Recipe, request: Request, actor: Actor = Depends(current_actor
     store = get_store()
     queue.initialize(store)
     spec = body.model_dump()
+    for slot in spec["slots"]:
+        if slot.get("generate") and slot["generate"]["reference_time_seconds"] is None:
+            slot["generate"].pop("reference_time_seconds")
     bid = "batch_" + digest([actor.tenant_id, body.project_id, body.idempotency_key])[:40]
     intent = digest(spec)
 
@@ -512,6 +522,7 @@ def generated_cut(store, item, actor, recipe, index, cfg_hash):
             seed=(recipe.seed + (item["ordinal"] - 1) * len(recipe.slots) + index) % 2147483648,
             reference_asset_id=slot.reference_asset_id,
             reference_asset_version=slot.reference_asset_version,
+            reference_time_seconds=slot.reference_time_seconds,
             idempotency_key=job_key,
         )
         receipt = generation.generate(body, None, actor)["data"]

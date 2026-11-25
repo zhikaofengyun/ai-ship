@@ -1,3 +1,11 @@
+import {
+  referenceSource,
+  frameFields,
+  framePreview,
+  chooseReference,
+  recentReferences,
+  pinnedReference,
+} from "./reference-frame.js";
 import { chooseBatchMarket } from "./batch-market.js";
 import { chooseBatchContract } from "./batch-contracts.js";
 import { chooseBatchWorkflow } from "./batch-workflow.js";
@@ -64,6 +72,7 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
     profiles = [],
     timelines = [],
     profileError = "";
+  const availableRefs = new Map();
   const cache = new Map(ctx.state.records.map((r) => [r.id, r]));
   const persist = () => {
     try {
@@ -105,8 +114,14 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
   function slotMarkup(s, i) {
     const gen = s.generate;
     const tpl = !!draft.template;
-    const imageChoices = mediaLibrary(ctx.state.records).filter(
-      (r) => mediaType(r) === "image",
+    const mode = gen?.reference_mode || "image";
+    const choices = mediaLibrary([...availableRefs.values()]).filter(
+      (r) => r.kind === "Asset" && mediaType(r) === mode,
+    );
+    const chosen = choices.find(
+      (r) =>
+        r.id === gen?.reference_asset_id &&
+        r.version === gen?.reference_asset_version,
     );
     return `<section class="batch-slot" data-slot="${i}"><header class="batch-slot-head"><strong>镜头 ${i + 1}<small>${gen ? "AI 生成" : "素材剪取"}${tpl ? " · 样片位置" : ""}</small></strong><div class="batch-controls">
       ${i > 0 && !tpl ? iconBtn("将此镜头前移", "up-slot", "up") : ""}
@@ -119,7 +134,7 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
         ${select("生成服务", "profile_id", [["", "选择视频模型"], ...profiles.map((p) => [p.id, p.label || p.model])], gen.profile_id, "required")}
         ${number("使用时长（秒）", "duration", gen.duration, 'min="0.04" max="3600" step="any" required')}
         ${area("画面描述", "prompt", gen.prompt, 'maxlength="6000" required')}
-        ${profile(s)?.requires_reference ? select("项目参考图", "reference_asset_id", [["", "选择参考图"], ...imageChoices.map((r) => [r.id, mediaName(r)])], gen.reference_asset_id, "required") : ""}
+        ${profile(s)?.requires_reference ? referenceSource(mode) + select(mode === "video" ? "项目参考视频" : "项目参考图", "reference_asset_id", [["", mode === "video" ? "选择视频" : "选择参考图"], ...choices.map((r) => [r.id, mediaName(r) + " · v" + r.version])], chosen?.id, "required") + btn("检索全部参考素材", "search-reference", "search", "button small ghost") + (mode === "video" ? frameFields(pid, chosen, gen.reference_time_seconds ?? 0) : chosen ? `<img class="generation-still" alt="选中的项目参考图" src="${esc(ctx.assetUrl(chosen))}">` : "") : ""}
       </div>${!profiles.length ? `<p class="batch-notice">${esc(profileError || "当前未配置视频生成服务。")}</p>` : ""}`
           : `<ul class="batch-segments">${s.choices.map(choiceMarkup).join("")}</ul><div class="batch-controls">${btn("选素材", "choose-assets", "plus", "button small secondary")}${btn("检索全部素材", "search-asset", "search", "button small ghost")}</div>`
       }
@@ -261,6 +276,15 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
     const slots = draft.slots.map((s) => {
       if (s.generate) {
         const g = { ...s.generate, duration: Number(s.generate.duration) };
+        delete g.reference_mode;
+        if (
+          profile(s)?.requires_reference &&
+          s.generate.reference_mode === "video"
+        )
+          g.reference_time_seconds = Number(
+            s.generate.reference_time_seconds ?? 0,
+          );
+        else delete g.reference_time_seconds;
         if (!profile(s)?.requires_reference) {
           delete g.reference_asset_id;
           delete g.reference_asset_version;
@@ -326,19 +350,43 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
       if (l) s.choices[Number(l.dataset.choice)][t.name] = t.value;
       else if (s.generate) {
         s.generate[t.name] = t.value;
-        if (t.name === "reference_asset_id")
+        if (["reference_mode", "profile_id"].includes(t.name)) {
+          delete s.generate.reference_asset_id;
+          delete s.generate.reference_asset_version;
+          delete s.generate.reference_time_seconds;
+          if (t.name === "profile_id") delete s.generate.reference_mode;
+        }
+        if (t.name === "reference_asset_id") {
           s.generate.reference_asset_version = cache.get(t.value)?.version;
+          if (s.generate.reference_mode === "video")
+            s.generate.reference_time_seconds = 0;
+        }
       }
     } else draft[t.name] = t.value;
     if (t.name === "count") forecast();
     persist();
   };
   main.onchange = (e) => {
+    if (e.target.name === "reference_time_seconds") {
+      const row = e.target.closest("[data-slot]");
+      const g = draft.slots[Number(row.dataset.slot)].generate;
+      row.querySelector("[data-reference-preview]").innerHTML = framePreview(
+        pid,
+        cache.get(g.reference_asset_id),
+        e.target.value,
+      );
+      return;
+    }
     if (e.target.name === "output") {
       delete draft.tail;
       persist();
     }
-    if (["profile_id", "output"].includes(e.target.name)) draw();
+    if (
+      ["profile_id", "output", "reference_mode", "reference_asset_id"].includes(
+        e.target.name,
+      )
+    )
+      draw();
   };
   main.onclick = async (e) => {
     const b = e.target.closest("[data-action]");
@@ -347,6 +395,22 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
       i = Number(b.closest("[data-slot]")?.dataset.slot),
       s = draft.slots[i];
     try {
+      if (op === "search-reference")
+        return await chooseReference(
+          ctx,
+          pid,
+          s.generate.reference_mode || "image",
+          (r) => {
+            if (disposed) return;
+            cache.set(r.id, r);
+            availableRefs.set(r.id, r);
+            s.generate.reference_asset_id = r.id;
+            s.generate.reference_asset_version = r.version;
+            delete s.generate.reference_time_seconds;
+            persist();
+            draw();
+          },
+        );
       if (op === "choose-market")
         return await chooseBatchMarket(ctx, pid, draft.marketBrief, (brief) => {
           if (!disposed) {
@@ -504,6 +568,47 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
     ).profiles.filter((p) => p.output_kind === "video");
   } catch (err) {
     profileError = err.message;
+  }
+  if (profiles.some((p) => p.requires_reference)) {
+    try {
+      for (const asset of await recentReferences(ctx, pid)) {
+        cache.set(asset.id, asset);
+        availableRefs.set(asset.id, asset);
+      }
+      const requests = new Map();
+      for (const { generate: g } of draft.slots) {
+        if (
+          !g?.reference_asset_id ||
+          availableRefs.get(g.reference_asset_id)?.version ===
+            g.reference_asset_version
+        )
+          continue;
+        const key = JSON.stringify([
+          g.reference_mode,
+          g.reference_asset_id,
+          g.reference_asset_version,
+        ]);
+        if (!requests.has(key))
+          requests.set(
+            key,
+            pinnedReference(
+              ctx,
+              pid,
+              g.reference_mode,
+              g.reference_asset_id,
+              g.reference_asset_version,
+            ),
+          );
+      }
+      for (const asset of await Promise.all(requests.values())) {
+        if (asset) {
+          cache.set(asset.id, asset);
+          availableRefs.set(asset.id, asset);
+        }
+      }
+    } catch (err) {
+      profileError = err.message;
+    }
   }
   if (!disposed && draft.slots.some((s) => s.generate)) draw();
   if (requestedWorkflow && !disposed) await pickWorkflow(requestedWorkflow);

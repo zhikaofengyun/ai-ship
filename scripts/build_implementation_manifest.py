@@ -458,6 +458,13 @@ ENDPOINT_GROUPS += [
         "G02 G03 G04 G05 G06",
         ["GET " + generation_route, "POST " + generation_route + "/{id}/refresh"],
     ),
+    (
+        "G02 G03",
+        [
+            "GET " + generation_route + "/reference/frame",
+            "GET " + generation_route + "/reference/assets",
+        ],
+    ),
     ("G04", ["POST " + generation_route + "/{id}/cancel"]),
     ("G02 G05 G06", ["POST " + generation_route + "/{id}/hold"]),
     (
@@ -907,6 +914,26 @@ TEST_GROUPS += [
         "GenerationTests.test_queue_download_probe_generated_origin_and_deduplicated_adoption",
     ),
     (
+        "G02 G03",
+        "tests/test_generation.py",
+        "GenerationTests.test_real_camera_frame_pts_png_scope_idempotency_and_revocation",
+    ),
+    (
+        "G02 G03",
+        "tests/test_generation.py",
+        "GenerationTests.test_full_project_reference_search_paginates_and_restores_older_originals",
+    ),
+    (
+        "G02 G03",
+        "tests/test_generation.py",
+        "GenerationTests.test_variable_frame_rate_and_nonzero_origin_use_presentation_timestamps",
+    ),
+    (
+        "G03 N06",
+        "tests/test_batches.py",
+        "BatchGenerationTransport.test_camera_frame_batch_slot_mixed_with_original_clip",
+    ),
+    (
         "G04",
         "tests/test_generation.py",
         "GenerationTests.test_lost_ack_reconciles_original_queue_and_never_interrupts_other_jobs",
@@ -1287,6 +1314,20 @@ TEST_GROUPS += [
         "QualificationTests.test_handler_body_change_with_unchanged_schema_invalidates_qualification",
     ),
 ]
+
+
+CURRENT_CODE_GROUPS += [
+    (
+        "G02 G03",
+        [
+            "app/generation_frames.py",
+            "app/generation.py",
+            "app/batches.py",
+            "web/reference-frame.js",
+        ],
+    ),
+]
+TEST_GROUPS += [("G02 G03", "scripts/browser_generation_frames.py", "run")]
 
 
 def read_audit_rows():

@@ -117,3 +117,25 @@ N01 的简报确定创作意图，N02 区分镜头的必须证据和排序偏好
 **开源设计依据。** 持久检查点、已完成节点不重跑和预算跨恢复保留，对应 LangGraph 的 checkpoint 合同及 OpenAI Agents SDK 的 runner 生命周期。质询产生的具体反馈和冻结验收集借鉴 DSPy 的 GEPA 文档。当前权重学习器使用实现内的有界坐标搜索。项目偏好使用关系库保存业务有效时间和系统观察时间，保留 Graphiti 强调的来源与历史时点语义。这些路径运行在 AI Ship 现有 FastAPI、SQLite、FFmpeg 和模型适配层。 [LangGraph checkpoint](https://github.com/langchain-ai/langgraph/blob/main/libs/checkpoint/README.md) · [OpenAI Agents SDK runner](https://github.com/openai/openai-agents-python/blob/main/.agents/references/runner-lifecycle.md) · [DSPy GEPA](https://github.com/stanfordnlp/dspy/blob/main/docs/docs/diving-deeper/gepa-in-depth.md) · [Graphiti](https://github.com/getzep/graphiti)
 
 **复现范围。** `tests/test_auto_edits.py` 用真实本地 HTTP 协议应答端和 FFmpeg 验证返工、断点、最终成片映射和偏好撤回。协议测试使用合成应答，外部模型画质与获批平台的留存导出需分别验证。`tests/test_score_policies.py` 验证训练、留出、晋升和训练证据撤回。`tests/test_execution.py` 验证已冻结的双节点工作流在修订后保留首节点产物，只执行修改的节点。`tests/test_budget.py` 在项目具有 2,001 笔额外费用及 501 条额外工具记录时核对旧收据、预算和新增调用。
+
+## 从实拍视频选择一帧作为生成参考
+
+制作台的「生成补充镜头」与批量制作的每个生成镜头都可在支持参考图的配置中切换「项目图片」和「从实拍视频取帧」。选取项目视频原件后填写从媒体起点计算的秒数。预览返回本地实际解码的 PNG，与提交时发给 ComfyUI 的图像使用同一取帧算法。切换素材或模型会清除先前时码或所选参考；纯文本、单张参考图和已有幂等请求继续使用原有路径。
+
+单条 `POST /api/v1/production/generation`、批量配方的 `slots[].generate` 均支持下列字段。工作流 G02-R2、G03-R2 使用原有 `reference: {id,version}` 端口，并在同一节点参数上指定可选的 `reference_time_seconds`。
+
+```json
+{
+  "reference_asset_id":"asset_camera_original",
+  "reference_asset_version":1,
+  "reference_time_seconds":0.819
+}
+```
+
+指定时码时须选择当前项目的视频原件，并提供准确修订。省略时码时仍需提供单帧图片。时码使用半开区间，等于片尾、位于声音尾部、落在没有画面的区间或不能确认显示时间都会被拒绝。系统通过 FFprobe 读取显示时间戳，再用 FFmpeg 解码并复核实际帧的 PTS 与时基，可用于变帧率和非零封装起点。记录的 `frame_pts_seconds` 到 `frame_end_seconds` 是该帧相对源起点的显示区间；`source_time_seconds` 是操作者当时选择的时间。在录制暂停或容器时间戳不完整时，仅接收能确认显示区间的帧。
+
+`GET /api/v1/production/generation/reference/frame?project_id=…&asset_id=…&version=1&time_seconds=0.819` 提供原件权限和版本校验后的 PNG 预览，以及 `X-Frame-PTS`、`X-Frame-SHA256` 回应头。生成时记录精确原件、源 SHA-256、PNG SHA-256、时码、实际 PTS、解码尺寸和独立派生 AssetVersion；同一项目对同一版原件重复使用同一时间位置，可复用已核对的派生 PNG。ComfyUI 接收后需读回相同的 PNG 字节，模型才可收到推理任务。生成器提交、核对、读取与接收产物前会重新查验授权、配置与参考来源；即使来源撤权仍可请求取消既有任务。进入工作流的输入是所选的一帧。批量制作中独立素材槽仍可使用原拍摄视频的连续片段。
+
+回归测试覆盖红/蓝实拍模拟源的逐帧实色、1 秒片尾前的最后一帧、变帧率及 5 秒非零封装起点、越界、跨项目与失效版本、上传后撤权、重放和普通素材与生成槽组合。ComfyUI 集成部分使用本地 HTTP 协议夹具，测试不依赖真实模型权重。
+
+在单条制作或批次的参考来源旁点击「检索全部参考素材」，可按名称、文件名或素材 ID，在当前项目内分页选择图片或视频原件。检索实时检查原件及其上游来源的制作用途、有效期和撤回记录，排除隔离或冷藏原件。若整页都受限，仍可使用游标继续浏览后续原件。检索直接读取项目原件，独立于工作台首页最近 500 条记录和可选搜索索引。重新打开草稿时按原件 ID 与版本核对已选项；修订变化须重新选择。API 为 `GET /api/v1/production/generation/reference/assets`，参数为 `project_id`、`media_type=image|video`、`q`、`limit` 和上一页返回的 `after` 游标。
