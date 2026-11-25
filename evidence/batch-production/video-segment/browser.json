@@ -1,0 +1,62 @@
+{
+  "chromium": {
+    "version": "158.0.8127.0",
+    "batch": {
+      "submitted_interval": [
+        1,
+        1.5
+      ],
+      "confirmed_input_sha256": "609639a45d818fa1ccc8a5753725f5db6558b8a96203428ed18071465cd6d874",
+      "completed": 2,
+      "provider_calls": 1
+    },
+    "single_and_review": {
+      "segment_playback_and_review": {
+        "wire_sha256": "609639a45d818fa1ccc8a5753725f5db6558b8a96203428ed18071465cd6d874",
+        "recorded_model_output_sha256": "8ff0f21468e96bd8629c648b09089063b21acabdbce6ea626ef8a9b2cd82c727",
+        "submitted_source_interval": [
+          1,
+          1.5
+        ],
+        "native_playback_advanced": true,
+        "native_player_error": null,
+        "source_frame_sha256": "e24ced52b9fc91eca9127ba9f2c9839d41fc644a86e298849b4e9ce8de231756",
+        "input_pts_seconds": 0.25,
+        "original_pts_seconds": 1.24,
+        "candidate_frame_sha256": "1a665e0cb489533da194ff126fa99792e9f312ed2bd33b88628332f32ea9ff76",
+        "decision": "needs_revision"
+      }
+    },
+    "browser_errors": []
+  },
+  "webkit": {
+    "version": "26.5",
+    "batch": {
+      "submitted_interval": [
+        1,
+        1.5
+      ],
+      "confirmed_input_sha256": "609639a45d818fa1ccc8a5753725f5db6558b8a96203428ed18071465cd6d874",
+      "completed": 2,
+      "provider_calls": 1
+    },
+    "single_and_review": {
+      "segment_playback_and_review": {
+        "wire_sha256": "609639a45d818fa1ccc8a5753725f5db6558b8a96203428ed18071465cd6d874",
+        "recorded_model_output_sha256": "8ff0f21468e96bd8629c648b09089063b21acabdbce6ea626ef8a9b2cd82c727",
+        "submitted_source_interval": [
+          1,
+          1.5
+        ],
+        "native_playback_advanced": true,
+        "native_player_error": null,
+        "source_frame_sha256": "e24ced52b9fc91eca9127ba9f2c9839d41fc644a86e298849b4e9ce8de231756",
+        "input_pts_seconds": 0.25,
+        "original_pts_seconds": 1.24,
+        "candidate_frame_sha256": "1a665e0cb489533da194ff126fa99792e9f312ed2bd33b88628332f32ea9ff76",
+        "decision": "needs_revision"
+      }
+    },
+    "browser_errors": []
+  }
+}

@@ -2,7 +2,7 @@
   "schema_version": "implementation-2",
   "source_version": "6.0",
   "source_html_sha256": "65a0e6e7f19b0e087be4ff0adcd1166c7073211caa5988f739df05b47971dee4",
-  "boundary": "原图谱共 178 项；7 项绑定已核对的运行凭据，0 项取得当前运行版本的独立整项验收。目录和实际可执行路线分别统计。",
+  "boundary": "原图谱共 178 项；10 项绑定已核对的运行凭据，0 项取得当前运行版本的独立整项验收。目录和实际可执行路线分别统计。",
   "status_definitions": {
     "local_business_subset": "真实局部路径",
     "generic_framework_only": "通用基础/配置",
@@ -20,8 +20,8 @@
     "full_business_acceptance": 0,
     "production_verified": 0,
     "external_live_verified": 0,
-    "pinned_execution_reports": 5,
-    "features_with_execution_reports": 7
+    "pinned_execution_reports": 9,
+    "features_with_execution_reports": 10
   },
   "workflow_registry": {
     "source_file": "app/execution.py",
@@ -408,12 +408,18 @@
       "test_files": [
         "tests/test_batch_acceptance.py",
         "tests/test_budget.py",
-        "tests/test_core.py"
+        "tests/test_core.py",
+        "tests/test_generation.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_batch_acceptance.py",
           "symbol": "BatchAcceptanceTests.test_versioned_preflight_and_actual_decoded_output",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_batch_can_require_signed_visual_review_before_first_render",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         },
         {
@@ -2054,6 +2060,11 @@
           "file": "scripts/browser_generation_frames.py",
           "symbol": "run",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_continuous_segment_receipt_replay_boundaries_permissions_and_mixed_batch",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
       "verification_runs": [],
@@ -2126,21 +2137,25 @@
           "GET /api/v1/production/generation/profiles",
           "GET /api/v1/production/generation/reference/assets",
           "GET /api/v1/production/generation/reference/frame",
+          "POST /api/v1/production/batches",
           "POST /api/v1/production/generation",
           "POST /api/v1/production/generation/{id}/refresh"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "本地 ComfyUI 实际运行 AnimateDiff-Lightning 两步模型与 SD1.5，输入提示词和种子，取得含 8 个不同解码帧的 VP9 视频。原件入库后经过项目提案、批准及 H.264/AAC 输出全片解码，保存来源与成片摘要。参考图路线固定项目图像版本并将已读回校验的像素送到已连接的 LoadImage 节点。批量与单条入口均可从实拍视频按显示时间取参考帧，双浏览器已验证实际像素与协议上传一致。",
+      "implemented_subset": "本地 ComfyUI 实际运行 AnimateDiff-Lightning 两步模型与 SD1.5，输入提示词和种子，取得含 8 个不同解码帧的 VP9 视频。原件入库后经过项目提案、批准及 H.264/AAC 输出全片解码，保存来源与成片摘要。参考图路线固定项目图像版本并将已读回校验的像素送到已连接的 LoadImage 节点。批量与单条入口均可从实拍视频按显示时间取参考帧，双浏览器已验证实际像素与协议上传一致。批次内同一镜头槽可在已拍片段与按提示生成的补镜之间选择，生成项保留种子、来源和请求收据。",
       "remaining_scope": "双端帧控制、局部蒙版重绘、商品身份与跨镜头连续性尚需独立验收。",
       "code": [
+        "app/batch_combinations.py",
+        "app/batch_queue.py",
         "app/batches.py",
         "app/catalog.py",
         "app/execution.py",
         "app/generation.py",
         "app/generation_frames.py",
         "app/schemas.py",
+        "web/batch-workspace.js",
         "web/controls.js",
         "web/generation-controls.js",
         "web/reference-frame.js"
@@ -2201,6 +2216,16 @@
         {
           "file": "scripts/browser_generation_frames.py",
           "symbol": "run",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchGenerationTransport.test_ten_thousand_mixed_ordinals_cost_and_recipe_replay",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchGenerationTransport.test_one_shot_can_choose_camera_or_generation_and_bypass_a_full_window",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -2383,22 +2408,33 @@
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
           "GET /api/v1/production/generation",
+          "GET /api/v1/production/generation/{jid}/visual-review",
+          "GET /api/v1/production/generation/{jid}/visual-review/candidate.png",
+          "GET /api/v1/production/generation/{jid}/visual-review/reference.mp4",
+          "GET /api/v1/production/generation/{jid}/visual-review/reference.png",
           "POST /api/v1/production/generation/{id}/hold",
-          "POST /api/v1/production/generation/{id}/refresh"
+          "POST /api/v1/production/generation/{id}/refresh",
+          "POST /api/v1/production/generation/{jid}/visual-review"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "取回候选文件后独立探测实际视频流、时长与尺寸，执行全片技术解码，再采纳入库。图片路线验实际格式和单帧，视频路线拒绝静帧，伪装成图片的视频会被拒绝。",
-      "remaining_scope": "商品外观、数量、镜头接缝等内容语义仍需独立评审。技术质检不能直接批准发布。",
+      "implemented_subset": "取回候选文件后独立探测实际视频流、时长与尺寸，执行全片技术解码，再采纳入库。图片路线验实际格式和单帧，视频路线拒绝静帧，伪装成图片的视频会被拒绝。可核对已发送的参考字节与候选真实画面，在选择的显示时码保存人工接受、拒绝或待修订、理由和帧摘要。拒绝后新制作和之前排队的渲染会核验当前决定。 双浏览器还实播送入的四帧 MP4，把输入 PTS 0.25 秒和源 PTS 1.24 秒绑定到同一次待修订决定。",
+      "remaining_scope": "人工判断覆盖所审帧及具体使用场景。复杂产品几何、数量、包装文字与动作在整片的一致性、自动独立评审与真实投放验收仍待验证。",
       "code": [
         "app/catalog.py",
         "app/generation.py",
+        "app/generation_frames.py",
+        "app/generation_review.py",
+        "app/media.py",
         "app/schemas.py",
         "web/controls.js",
-        "web/generation-controls.js"
+        "web/generation-controls.js",
+        "web/generation-review.js"
       ],
       "test_files": [
+        "scripts/browser_generation_frames.py",
+        "scripts/browser_generation_review.py",
         "scripts/check_contracts.py",
         "scripts/verify_generation_worker.py",
         "tests/test_generation.py"
@@ -2423,10 +2459,86 @@
           "file": "tests/test_generation.py",
           "symbol": "GenerationTests.test_running_cancel_preserves_actual_terminal_and_rejects_unverified_video",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_visual_review_uses_sent_bytes_and_real_pts_and_blocks_queued_render",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_visual_review_anamorphic_preview_uses_display_aspect_and_source_pts",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_generation_frames.py",
+          "symbol": "run",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_generation_review.py",
+          "symbol": "main",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_continuous_segment_receipt_replay_boundaries_permissions_and_mixed_batch",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_identical_output_has_independent_origin_and_legacy_receipts_recover",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_batch_can_require_signed_visual_review_before_first_render",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
-      "verification_runs": [],
-      "verification_boundary": "尚未为该项绑定实际运行凭据。",
+      "verification_runs": [
+        {
+          "id": "candidate-review-chromium-v1",
+          "path": "evidence/batch-production/mixed-routing/visual-review/chromium.json",
+          "sha256": "bd558ffa4f10ff07b056dae9e108793f8ad545fe50dde06c1e2c953314465a68",
+          "profile": "candidate-review-chromium-v1",
+          "environment": "local",
+          "runtime_sha256": null,
+          "checks": [
+            {
+              "criterion": "Q01",
+              "extent": "partial",
+              "observation": "chromium 158.0.8127.0 对照实拍杯具和已记录的真实模型输出；该浏览器轮次使用已生成字节。输出 0.375 秒的显示帧有摘要，先保存待修订再保存拒绝及原因，保留两版。连续参考的回放实测将片段 0.25 秒对应回原片 1.24 秒并保存修订决定。"
+            },
+            {
+              "criterion": "Q05",
+              "extent": "partial",
+              "observation": "chromium 158.0.8127.0 对照实拍杯具和已记录的真实模型输出；该浏览器轮次使用已生成字节。输出 0.375 秒的显示帧有摘要，先保存待修订再保存拒绝及原因，保留两版。连续参考的回放实测将片段 0.25 秒对应回原片 1.24 秒并保存修订决定。"
+            }
+          ]
+        },
+        {
+          "id": "candidate-review-webkit-v1",
+          "path": "evidence/batch-production/mixed-routing/visual-review/webkit.json",
+          "sha256": "43386b237cfc72e95376bb00481eeea9b3e88b0fad181c7626f77d9c7fed543d",
+          "profile": "candidate-review-webkit-v1",
+          "environment": "local",
+          "runtime_sha256": null,
+          "checks": [
+            {
+              "criterion": "Q01",
+              "extent": "partial",
+              "observation": "webkit 26.5 对照实拍杯具和已记录的真实模型输出；该浏览器轮次使用已生成字节。输出 0.375 秒的显示帧有摘要，先保存待修订再保存拒绝及原因，保留两版。连续参考的回放实测将片段 0.25 秒对应回原片 1.24 秒并保存修订决定。"
+            },
+            {
+              "criterion": "Q05",
+              "extent": "partial",
+              "observation": "webkit 26.5 对照实拍杯具和已记录的真实模型输出；该浏览器轮次使用已生成字节。输出 0.375 秒的显示帧有摘要，先保存待修订再保存拒绝及原因，保留两版。连续参考的回放实测将片段 0.25 秒对应回原片 1.24 秒并保存修订决定。"
+            }
+          ]
+        }
+      ],
+      "verification_boundary": "固定运行报告与原图谱条件逐项对应，适用范围见 checks。",
       "full_business_acceptance": false,
       "production_verified": false,
       "external_live_verified": false,
@@ -2492,24 +2604,35 @@
         "direct_api_endpoints": [
           "GET /api/v1/production/generation",
           "GET /api/v1/production/generation/profiles",
+          "GET /api/v1/production/generation/{jid}/visual-review",
+          "GET /api/v1/production/generation/{jid}/visual-review/candidate.png",
+          "GET /api/v1/production/generation/{jid}/visual-review/reference.mp4",
+          "GET /api/v1/production/generation/{jid}/visual-review/reference.png",
           "POST /api/v1/production/auto-edits/{run_id}/replace-shot",
           "POST /api/v1/production/generation",
           "POST /api/v1/production/generation/{id}/hold",
-          "POST /api/v1/production/generation/{id}/refresh"
+          "POST /api/v1/production/generation/{id}/refresh",
+          "POST /api/v1/production/generation/{jid}/visual-review"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "生成候选保存任务、提示词/种子、模型档案、实际产物与原件版本；新生成素材可以新提案或选定片段替换的方式使用。",
+      "implemented_subset": "生成候选保存任务、提示词/种子、模型档案、实际产物与原件版本；新生成素材可以新提案或选定片段替换的方式使用。视觉复核按任务固定原参考、候选和资产版本，后续判断保留原版本和旧审阅。",
       "remaining_scope": "没有自动保留结构条件的局部重绘、同模型跨版本视觉回归和商品事实验证。",
       "code": [
         "app/catalog.py",
         "app/generation.py",
+        "app/generation_frames.py",
+        "app/generation_review.py",
+        "app/media.py",
         "app/schemas.py",
         "web/controls.js",
-        "web/generation-controls.js"
+        "web/generation-controls.js",
+        "web/generation-review.js"
       ],
       "test_files": [
+        "scripts/browser_generation_frames.py",
+        "scripts/browser_generation_review.py",
         "scripts/check_contracts.py",
         "scripts/verify_generation_worker.py",
         "tests/test_auto_edits.py",
@@ -2540,10 +2663,66 @@
           "file": "tests/test_auto_edits.py",
           "symbol": "AutoEditTests.test_single_shot_fork_retains_unchanged_intervals_and_replays",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_visual_review_uses_sent_bytes_and_real_pts_and_blocks_queued_render",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_generation_frames.py",
+          "symbol": "run",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_generation_review.py",
+          "symbol": "main",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_continuous_segment_receipt_replay_boundaries_permissions_and_mixed_batch",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_identical_output_has_independent_origin_and_legacy_receipts_recover",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
-      "verification_runs": [],
-      "verification_boundary": "尚未为该项绑定实际运行凭据。",
+      "verification_runs": [
+        {
+          "id": "candidate-review-chromium-v1",
+          "path": "evidence/batch-production/mixed-routing/visual-review/chromium.json",
+          "sha256": "bd558ffa4f10ff07b056dae9e108793f8ad545fe50dde06c1e2c953314465a68",
+          "profile": "candidate-review-chromium-v1",
+          "environment": "local",
+          "runtime_sha256": null,
+          "checks": [
+            {
+              "criterion": "Q04",
+              "extent": "partial",
+              "observation": "chromium 158.0.8127.0 对照实拍杯具和已记录的真实模型输出；该浏览器轮次使用已生成字节。输出 0.375 秒的显示帧有摘要，先保存待修订再保存拒绝及原因，保留两版。连续参考的回放实测将片段 0.25 秒对应回原片 1.24 秒并保存修订决定。"
+            }
+          ]
+        },
+        {
+          "id": "candidate-review-webkit-v1",
+          "path": "evidence/batch-production/mixed-routing/visual-review/webkit.json",
+          "sha256": "43386b237cfc72e95376bb00481eeea9b3e88b0fad181c7626f77d9c7fed543d",
+          "profile": "candidate-review-webkit-v1",
+          "environment": "local",
+          "runtime_sha256": null,
+          "checks": [
+            {
+              "criterion": "Q04",
+              "extent": "partial",
+              "observation": "webkit 26.5 对照实拍杯具和已记录的真实模型输出；该浏览器轮次使用已生成字节。输出 0.375 秒的显示帧有摘要，先保存待修订再保存拒绝及原因，保留两版。连续参考的回放实测将片段 0.25 秒对应回原片 1.24 秒并保存修订决定。"
+            }
+          ]
+        }
+      ],
+      "verification_boundary": "固定运行报告与原图谱条件逐项对应，适用范围见 checks。",
       "full_business_acceptance": false,
       "production_verified": false,
       "external_live_verified": false,
@@ -6759,24 +6938,30 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "POST /api/v1/production/batches",
           "POST /api/v1/production/variants/{run_id}",
           "POST /api/v1/production/variants/{run_id}/{family_id}/select"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "生成和比较真实分镜变体、审查素材族与使用历史，遵守人工锁、配额及商品约束，选定版本可继续渲染。",
+      "implemented_subset": "生成和比较真实分镜变体、审查素材族与使用历史，遵守人工锁、配额及商品约束，选定版本可继续渲染。同一个混合配方用条目序号和种子决定各槽的素材来源，恢复时重建同样的选择。纯素材组合用完后，后续循环至少有一处生成镜头。",
       "remaining_scope": "跨平台疲劳观测、长期全库近重复阈值和商业作品综合创意验收尚缺。",
       "code": [
+        "app/batch_combinations.py",
+        "app/batch_queue.py",
+        "app/batches.py",
         "app/catalog.py",
         "app/schemas.py",
         "app/variant_fingerprints.py",
         "app/variants.py",
+        "web/batch-workspace.js",
         "web/controls.js",
         "web/variant-panel.js"
       ],
       "test_files": [
         "scripts/check_contracts.py",
+        "tests/test_batches.py",
         "tests/test_variants.py"
       ],
       "test_definitions": [
@@ -6788,6 +6973,16 @@
         {
           "file": "tests/test_variants.py",
           "symbol": "StoryboardVariantTests.test_locked_slot_manual_rewrite_and_repeat_history",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchGenerationTransport.test_ten_thousand_mixed_ordinals_cost_and_recipe_replay",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchGenerationTransport.test_one_shot_can_choose_camera_or_generation_and_bypass_a_full_window",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -10442,21 +10637,26 @@
           "GET /api/v1/production/analytics",
           "GET /api/v1/production/post-reviews/placement-performance",
           "POST /api/v1/production/metrics/import",
+          "POST /api/v1/production/post-reviews/placement-comparisons",
           "POST /api/v1/production/tiktok/metrics"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "可人工导入或用授权 TikTok 读取指标。累计与区间计数、零与缺项分开；有映射和留存证据时按同账号、流量和观察窗比较同一成片位置的素材，逐帖子等权，列出共同出现的来源。",
+      "implemented_subset": "可人工导入或用授权 TikTok 读取指标。累计与区间计数、零与缺项分开；有映射和留存证据时按同账号、流量和观察窗比较同一成片位置的素材，逐帖子等权，列出共同出现的来源。最新同一时刻出现矛盾人数，或最新留存回执经通用接口改版时，暂缓使用该帖子的数据，等待新的正式观测。",
       "remaining_scope": "TikTok 真实账号联调、自动逐秒曲线获取、退款归因和跨平台统计仍待验。",
       "code": [
+        "app/placement_comparisons.py",
         "app/placement_performance.py",
         "app/production.py",
         "app/tiktok_metrics.py",
+        "web/placement-comparisons.js",
         "web/placement-performance.js"
       ],
       "test_files": [
+        "scripts/browser_batch_workbench.py",
         "tests/test_auto_edits.py",
+        "tests/test_placement_comparisons.py",
         "tests/test_production.py",
         "tests/test_tiktok_metrics.py"
       ],
@@ -10474,6 +10674,21 @@
         {
           "file": "tests/test_auto_edits.py",
           "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_placement_comparisons.py",
+          "symbol": "PlacementComparisonTests.test_matching_denominators_mixed_sources_exclusions_and_recheck",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_placement_comparisons.py",
+          "symbol": "PlacementComparisonTests.test_total_views_and_edited_receipts_do_not_fill_missing_curves",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_batch_workbench.py",
+          "symbol": "check_placement",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -10922,23 +11137,29 @@
           "GET /api/v1/production/analytics",
           "GET /api/v1/production/post-reviews/placement-performance",
           "POST /api/v1/production/metrics/import",
+          "POST /api/v1/production/post-reviews/placement-comparison-hypotheses",
+          "POST /api/v1/production/post-reviews/placement-comparisons",
           "POST /api/v1/production/post-reviews/placement-hypotheses",
           "POST /api/v1/production/post-reviews/retention-mapping"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "指标按定义/单位/币种/窗口/付费属性分组，明确不作因果主张。",
+      "implemented_subset": "指标按定义/单位/币种/窗口/付费属性分组，明确不作因果主张。素材位置对照在账号、流量、观察窗、轨道、成片位置和发布日保持一致时，先按帖再按日等权，报告两组实际人数、留存差值（百分点）和缺失原因。",
       "remaining_scope": "混杂识别、因果设计和真实多账号小流量验证尚未完成。",
       "code": [
         "app/edit_feedback.py",
+        "app/placement_comparisons.py",
         "app/placement_performance.py",
         "app/production.py",
         "app/retention.py",
+        "web/placement-comparisons.js",
         "web/placement-performance.js"
       ],
       "test_files": [
+        "scripts/browser_batch_workbench.py",
         "tests/test_auto_edits.py",
+        "tests/test_placement_comparisons.py",
         "tests/test_production.py"
       ],
       "test_definitions": [
@@ -10955,6 +11176,21 @@
         {
           "file": "tests/test_auto_edits.py",
           "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_placement_comparisons.py",
+          "symbol": "PlacementComparisonTests.test_matching_denominators_mixed_sources_exclusions_and_recheck",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_placement_comparisons.py",
+          "symbol": "PlacementComparisonTests.test_total_views_and_edited_receipts_do_not_fill_missing_curves",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_batch_workbench.py",
+          "symbol": "check_placement",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -11233,24 +11469,36 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "GET /api/v1/production/score-policies/{project_id}/trial",
+          "POST /api/v1/production/assets/score",
           "POST /api/v1/production/experiments",
-          "POST /api/v1/production/experiments/{experiment_id}/evaluate"
+          "POST /api/v1/production/experiments/{experiment_id}/evaluate",
+          "POST /api/v1/production/score-policies/trials/start",
+          "POST /api/v1/production/score-policies/trials/stop"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "冻结实验单位/指标/窗口、确定性分组、结果按单位描述比较。",
+      "implemented_subset": "冻结实验单位/指标/窗口、确定性分组、结果按单位描述比较。已通过离线评估的项目素材评分策略可按素材分桶后限量试用；同一素材的多个版本留在同一组。支持人工结束和授权或基线证据漂移后停用。",
       "remaining_scope": "没有完整统计序贯护栏、平台投放执行、污染检查和策略适用性晋升验收。",
       "code": [
-        "app/production.py"
+        "app/production.py",
+        "app/score_policies.py",
+        "web/score-policies.js"
       ],
       "test_files": [
-        "tests/test_production.py"
+        "tests/test_production.py",
+        "tests/test_score_policies.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_production.py",
           "symbol": "ProductionIntegrationTests.test_experiment_unit_data_and_honest_effect_boundary",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_score_policies.py",
+          "symbol": "ScorePolicyTests.test_limited_trial_sticky_assignment_counts_history_stop_and_stale_guard",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -11325,24 +11573,36 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "GET /api/v1/production/score-policies/{project_id}/trial",
+          "POST /api/v1/production/assets/score",
           "POST /api/v1/production/experiments",
-          "POST /api/v1/production/experiments/{experiment_id}/evaluate"
+          "POST /api/v1/production/experiments/{experiment_id}/evaluate",
+          "POST /api/v1/production/score-policies/trials/start",
+          "POST /api/v1/production/score-policies/trials/stop"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "冻结实验单位/指标/窗口、确定性分组、结果按单位描述比较。",
+      "implemented_subset": "冻结实验单位/指标/窗口、确定性分组、结果按单位描述比较。项目评分试用分别统计唯一素材单位、评分调用和非空观测，手工权重评分不纳入两组样本。",
       "remaining_scope": "没有完整统计序贯护栏、平台投放执行、污染检查和策略适用性晋升验收。",
       "code": [
-        "app/production.py"
+        "app/production.py",
+        "app/score_policies.py",
+        "web/score-policies.js"
       ],
       "test_files": [
-        "tests/test_production.py"
+        "tests/test_production.py",
+        "tests/test_score_policies.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_production.py",
           "symbol": "ProductionIntegrationTests.test_experiment_unit_data_and_honest_effect_boundary",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_score_policies.py",
+          "symbol": "ScorePolicyTests.test_limited_trial_sticky_assignment_counts_history_stop_and_stale_guard",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -11414,18 +11674,23 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "GET /api/v1/production/score-policies/{project_id}/trial",
+          "POST /api/v1/production/assets/score",
           "POST /api/v1/production/score-policies/activate",
           "POST /api/v1/production/score-policies/approve",
           "POST /api/v1/production/score-policies/evaluate",
-          "POST /api/v1/production/score-policies/propose"
+          "POST /api/v1/production/score-policies/propose",
+          "POST /api/v1/production/score-policies/trials/start",
+          "POST /api/v1/production/score-policies/trials/stop"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "用历史评分证据比较项目素材评分权重候选，精确批准后原子切换；后续评分消费生效策略。",
-      "remaining_scope": "实流量小范围验证、跨模型或工作流晋升及统计推断尚缺。",
+      "implemented_subset": "用历史评分证据比较项目素材评分权重候选，精确批准后原子切换；后续评分消费生效策略。项目可在固定候选上开展有限比例的评分试用，对两个组的样本进行核对后再决定是否采用。",
+      "remaining_scope": "跨模型或工作流的发布控制、真实投放收益和独立统计验证仍待验。",
       "code": [
         "app/catalog.py",
+        "app/production.py",
         "app/schemas.py",
         "app/score_policies.py",
         "web/controls.js",
@@ -11444,6 +11709,11 @@
         {
           "file": "tests/test_score_policies.py",
           "symbol": "ScorePolicyTests.test_incomplete_duplicate_or_failed_case_blocks_approval",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_score_policies.py",
+          "symbol": "ScorePolicyTests.test_limited_trial_sticky_assignment_counts_history_stop_and_stale_guard",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -12086,7 +12356,8 @@
         "direct_api_endpoints": [
           "POST /api/v1/dependencies/impact",
           "POST /api/v1/execution/{run_id}/revise-node",
-          "POST /api/v1/parameters/resolve"
+          "POST /api/v1/parameters/resolve",
+          "POST /api/v1/production/auto-edits"
         ],
         "control_plane_commands": [
           {
@@ -12096,16 +12367,20 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "受版本和运行状态保护，只能改未开始节点，生成新图版本，保存前后依赖和既有检查点，恢复时执行新图。",
+      "implemented_subset": "受版本和运行状态保护，只能改未开始节点，生成新图版本，保存前后依赖和既有检查点，恢复时执行新图。三角色选剪可以读取上一轮的测量或校验问题再修订，保留旧方案、角色调用和轮次决定。",
       "remaining_scope": "未覆盖正在外发的副作用迁移、任意拓扑替换或全部原文重规划路线。",
       "code": [
+        "app/auto_edits.py",
         "app/commands.py",
+        "app/edit_context.py",
         "app/execution.py",
         "app/graph_revision.py",
+        "app/providers.py",
         "app/store.py",
         "app/workflow.py"
       ],
       "test_files": [
+        "tests/test_auto_edits.py",
         "tests/test_core.py",
         "tests/test_execution.py"
       ],
@@ -12118,6 +12393,11 @@
         {
           "file": "tests/test_execution.py",
           "symbol": "ExecutionTests.test_revise_only_unstarted_node_preserves_checkpoint_and_executes_new_graph",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_repair_invalid_source_interval_then_review_without_duplicating_paid_calls",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         },
         {
@@ -12789,28 +13069,38 @@
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
           "GET /api/v1/execution/{run_id}/context-pack",
-          "POST /api/v1/execution/context-packs"
+          "POST /api/v1/execution/context-packs",
+          "POST /api/v1/production/auto-edits"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "任务进入本地工作流或保存合同后，人工固定原始版本、硬约束、停止条件、未解节点和工具调用。在给定 UTF-8 字节窗口保留原文引用；重新打开会标记已变化的来源。",
+      "implemented_subset": "任务进入本地工作流或保存合同后，人工固定原始版本、硬约束、停止条件、未解节点和工具调用。在给定 UTF-8 字节窗口保留原文引用；重新打开会标记已变化的来源。选剪角色发送前先预留输出预算，再按需要删去 OCR 坐标及中间采样帧，并记录删项和实际发送内容的摘要。",
       "remaining_scope": "自动分层检索、模型专用 token 计量、多阶段自动摘要与跨执行器恢复待验。",
       "code": [
+        "app/auto_edits.py",
         "app/catalog.py",
         "app/context_pack.py",
+        "app/edit_context.py",
+        "app/providers.py",
         "app/schemas.py",
         "web/context-pack.js",
         "web/controls.js"
       ],
       "test_files": [
         "scripts/check_contracts.py",
+        "tests/test_auto_edits.py",
         "tests/test_context_pack.py"
       ],
       "test_definitions": [
         {
           "file": "tests/test_context_pack.py",
           "symbol": "RecoveryPackTests.test_evidence_sources_and_stops_survive_pressure_and_unknown_requires_review",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_director_turn_budget_preserves_hard_fields_and_matches_provider_measure",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -14844,9 +15134,10 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "批量工作按项目批次轮转，控制并发工作进程与生成窗口，登记每次生成请求，凭租约认领和恢复。普通 HTTP 服务与本机独立批次进程可分开运行，进程退出后其他领取者继续。",
+      "implemented_subset": "批量工作按项目批次轮转，控制并发工作进程与生成窗口，登记每次生成请求，凭租约认领和恢复。普通 HTTP 服务与本机独立批次进程可分开运行，进程退出后其他领取者继续。混合批次逐条判断是否占生成并发，纯素材条目可在生成窗口已满时继续执行。",
       "remaining_scope": "缺多主机调度、跨租户分层 SLA 与高分辨率成片的持续负载测量。",
       "code": [
+        "app/batch_combinations.py",
         "app/batch_queue.py",
         "app/batch_workflows.py",
         "app/batches.py",
@@ -14875,6 +15166,16 @@
         {
           "file": "tests/test_dedicated_worker.py",
           "symbol": "DedicatedWorkerTests.test_worker_drain_restart_and_unique_completed_outputs",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchGenerationTransport.test_ten_thousand_mixed_ordinals_cost_and_recipe_replay",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_batches.py",
+          "symbol": "BatchGenerationTransport.test_one_shot_can_choose_camera_or_generation_and_bypass_a_full_window",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         },
         {
@@ -14957,23 +15258,29 @@
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
         "direct_api_endpoints": [
+          "GET /api/v1/production/batches",
           "GET /api/v1/production/batches/observability/compare",
-          "GET /api/v1/production/batches/observability/health"
+          "GET /api/v1/production/batches/observability/health",
+          "GET /api/v1/production/batches/{bid}"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "按项目查询真实队列积压、等待时长、过期租约与失败代码；页面展示批次与异常说明。",
+      "implemented_subset": "按项目查询真实队列积压、等待时长、过期租约与失败代码；页面展示批次与异常说明。批次列表和单批队列可按页查看，队列可按条目状态筛选。",
       "remaining_scope": "尚缺跨机器的主动通知、分位数 SLO 和基于生产历史的质量基线。",
       "code": [
         "app/api.py",
         "app/batch_observability.py",
+        "app/batches.py",
         "tests/test_core.py",
         "tests/test_media.py",
         "tests/test_production.py",
-        "web/batch-observability.js"
+        "web/batch-observability.js",
+        "web/batch-queue.js",
+        "web/batch-workspace.css"
       ],
       "test_files": [
+        "scripts/browser_batch_navigation.py",
         "tests/test_batch_observability.py",
         "tests/test_core.py"
       ],
@@ -14981,6 +15288,11 @@
         {
           "file": "tests/test_batch_observability.py",
           "symbol": "BatchObservabilityTests.test_comparison_same_outputs_with_fixed_sample_and_reject_mismatched_scope",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_batch_navigation.py",
+          "symbol": "run",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -16014,7 +16326,10 @@
       "execution": {
         "registered_workflow_routes": [],
         "workflow_start_endpoint": null,
-        "direct_api_endpoints": [],
+        "direct_api_endpoints": [
+          "GET /api/v1/production/batches",
+          "GET /api/v1/production/batches/{bid}"
+        ],
         "control_plane_commands": [
           {
             "endpoint": "POST /api/v1/commands",
@@ -16027,11 +16342,14 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "导航侧栏、制作/证据区和编辑器多面板可拖动或用键盘调节；六种停靠顺序、手机监视器高度与全屏回退均有双引擎操作校验。23 个模块的目录可拖宽、键盘调节、换边、收起及复位。",
+      "implemented_subset": "导航侧栏、制作/证据区和编辑器多面板可拖动或用键盘调节；六种停靠顺序、手机监视器高度与全屏回退均有双引擎操作校验。23 个模块的目录可拖宽、键盘调节、换边、收起及复位。批次队列可键盘展开和收起，在窄屏抽屉关闭后恢复焦点。",
       "remaining_scope": "实体手机/Mac Safari、读屏和系统缩放、离线等价业务列表、任意独立系统窗口尚未验收。",
       "code": [
+        "app/batches.py",
         "web/app.js",
         "web/asset-search.js",
+        "web/batch-queue.js",
+        "web/batch-workspace.css",
         "web/editor-layout.js",
         "web/editor-viewer.js",
         "web/editor.js",
@@ -16040,6 +16358,7 @@
         "web/workspace-layout.js"
       ],
       "test_files": [
+        "scripts/browser_batch_navigation.py",
         "scripts/browser_module_layout.py",
         "scripts/browser_regression.py",
         "scripts/browser_workspace_layout.py"
@@ -16052,6 +16371,11 @@
         },
         {
           "file": "scripts/browser_module_layout.py",
+          "symbol": "run",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_batch_navigation.py",
           "symbol": "run",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
@@ -16152,6 +16476,7 @@
       "test_files": [
         "tests/test_auto_edits.py",
         "tests/test_batch_acceptance.py",
+        "tests/test_generation.py",
         "tests/test_production.py"
       ],
       "test_definitions": [
@@ -16163,6 +16488,11 @@
         {
           "file": "tests/test_batch_acceptance.py",
           "symbol": "BatchAcceptanceTests.test_versioned_preflight_and_actual_decoded_output",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_generation.py",
+          "symbol": "GenerationTests.test_batch_can_require_signed_visual_review_before_first_render",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
@@ -16253,12 +16583,13 @@
         ],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "真实三个模型处理一个带原片证据的选片问题。两张接受票与原片时长字段冲突，原案禁止采用。编辑身份单镜头接管后保留旧案、审阅并成片。",
+      "implemented_subset": "真实三个模型处理一个带原片证据的选片问题。两张接受票与原片时长字段冲突，原案禁止采用。编辑身份单镜头接管后保留旧案、审阅并成片。复核或裁决角色可在下一轮读取自身未通过的证据引用。校验器把引用值与原片实测值对照。",
       "remaining_scope": "尚未核验真实模型给出相反投票、开放证据权重、商品数量及复杂业务取舍。",
       "code": [
         "app/auto_edits.py",
         "app/budget.py",
         "app/commands.py",
+        "app/edit_context.py",
         "app/edit_feedback.py",
         "app/providers.py",
         "web/project-production.js"
@@ -16293,6 +16624,11 @@
         {
           "file": "tests/test_auto_edits.py",
           "symbol": "AutoEditTests.test_durable_second_director_turn_consumes_failure_and_keeps_original",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_auto_edits.py",
+          "symbol": "AutoEditTests.test_role_receives_its_own_failed_citation_and_chinese_units_validate",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         },
         {
@@ -18360,28 +18696,34 @@
           "GET /api/v1/production/post-reviews/placement-performance",
           "POST /api/v1/production/post-reviews/archive",
           "POST /api/v1/production/post-reviews/compare",
+          "POST /api/v1/production/post-reviews/placement-comparison-hypotheses",
+          "POST /api/v1/production/post-reviews/placement-comparisons",
           "POST /api/v1/production/post-reviews/placement-hypotheses",
           "POST /api/v1/production/post-reviews/retention-mapping"
         ],
         "control_plane_commands": [],
         "boundary": "仅支持审计列出的子集；部分入口为通用辅助机制，注册/保存/接口成功不代表原文领域目标已通过"
       },
-      "implemented_subset": "从已登记帖子回到实际导出及 TimeMap，把留存观察按时间区间映射至片段与原素材；同成片位置可按原片版本和角色比较使用次数、帖子数、条件留存及同区间多素材帖子数，保留反证。可固定完整样本集、反例、下一版改法与停止条件作为导演依据，数据漂移时重新核对。",
+      "implemented_subset": "从已登记帖子回到实际导出及 TimeMap，把留存观察按时间区间映射至片段与原素材；同成片位置可按原片版本和角色比较使用次数、帖子数、条件留存及同区间多素材帖子数，保留反证。可固定完整样本集、反例、下一版改法与停止条件作为导演依据，数据漂移时重新核对。可选择同一轨道角色的两个素材，以 UTC 发布日配对，只纳入覆盖整个区间的单侧帖子。共现帖另列，同日差值和逐日剔除范围可复核，编辑可冻结对照、反证、下一版改法及停用条件。",
       "remaining_scope": "需要发布端提供可信曲线及实际成片对应，观察结果尚不能排除题材、投放或发布时间的影响。",
       "code": [
         "app/catalog.py",
         "app/edit_feedback.py",
+        "app/placement_comparisons.py",
         "app/placement_performance.py",
         "app/post_reviews.py",
         "app/retention.py",
         "app/schemas.py",
         "web/controls.js",
+        "web/placement-comparisons.js",
         "web/placement-performance.js",
         "web/post-reviews.js"
       ],
       "test_files": [
+        "scripts/browser_batch_workbench.py",
         "scripts/check_contracts.py",
         "tests/test_auto_edits.py",
+        "tests/test_placement_comparisons.py",
         "tests/test_post_reviews.py"
       ],
       "test_definitions": [
@@ -18404,10 +18746,76 @@
           "file": "tests/test_auto_edits.py",
           "symbol": "AutoEditTests.test_retention_maps_actual_render_to_frozen_edit_feedback",
           "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_placement_comparisons.py",
+          "symbol": "PlacementComparisonTests.test_matching_denominators_mixed_sources_exclusions_and_recheck",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "tests/test_placement_comparisons.py",
+          "symbol": "PlacementComparisonTests.test_total_views_and_edited_receipts_do_not_fill_missing_curves",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+        },
+        {
+          "file": "scripts/browser_batch_workbench.py",
+          "symbol": "check_placement",
+          "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
         }
       ],
-      "verification_runs": [],
-      "verification_boundary": "尚未为该项绑定实际运行凭据。",
+      "verification_runs": [
+        {
+          "id": "matched-placement-chromium-v1",
+          "path": "evidence/matched-placements/chromium.json",
+          "sha256": "2983687d3fdb992d2127e1c0c78feaff4624a8f0030cdfb9875eadea14a8f46c",
+          "profile": "matched-placement-chromium-v1",
+          "environment": "local",
+          "runtime_sha256": null,
+          "checks": [
+            {
+              "criterion": "Q02",
+              "extent": "partial",
+              "observation": "chromium 158.0.8127.0 在两条本地编码成片核对后，按合成帖子和留存回执比较同日首个半秒。基准 80/100、候选 55/100，差值为 −25 个百分点。付费过滤无样本。编辑保存复用假设、反证、下一版改法和停止条件。此记录只覆盖夹具中的局部行为。"
+            },
+            {
+              "criterion": "Q03",
+              "extent": "partial",
+              "observation": "chromium 158.0.8127.0 在两条本地编码成片核对后，按合成帖子和留存回执比较同日首个半秒。基准 80/100、候选 55/100，差值为 −25 个百分点。付费过滤无样本。编辑保存复用假设、反证、下一版改法和停止条件。此记录只覆盖夹具中的局部行为。"
+            },
+            {
+              "criterion": "Q06",
+              "extent": "partial",
+              "observation": "chromium 158.0.8127.0 在两条本地编码成片核对后，按合成帖子和留存回执比较同日首个半秒。基准 80/100、候选 55/100，差值为 −25 个百分点。付费过滤无样本。编辑保存复用假设、反证、下一版改法和停止条件。此记录只覆盖夹具中的局部行为。"
+            }
+          ]
+        },
+        {
+          "id": "matched-placement-webkit-v1",
+          "path": "evidence/matched-placements/webkit.json",
+          "sha256": "aa61fc7b9e38ca8ab9abc3a22b611c7ec3d2ef110f895c5fad53457e83e017dd",
+          "profile": "matched-placement-webkit-v1",
+          "environment": "local",
+          "runtime_sha256": null,
+          "checks": [
+            {
+              "criterion": "Q02",
+              "extent": "partial",
+              "observation": "webkit 26.5 在两条本地编码成片核对后，按合成帖子和留存回执比较同日首个半秒。基准 80/100、候选 55/100，差值为 −25 个百分点。付费过滤无样本。编辑保存复用假设、反证、下一版改法和停止条件。此记录只覆盖夹具中的局部行为。"
+            },
+            {
+              "criterion": "Q03",
+              "extent": "partial",
+              "observation": "webkit 26.5 在两条本地编码成片核对后，按合成帖子和留存回执比较同日首个半秒。基准 80/100、候选 55/100，差值为 −25 个百分点。付费过滤无样本。编辑保存复用假设、反证、下一版改法和停止条件。此记录只覆盖夹具中的局部行为。"
+            },
+            {
+              "criterion": "Q06",
+              "extent": "partial",
+              "observation": "webkit 26.5 在两条本地编码成片核对后，按合成帖子和留存回执比较同日首个半秒。基准 80/100、候选 55/100，差值为 −25 个百分点。付费过滤无样本。编辑保存复用假设、反证、下一版改法和停止条件。此记录只覆盖夹具中的局部行为。"
+            }
+          ]
+        }
+      ],
+      "verification_boundary": "固定运行报告与原图谱条件逐项对应，适用范围见 checks。",
       "full_business_acceptance": false,
       "production_verified": false,
       "external_live_verified": false,

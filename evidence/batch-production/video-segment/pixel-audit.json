@@ -1,0 +1,22 @@
+{
+  "all_decoded_source_pixels_equal": true,
+  "source_indices": [
+    25,
+    28,
+    31,
+    34
+  ],
+  "source_pts_seconds": [
+    1.0,
+    1.12,
+    1.24,
+    1.36
+  ],
+  "decoded_rgb_sha256_by_frame": [
+    "f5c3b0ab956e27d24906ff65694a12f54f586777a2d618ae78be9e810f441ce8",
+    "5274a45d24cc47d5901d0c7a3b3582834e6cf8678b452020af34d34edcd99294",
+    "72610d8e999b722894b03d61bf0f846ac8f23a7dcd95811c84ce61b2e0abf696",
+    "cebd02e0bfd578b12c6c5c2de5a7698de2d6722d75912031e7f4d9eea160af0c"
+  ],
+  "number_of_compared_rgb_channels": 1769472
+}

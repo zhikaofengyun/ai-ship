@@ -129,6 +129,24 @@ class FeatureRunEvidenceTests(unittest.TestCase):
             )
         )
 
+    def test_matched_placement_browser_reports_do_not_accept_rehashed_changed_counts(self):
+        for browser in ("chromium", "webkit"):
+            entry = next(e for e in INDEX["runs"] if e["id"] == f"matched-placement-{browser}-v1")
+            report = json.loads((ROOT / entry["path"]).read_text())
+            self.ledger["runs"] = [dict(entry)]
+            self.ledger["runs"][0].update(self.put(entry["path"], report))
+            runs, reviews = self.validate()
+            self.assertEqual(set(runs), {"M09"})
+            self.assertFalse(reviews)
+            self.assertEqual(
+                {(c["criterion"], c["extent"]) for c in runs["M09"][0]["checks"]},
+                {("Q02", "partial"), ("Q03", "partial"), ("Q06", "partial")},
+            )
+            report["matched_comparison"]["baseline"]["entrants"] = 101
+            self.ledger["runs"][0].update(self.put(entry["path"], report))
+            with self.assertRaisesRegex(ValueError, "Report check failed"):
+                self.validate()
+
     def test_reject_scope_override_path_escape_symlink_false_and_modified_report(self):
         entry = copy.deepcopy(next(e for e in INDEX["runs"] if e["profile"] == "frame-search-v1"))
         dest = self.root / entry["path"]

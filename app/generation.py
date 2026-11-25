@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import Response
 from pydantic import Field, StrictInt
 
-from . import generation_frames
+from . import generation_frames, generation_review, generation_segments
 from .api import ok
 from .auth import Actor, current_actor
 from .auto_edits import producer, ensure_lease, require_live, load_session
@@ -35,6 +35,7 @@ from .production import Body, digest, record, ref, revise, save
 from .store import get_store
 
 router = APIRouter(prefix="/production/generation", tags=["local-video-generation"])
+router.include_router(generation_review.router)
 OPERATIONS = {"video": "comfy_video_generation", "image": "comfy_image_generation"}
 STILL_CODECS = {".png": "png", ".jpg": "mjpeg", ".jpeg": "mjpeg", ".webp": "webp"}
 FINAL = {"ready", "failed", "cancelled"}
@@ -47,6 +48,7 @@ class Generate(Body):
     reference_asset_id: str | None = Field(default=None, min_length=1)
     reference_asset_version: StrictInt | None = Field(default=None, ge=1)
     reference_time_seconds: float | None = Field(default=None, strict=True, ge=0, lt=3600)
+    reference_end_seconds: float | None = Field(default=None, strict=True, gt=0, le=3600)
     prompt: str = Field(min_length=1, max_length=6000)
     seed: StrictInt = Field(ge=0, le=2147483647)
     slot: str = Field(default="", max_length=160)
@@ -54,7 +56,7 @@ class Generate(Body):
 
 
 def has_dependency(graph, output_node, input_node):
-    """Check that a LoadImage can reach the selected output through actual Comfy links."""
+    """Check that the reference node can reach the selected output through actual Comfy links."""
     pending = [output_node]
     visited = set()
     while pending:
@@ -116,16 +118,27 @@ def profiles():
                 expected = str if field == "text_input" else int
                 if type(value) is not expected:
                     raise ValueError()
-            if "image_input" in cfg:
-                binding = cfg["image_input"]
+            if "video_input" in cfg:
+                if (
+                    "image_input" in cfg
+                    or type(cfg.get("reference_fps")) is not int
+                    or not 1 <= cfg["reference_fps"] <= 30
+                    or type(cfg.get("max_reference_frames")) is not int
+                    or not 2 <= cfg["max_reference_frames"] <= 32
+                    or cfg.get("output_kind", "video") != "video"
+                ):
+                    raise ValueError()
+            if "image_input" in cfg or "video_input" in cfg:
+                video = "video_input" in cfg
+                binding = cfg["video_input" if video else "image_input"]
                 if not isinstance(binding, list) or len(binding) != 2:
                     raise ValueError()
                 node, key = binding
                 if (
                     not isinstance(node, str)
-                    or key != "image"
+                    or key != ("file" if video else "image")
                     or cfg["text_input"] == binding
-                    or workflow[node]["class_type"] != "LoadImage"
+                    or workflow[node]["class_type"] != ("LoadVideo" if video else "LoadImage")
                     or not isinstance(workflow[node]["inputs"][key], str)
                     or node == str(cfg["output_node"])
                     or not has_dependency(workflow, str(cfg["output_node"]), node)
@@ -155,7 +168,16 @@ def available(request: Request, actor: Actor = Depends(current_actor)):
                     "label": cfg.get("label") or key,
                     "model": cfg["model"],
                     "output_kind": cfg.get("output_kind", "video"),
-                    "requires_reference": "image_input" in cfg,
+                    "requires_reference": "image_input" in cfg or "video_input" in cfg,
+                    **(
+                        {
+                            "reference_kind": "video_segment",
+                            "reference_fps": cfg["reference_fps"],
+                            "max_reference_frames": cfg["max_reference_frames"],
+                        }
+                        if "video_input" in cfg
+                        else {}
+                    ),
                     "status": "registered_not_probed",
                 }
                 for key, cfg in profiles().items()
@@ -175,7 +197,7 @@ def load(actor, id):
 def result(actor, job):
     pin = job["data"].get("asset_ref")
     return {
-        "job": job,
+        "job": generation_review.attach_heads(actor, job["project_id"], [job])[0],
         "asset": (
             record(actor, pin["id"], "Asset", pin["version"], job["project_id"]) if pin else None
         ),
@@ -206,7 +228,13 @@ def jobs(project_id: str, request: Request, actor: Actor = Depends(current_actor
         actor.tenant_id, kind="ToolCall", project_id=project_id, q="comfy_", limit=2000
     )
     return ok(
-        {"jobs": [r for r in items if r["data"].get("operation_kind") in OPERATIONS.values()]},
+        {
+            "jobs": generation_review.attach_heads(
+                actor,
+                project_id,
+                [r for r in items if r["data"].get("operation_kind") in OPERATIONS.values()],
+            )
+        },
         request,
     )
 
@@ -281,16 +309,16 @@ def pinned_reference(actor, project, pin):
         return
     item, blob, path = resolve_media(get_store(), actor, pin["id"], project_id=project)
     if item["kind"] != "Asset":
-        raise DomainError("REFERENCE_ASSET_REQUIRED", "参考图须选取本项目的原件素材。", 422)
+        raise DomainError("REFERENCE_ASSET_REQUIRED", "参考输入须选取本项目的原件素材。", 422)
     if item["version"] != pin["version"]:
         raise DomainError(
-            "REFERENCE_REVISION_CHANGED", "参考素材修订已变化，请核对原图并重新选定版本。", 409
+            "REFERENCE_REVISION_CHANGED", "参考素材修订已变化，请核对原件并重新选定版本。", 409
         )
     return item, blob, path
 
 
-def reference_filename(actor, project, sha):
-    return "atlas-ref-" + digest([actor.tenant_id, project])[:16] + "-" + sha + ".png"
+def reference_filename(actor, project, sha, suffix=".png"):
+    return "atlas-ref-" + digest([actor.tenant_id, project])[:16] + "-" + sha + suffix
 
 
 @router.get(
@@ -339,6 +367,17 @@ def bind_http(http, actor, job, *, cancel=False):
                 _, blob, _ = pinned_reference(actor, job["project_id"], p["asset_ref"])
                 if blob["data"]["checksum"] != p["original_sha256"]:
                     raise DomainError("REFERENCE_REVISION_CHANGED", "参考原件指纹已变化。", 409)
+                if p.get("segment_ref"):
+                    clip, b, _ = resolve_media(
+                        get_store(), actor, p["segment_ref"]["id"], project_id=job["project_id"]
+                    )
+                    if (
+                        ref(clip) != p["segment_ref"]
+                        or b["data"]["checksum"] != p["segment_sha256"]
+                    ):
+                        raise DomainError(
+                            "REFERENCE_SEGMENT_CHANGED", "参考区间修订或指纹已变化。", 409
+                        )
                 if p.get("frame_ref"):
                     frame, b, _ = resolve_media(
                         get_store(), actor, p["frame_ref"]["id"], project_id=job["project_id"]
@@ -356,15 +395,35 @@ def prepare_reference(actor, cfg, body):
         body.reference_asset_id is not None
         or body.reference_asset_version is not None
         or body.reference_time_seconds is not None
+        or body.reference_end_seconds is not None
     )
-    if "image_input" not in cfg:
+    if "image_input" not in cfg and "video_input" not in cfg:
         if selected:
-            raise DomainError("REFERENCE_UNSUPPORTED", "此生成工作流未配置参考图。", 422)
+            raise DomainError("REFERENCE_UNSUPPORTED", "此生成工作流未配置参考输入。", 422)
         return None, None
     if not body.reference_asset_id or not body.reference_asset_version:
-        raise DomainError("REFERENCE_REQUIRED", "此工作流需要指定本项目参考图及其准确修订。", 422)
+        raise DomainError("REFERENCE_REQUIRED", "此工作流需要指定本项目参考原件及其准确修订。", 422)
     pin = {"id": body.reference_asset_id, "version": body.reference_asset_version}
     item, blob, path = pinned_reference(actor, body.project_id, pin)
+    if "video_input" in cfg:
+        evidence, data = generation_segments.prepare(
+            actor,
+            body.project_id,
+            item,
+            blob,
+            path,
+            body.reference_time_seconds,
+            body.reference_end_seconds,
+            cfg,
+        )
+        return {
+            **evidence,
+            "filename": reference_filename(
+                actor, body.project_id, evidence["segment_sha256"], ".mp4"
+            ),
+        }, data
+    if body.reference_end_seconds is not None:
+        raise DomainError("REFERENCE_SEGMENT_UNSUPPORTED", "此配置仅接受单帧参考。", 422)
     if body.reference_time_seconds is not None:
         generation_frames.checked_time(item["data"].get("probe", {}), body.reference_time_seconds)
         evidence, png = generation_frames.pixels(
@@ -374,6 +433,21 @@ def prepare_reference(actor, cfg, body):
             **evidence,
             "filename": reference_filename(actor, body.project_id, evidence["png_sha256"]),
         }, png
+    png = normalized_still(path)
+    sha = hashlib.sha256(png).hexdigest()
+    filename = reference_filename(actor, body.project_id, sha)
+    return {
+        "asset_ref": ref(item),
+        "original_sha256": blob["data"]["checksum"],
+        "png_sha256": sha,
+        "width": int.from_bytes(png[16:20], "big"),
+        "height": int.from_bytes(png[20:24], "big"),
+        "bytes": len(png),
+        "filename": filename,
+    }, png
+
+
+def normalized_still(path, *, display_aspect=False):
     probe = probe_media(path)
     if not probe["is_still"] or probe["video_codec"] not in {"png", "mjpeg", "webp", "bmp"}:
         raise DomainError("REFERENCE_IMAGE_REQUIRED", "参考素材须是可验证的单帧原图。", 422)
@@ -400,7 +474,7 @@ def prepare_reference(actor, cfg, body):
             "-frames:v",
             "1",
             "-vf",
-            "scale=w='min(4096,iw)':h='min(4096,ih)':force_original_aspect_ratio=decrease",
+            generation_frames.preview_scale(display_aspect),
             "-pix_fmt",
             "rgba",
             "-c:v",
@@ -416,26 +490,22 @@ def prepare_reference(actor, cfg, body):
     )
     if len(png) > 50 * 1024 * 1024 or png[:8] != bytes.fromhex("89504e470d0a1a0a"):
         raise DomainError("REFERENCE_IMAGE_LIMIT", "规范化参考图片超过工作器容量或编码无效。", 422)
-    sha = hashlib.sha256(png).hexdigest()
-    filename = reference_filename(actor, body.project_id, sha)
-    return {
-        "asset_ref": ref(item),
-        "original_sha256": blob["data"]["checksum"],
-        "png_sha256": sha,
-        "width": int.from_bytes(png[16:20], "big"),
-        "height": int.from_bytes(png[20:24], "big"),
-        "bytes": len(png),
-        "filename": filename,
-    }, png
+    return png
 
 
-def upload_reference(http, reference, png):
+def upload_reference(http, reference, data):
     name = reference["filename"]
     try:
         response = http.post(
             "upload/image",
             data={"type": "input", "overwrite": "false"},
-            files={"image": (name, png, "image/png")},
+            files={
+                "image": (
+                    name,
+                    data,
+                    "video/mp4" if reference.get("segment_sha256") else "image/png",
+                )
+            },
         )
         response.raise_for_status()
         value = response.json()
@@ -443,7 +513,7 @@ def upload_reference(http, reference, png):
             value.get(k) != v for k, v in {"name": name, "subfolder": "", "type": "input"}.items()
         ):
             raise ValueError("wrong ComfyUI reference descriptor")
-        # A matching descriptor alone cannot prove that the file served to LoadImage is intact.
+        # A matching descriptor alone cannot prove that the file served to the reference node is intact.
         params = {"filename": name, "type": "input", "subfolder": ""}
         received = hashlib.sha256()
         size = 0
@@ -451,10 +521,12 @@ def upload_reference(http, reference, png):
             stored.raise_for_status()
             for chunk in stored.iter_bytes(1024 * 1024):
                 size += len(chunk)
-                if size > len(png):
+                if size > len(data):
                     raise ValueError("unexpected reference size")
                 received.update(chunk)
-        if size != len(png) or received.hexdigest() != reference["png_sha256"]:
+        if size != len(data) or received.hexdigest() != (
+            reference.get("segment_sha256") or reference["png_sha256"]
+        ):
             raise ValueError("reference pixels did not round-trip")
         return {
             "descriptor": {"name": name, "subfolder": "", "type": "input"},
@@ -464,7 +536,7 @@ def upload_reference(http, reference, png):
         }
     except (httpx.HTTPError, ValueError, TypeError) as exc:
         raise DomainError(
-            "REFERENCE_UPLOAD_FAILED", "参考图上传回执无效，未提交推理。", 422
+            "REFERENCE_UPLOAD_FAILED", "参考文件上传回执无效，未提交推理。", 422
         ) from exc
 
 
@@ -474,7 +546,7 @@ def workflow_for(cfg, body, reference=None):
         node, param = cfg[mapping]
         graph[node]["inputs"][param] = value
     if reference:
-        node, param = cfg["image_input"]
+        node, param = cfg.get("video_input") or cfg["image_input"]
         graph[node]["inputs"][param] = reference["filename"]
     return graph
 
@@ -488,7 +560,12 @@ def generate(body: Generate, request: Request, actor: Actor = Depends(current_ac
     # Preserve request hashes created before optional image references were introduced.
     omitted = {
         k
-        for k in ("reference_asset_id", "reference_asset_version", "reference_time_seconds")
+        for k in (
+            "reference_asset_id",
+            "reference_asset_version",
+            "reference_time_seconds",
+            "reference_end_seconds",
+        )
         if getattr(body, k) is None
     }
     payload_hash = digest(body.model_dump(exclude=omitted))
@@ -543,6 +620,8 @@ def generate(body: Generate, request: Request, actor: Actor = Depends(current_ac
                 pins.append(parent["data"]["plan_ref"])
         if reference:
             pins.append(reference["asset_ref"])
+            if reference.get("segment_ref"):
+                pins.append(reference["segment_ref"])
             if reference.get("frame_ref"):
                 pins.append(reference["frame_ref"])
         reqid = str(uuid.uuid4())
@@ -598,7 +677,7 @@ def generate(body: Generate, request: Request, actor: Actor = Depends(current_ac
                 if job["data"].get("cancel_requested") or job["data"]["stage"] in FINAL:
                     raise DomainError(
                         "GENERATION_CANCELLED_BEFORE_PROMPT",
-                        "任务在参考图准备期间取消，未提交推理。",
+                        "任务在参考文件准备期间取消，未提交推理。",
                         409,
                     )
             response = http.post(
@@ -934,6 +1013,8 @@ def reconcile(id, request, actor, *, cancel):
     with producer(actor, id) as token:
         job = load(actor, job["id"])
         if job["data"]["stage"] in FINAL:
+            if token and not cancel and job["data"]["stage"] == "ready":
+                job = generation_review.separate_legacy_output(actor, job)
             return ok(result(actor, job), request)
         if not token:
             # A slow download could be in progress. The receiving worker checks this durable flag before adoption.

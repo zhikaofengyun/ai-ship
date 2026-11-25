@@ -1,0 +1,83 @@
+{
+  "atlas_nodes": [
+    "G03",
+    "E01",
+    "N04",
+    "N05",
+    "Y02",
+    "Y05"
+  ],
+  "tests": {
+    "command": "python -m unittest tests.test_batches tests.test_batch_acceptance tests.test_batch_observability -v",
+    "passed": 16,
+    "camera_or_model_test": {
+      "encoded_and_decoded": 5,
+      "model_submissions": 3,
+      "camera_renders_while_provider_waiting": 2,
+      "provider": "local HTTP ComfyUI protocol fixture, with actual encoded media"
+    }
+  },
+  "capacity": {
+    "mixed_slot": {
+      "requested": 100000,
+      "camera_only_items": 80007,
+      "model_items": 19993,
+      "estimated_model_calls": 19993,
+      "enqueue_seconds": 0.52,
+      "inference_submissions": 0,
+      "renders": 0
+    },
+    "requested": 100000,
+    "persisted_rows": 100000,
+    "distinct_generated_cut_combinations": 100000,
+    "enqueue_seconds": 0.529,
+    "last_visible_ordinal": 100000,
+    "idempotent_replay": true,
+    "rows_cancelled": 100000,
+    "scope": "Single-machine admission, durable queue, paging, combination enumeration and controls. Workers disabled. Zero rendered media files in this specific test."
+  },
+  "browsers": {
+    "chromium": {
+      "version": "158.0.8127.0",
+      "page_errors": [],
+      "estimate": 1,
+      "submissions": 1,
+      "decoded": [
+        {
+          "ordinal": 1,
+          "generator": false,
+          "mp4_sha256": "0794da58070dbfdf413ac8bf7246cf5813a610d721382c008235ad5653e24e88",
+          "mp4_bytes": 29890
+        },
+        {
+          "ordinal": 2,
+          "generator": true,
+          "mp4_sha256": "f8fda49ee0fb324863c4dbb276dd8b8b242638f9adb43f5091aa51d445782eac",
+          "mp4_bytes": 24384
+        }
+      ],
+      "provider": "Local ComfyUI HTTP fixture returned the source video; this checks actual decoded input pixels and upload bytes, not inference quality."
+    },
+    "webkit": {
+      "version": "26.5",
+      "page_errors": [],
+      "estimate": 1,
+      "submissions": 1,
+      "decoded": [
+        {
+          "ordinal": 1,
+          "generator": false,
+          "mp4_sha256": "0794da58070dbfdf413ac8bf7246cf5813a610d721382c008235ad5653e24e88",
+          "mp4_bytes": 29890
+        },
+        {
+          "ordinal": 2,
+          "generator": true,
+          "mp4_sha256": "f8fda49ee0fb324863c4dbb276dd8b8b242638f9adb43f5091aa51d445782eac",
+          "mp4_bytes": 24384
+        }
+      ],
+      "provider": "Local ComfyUI HTTP fixture returned the source video; this checks actual decoded input pixels and upload bytes, not inference quality."
+    }
+  }
+}

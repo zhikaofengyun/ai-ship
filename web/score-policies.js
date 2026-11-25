@@ -51,7 +51,7 @@ function operation(ctx, name, title, body, submit, after = null) {
       });
       await ctx.reloadData();
       await ctx.refresh();
-      if (after) after(result);
+      if (after) await after(result);
       else toast(title + "已保存");
     },
   );
@@ -177,7 +177,16 @@ async function evaluate(ctx, fit = false) {
   };
 }
 async function promotion(ctx) {
-  const ptr = await current(ctx);
+  const project = ctx.requireProject();
+  const [ptr, review] = await Promise.all([
+    current(ctx),
+    ctx.api(endpoint + encodeURIComponent(project) + "/trial"),
+  ]);
+  const trial = review.trial;
+  const running = trial?.data.status === "running";
+  const canApprove = ["owner", "reviewer"].includes(
+    ctx.state.health?.actor?.role,
+  );
   const experiments = ctx
     .records("Experiment")
     .filter(
@@ -198,13 +207,117 @@ async function promotion(ctx) {
       (r) =>
         managed(r) &&
         r.data.pointer_version === ptr?.version &&
+        r.data.operation === "activate_asset_scoring_policy" &&
+        r.data.decision === "approved" &&
         new Date(r.data.expires_at).getTime() > Date.now(),
     );
+  const approvalSelect = (choices = approvals) =>
+    select(
+      "本项目有效批准",
+      "approval",
+      [
+        ["", "请选择"],
+        ...choices.map((r) => [
+          r.id,
+          (ctx.records("Policy").find((p) => p.id === r.data.subject_id)?.data
+            .name || "候选") +
+            " · " +
+            r.id.slice(-6),
+        ]),
+      ],
+      "",
+      "required",
+    );
+  const releasable = approvals.filter(
+    (r) =>
+      !trial ||
+      r.data.subject_id !== trial.data.candidate.id ||
+      r.data.subject_version !== trial.data.candidate.version ||
+      (!running && trial.data.review_decision === "recommend_release"),
+  );
+  const trialName =
+    trial &&
+    (ctx.records("Policy").find((p) => p.id === trial.data.candidate.id)?.data
+      .name ||
+      trial.data.candidate.id);
+  const armRow = (id, name) => {
+    const counts = (trial?.data.reviewed_arms || review.arms)[id] || {};
+    return `<tr><th scope="row">${name}</th><td>${esc(counts.units ?? 0)}</td><td>${esc(counts.measured_units ?? 0)}</td><td>${esc(counts.scores ?? 0)}</td><td>${esc(counts.measured ?? 0)}</td></tr>`;
+  };
   const d = modal(
     "评分策略晋升",
-    "<p>批准绑定一次回归和候选。生效后，后续使用项目策略的评分将引用新权重。</p>" +
-      '<div class="dialog-actions"><button class="button secondary" data-approve>审批回归结果</button><button class="button primary" data-activate>生效已批准候选</button></div>',
+    `<section data-trial-summary>
+      <h3>限量试用</h3>${
+        trial
+          ? `<p>${esc(trialName)} · ${esc(trial.data.percent)}% 候选分流 · ${review.ineligible_reason ? "已失去分流资格" : running ? "试用中" : "已停止"}</p>
+        <p>停止条件 · ${esc(trial.data.stop_condition)}</p>
+        ${trial.data.stop_reason || review.ineligible_reason ? `<p>原因 · ${esc(trial.data.stop_reason || review.ineligible_reason)}</p>` : ""}
+        ${trial.data.review_decision ? `<p>评审结论 · ${trial.data.review_decision === "recommend_release" ? "建议全量生效" : "暂不建议全量生效"}</p>` : ""}
+        <table class="data-table" aria-label="限量试用分组统计"><thead><tr><th>分组</th><th>素材数</th><th>有效素材</th><th>评分次数</th><th>有效评分</th></tr></thead><tbody>
+          ${armRow("baseline", "基线")}${armRow("candidate", "候选")}
+        </tbody></table>`
+          : "<p>当前项目尚无限量试用记录。</p>"
+      }
+      <div class="dialog-actions">${canApprove && approvals.length && ptr?.data.release_state === "active" && (!running || review.ineligible_reason) ? '<button class="button secondary" data-trial-start>开始限量试用</button>' : ""}
+      ${canApprove && running ? '<button class="button secondary" data-trial-stop>停止试用</button>' : ""}
+      <button class="button ghost" data-trial-refresh>刷新统计</button></div></section>
+      ${
+        canApprove
+          ? '<h3>正式生效</h3><p>批准绑定一次回归和候选。生效后，后续使用项目策略的评分将引用新权重。</p><div class="dialog-actions"><button class="button secondary" data-approve>审批回归结果</button><button class="button primary" data-activate>生效已批准候选</button></div>'
+          : "<p>项目所有者和审核人可以审批及变更试用。</p>"
+      }`,
   );
+  const reopen = () => promotion(ctx);
+  d.querySelector("[data-trial-refresh]").onclick = () =>
+    reopen().catch((err) => toast(err.message, "error"));
+  if (!canApprove) return;
+  const start = d.querySelector("[data-trial-start]");
+  if (start)
+    start.onclick = () =>
+      operation(
+        ctx,
+        "trials/start",
+        "开始限量试用",
+        approvalSelect() +
+          field(
+            "分给候选的素材比例（%）",
+            "percent",
+            "",
+            "number",
+            'min="1" max="99" step="1" required',
+          ) +
+          area("停止条件", "stop_condition", "", "required") +
+          "<p>同一素材保持在同组。其余素材继续使用当前基线。</p>",
+        (v) => ({
+          approval: fact(ctx, "Approval", v.approval),
+          percent: Number(v.percent),
+          expected_trial_version: trial?.version || 0,
+          stop_condition: v.stop_condition,
+        }),
+        reopen,
+      );
+  const stop = d.querySelector("[data-trial-stop]");
+  if (stop)
+    stop.onclick = () =>
+      operation(
+        ctx,
+        "trials/stop",
+        "停止限量试用",
+        select("评审结论", "decision", [
+          ["no_recommendation", "结束试用，暂不建议全量生效"],
+          ...(review.arms.baseline?.measured_units > 0 &&
+          review.arms.candidate?.measured_units > 0 &&
+          !review.ineligible_reason
+            ? [["recommend_release", "建议候选进入全量生效审批"]]
+            : []),
+        ]) + area("停止原因及依据", "reason", "", "required"),
+        (v) => ({
+          expected_trial_version: trial.version,
+          reason: v.reason,
+          decision: v.decision,
+        }),
+        reopen,
+      );
   d.querySelector("[data-approve]").onclick = () =>
     operation(
       ctx,
@@ -245,29 +358,11 @@ async function promotion(ctx) {
         };
       },
     );
+  d.querySelector("[data-activate]").disabled = !releasable.length;
   d.querySelector("[data-activate]").onclick = () =>
-    operation(
-      ctx,
-      "activate",
-      "生效评分策略",
-      select(
-        "本项目有效批准",
-        "approval",
-        [
-          ["", "请选择"],
-          ...approvals.map((r) => [
-            r.id,
-            (ctx.records("Policy").find((p) => p.id === r.data.subject_id)?.data
-              .name || "候选") +
-              " · " +
-              r.id.slice(-6),
-          ]),
-        ],
-        "",
-        "required",
-      ),
-      (v) => ({ approval: fact(ctx, "Approval", v.approval) }),
-    );
+    operation(ctx, "activate", "生效评分策略", approvalSelect(), (v) => ({
+      approval: fact(ctx, "Approval", v.approval),
+    }));
 }
 async function rollback(ctx) {
   const ptr = await current(ctx);

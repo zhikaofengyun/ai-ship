@@ -2,6 +2,7 @@ import { $, esc, field, formData, modal, select, uid } from "./ui.js";
 
 const labels = {
   require_full_decode: "完整解码",
+  require_reference_review: "参考生成镜头审片",
   subtitle_language: "字幕语言",
 };
 const rules = [
@@ -41,6 +42,7 @@ export async function chooseBatchContract(ctx, pid, current, apply) {
       <div class="form-grid">${rules.map(([key, label, step]) => field(label, key, base[key] ?? "", "number", 'min="0" step="' + step + '"')).join("")}
       ${field("字幕语言", "subtitle_language", base.subtitle_language || "")}</div>
       <label class="check"><input type="checkbox" name="decode" ${base.require_full_decode ? "checked" : ""}>要求成片完整解码</label>
+      <label class="check"><input type="checkbox" name="visual" ${base.require_reference_review ? "checked" : ""}>要求所选参考生成镜头均已通过画面审阅</label>
       <button class="button primary" type="submit">保存并应用到批次</button></form>`,
       async (f) => {
         const v = formData(f),
@@ -49,6 +51,8 @@ export async function chooseBatchContract(ctx, pid, current, apply) {
           if (v[key] !== "") requirements[key] = Number(v[key]);
         if (v.subtitle_language?.trim())
           requirements.subtitle_language = v.subtitle_language.trim();
+        if (f.elements.visual.checked)
+          requirements.require_reference_review = true;
         if (f.elements.decode.checked) requirements.require_full_decode = true;
         const r = await ctx.api(path, {
           method: "POST",

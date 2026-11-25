@@ -1,0 +1,244 @@
+{
+  "profile": {
+    "label": "连续实拍区间生成短片 · 8 fps",
+    "model": "Stable Diffusion 1.5 + AnimateDiff-Lightning video-to-video",
+    "base_url": "http://127.0.0.1:18218",
+    "text_input": [
+      "2",
+      "text"
+    ],
+    "seed_input": [
+      "6",
+      "seed"
+    ],
+    "output_node": "8",
+    "workflow": {
+      "1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": "sd15.safetensors"
+        }
+      },
+      "2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": ""
+        }
+      },
+      "3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": "letters, price, text, watermark"
+        }
+      },
+      "4": {
+        "class_type": "ADE_AnimateDiffLoaderGen1",
+        "inputs": {
+          "model": [
+            "1",
+            0
+          ],
+          "model_name": "animatediff_lightning_2step_comfyui.safetensors",
+          "beta_schedule": "sqrt_linear (AnimateDiff)"
+        }
+      },
+      "6": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "4",
+            0
+          ],
+          "seed": 1,
+          "steps": 2,
+          "cfg": 1.0,
+          "sampler_name": "euler",
+          "scheduler": "sgm_uniform",
+          "positive": [
+            "2",
+            0
+          ],
+          "negative": [
+            "3",
+            0
+          ],
+          "latent_image": [
+            "11",
+            0
+          ],
+          "denoise": 0.12
+        }
+      },
+      "7": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "6",
+            0
+          ],
+          "vae": [
+            "13",
+            0
+          ]
+        }
+      },
+      "8": {
+        "class_type": "SaveWEBM",
+        "inputs": {
+          "images": [
+            "7",
+            0
+          ],
+          "filename_prefix": "AI_Ship/shot",
+          "codec": "vp9",
+          "fps": 8.0,
+          "crf": 20
+        }
+      },
+      "9": {
+        "class_type": "LoadVideo",
+        "inputs": {
+          "file": "reference.mp4"
+        }
+      },
+      "10": {
+        "class_type": "ImageScale",
+        "inputs": {
+          "image": [
+            "14",
+            0
+          ],
+          "upscale_method": "lanczos",
+          "width": 144,
+          "height": 256,
+          "crop": "center"
+        }
+      },
+      "11": {
+        "class_type": "VAEEncode",
+        "inputs": {
+          "pixels": [
+            "10",
+            0
+          ],
+          "vae": [
+            "13",
+            0
+          ]
+        }
+      },
+      "14": {
+        "class_type": "GetVideoComponents",
+        "inputs": {
+          "video": [
+            "9",
+            0
+          ]
+        }
+      },
+      "13": {
+        "class_type": "VAELoader",
+        "inputs": {
+          "vae_name": "taesd"
+        }
+      }
+    },
+    "video_input": [
+      "9",
+      "file"
+    ],
+    "reference_fps": 8,
+    "max_reference_frames": 16
+  },
+  "evidence": {
+    "asset_ref": {
+      "id": "asset_4cb2b627fbc349e689ed4fa9bd758796",
+      "kind": "Asset",
+      "version": 1
+    },
+    "bytes": 1192649,
+    "duration": 0.5,
+    "filename": "atlas-ref-1ff6b9244e5bf86d-609639a45d818fa1ccc8a5753725f5db6558b8a96203428ed18071465cd6d874.mp4",
+    "frames": 4,
+    "height": 512,
+    "kind": "video_segment",
+    "original_sha256": "afacd0313fdcd967f135c6220a326c47c84038cf987b59af9b655a50aec21b48",
+    "reference_fps": 8,
+    "segment_ref": {
+      "id": "assetversion_ea8b509b88db7ed008f66b2902b13217ebf8696a",
+      "kind": "AssetVersion",
+      "version": 1
+    },
+    "segment_sha256": "609639a45d818fa1ccc8a5753725f5db6558b8a96203428ed18071465cd6d874",
+    "source_end_seconds": 1.5,
+    "source_frame_pts_seconds": [
+      1.0,
+      1.12,
+      1.24,
+      1.36
+    ],
+    "source_start_seconds": 1.0,
+    "width": 288
+  },
+  "verified_sha256": "609639a45d818fa1ccc8a5753725f5db6558b8a96203428ed18071465cd6d874",
+  "provider_id": "02be1b79-0623-4867-8999-3a579aecf93c",
+  "events": [
+    {
+      "stage": "queued",
+      "seconds": 1.587
+    },
+    {
+      "stage": "running",
+      "seconds": 3.631
+    },
+    {
+      "stage": "ready",
+      "seconds": 20.338
+    }
+  ],
+  "input": {
+    "project_id": "project_3c81c9d662434bf3901a1764d90b8bff",
+    "profile_id": "animatediff-video-segment",
+    "prompt": "The existing coffee ceremony table with tan clay cups and a dark dish on white cloth, patterned backdrop. Preserve the arrangement, natural colours and outlines. Slight natural camera movement.",
+    "idempotency_key": "deec6307ac7943448065af4e211a2c27",
+    "seed": 48185,
+    "reference_asset_id": "asset_4cb2b627fbc349e689ed4fa9bd758796",
+    "reference_asset_version": 1,
+    "reference_time_seconds": 1.0,
+    "reference_end_seconds": 1.5
+  },
+  "reference": {
+    "sha256": "609639a45d818fa1ccc8a5753725f5db6558b8a96203428ed18071465cd6d874",
+    "bytes": 1192649,
+    "video_stream": {
+      "codec_name": "h264",
+      "width": 288,
+      "height": 512,
+      "r_frame_rate": "8/1",
+      "time_base": "1/16384"
+    },
+    "decoded_frames": 4,
+    "distinct_decoded_frames": 4
+  },
+  "candidate": {
+    "sha256": "8ff0f21468e96bd8629c648b09089063b21acabdbce6ea626ef8a9b2cd82c727",
+    "bytes": 55512,
+    "video_stream": {
+      "codec_name": "vp9",
+      "width": 144,
+      "height": 256,
+      "r_frame_rate": "8/1",
+      "time_base": "1/1000"
+    },
+    "decoded_frames": 4,
+    "distinct_decoded_frames": 4
+  }
+}

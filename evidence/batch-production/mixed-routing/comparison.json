@@ -1,0 +1,525 @@
+{
+  "camera": {
+    "mean_abs_error_to_reference_0_to_1": [
+      0.0,
+      0.102839,
+      0.124857,
+      0.143714
+    ],
+    "mean_luminance_correlation_to_reference": [
+      1.0,
+      0.613203,
+      0.435569,
+      0.280944
+    ],
+    "mean_abs_frame_to_frame_change_0_to_1": [
+      0.102839,
+      0.067596,
+      0.083492
+    ]
+  },
+  "initial": {
+    "mean_abs_error_to_reference_0_to_1": [
+      0.143193,
+      0.146574,
+      0.138179,
+      0.15504
+    ],
+    "mean_luminance_correlation_to_reference": [
+      0.605911,
+      0.66741,
+      0.650227,
+      0.598181
+    ],
+    "mean_abs_frame_to_frame_change_0_to_1": [
+      0.178207,
+      0.184712,
+      0.167576
+    ]
+  },
+  "low-denoise-tiny": {
+    "mean_abs_error_to_reference_0_to_1": [
+      0.073892,
+      0.06514,
+      0.070583,
+      0.069138
+    ],
+    "mean_luminance_correlation_to_reference": [
+      0.904522,
+      0.907801,
+      0.913726,
+      0.885222
+    ],
+    "mean_abs_frame_to_frame_change_0_to_1": [
+      0.08316,
+      0.077165,
+      0.080949
+    ]
+  },
+  "low-denoise-full": {
+    "mean_abs_error_to_reference_0_to_1": [
+      0.089389,
+      0.081495,
+      0.08247,
+      0.089103
+    ],
+    "mean_luminance_correlation_to_reference": [
+      0.914158,
+      0.909346,
+      0.912133,
+      0.874986
+    ],
+    "mean_abs_frame_to_frame_change_0_to_1": [
+      0.09473,
+      0.086913,
+      0.091621
+    ]
+  },
+  "method": "Center-square crop in each candidate and the source, Lanczos 64x64 then BOX 16x16, RGB/255. Mean absolute RGB channel error and Pearson correlation of Rec.709 luminance against the source display frame at 1.200 s. Real camera comparison uses source indices 30,34,37,40 at 25fps; generated frames are sampled at 8fps. Different camera motion is descriptive, not proof of model quality.",
+  "profiles": {
+    "low-denoise-tiny": {
+      "worker_device": "CPU",
+      "elapsed_seconds": 19.194,
+      "events": [
+        {
+          "stage": "queued",
+          "seconds": 0.421
+        },
+        {
+          "stage": "running",
+          "seconds": 2.481
+        },
+        {
+          "stage": "ready",
+          "seconds": 19.053
+        }
+      ],
+      "profile": {
+        "label": "参考图生成短片 · 8 帧",
+        "model": "Stable Diffusion 1.5 + AnimateDiff-Lightning image conditioned",
+        "base_url": "http://127.0.0.1:18218",
+        "text_input": [
+          "2",
+          "text"
+        ],
+        "seed_input": [
+          "6",
+          "seed"
+        ],
+        "output_node": "8",
+        "workflow": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd15.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": ""
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "letters, price, text, watermark"
+            }
+          },
+          "4": {
+            "class_type": "ADE_AnimateDiffLoaderGen1",
+            "inputs": {
+              "model": [
+                "1",
+                0
+              ],
+              "model_name": "animatediff_lightning_2step_comfyui.safetensors",
+              "beta_schedule": "sqrt_linear (AnimateDiff)"
+            }
+          },
+          "6": {
+            "class_type": "KSampler",
+            "inputs": {
+              "model": [
+                "4",
+                0
+              ],
+              "seed": 1,
+              "steps": 2,
+              "cfg": 1.0,
+              "sampler_name": "euler",
+              "scheduler": "sgm_uniform",
+              "positive": [
+                "2",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "latent_image": [
+                "12",
+                0
+              ],
+              "denoise": 0.12
+            }
+          },
+          "7": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "6",
+                0
+              ],
+              "vae": [
+                "13",
+                0
+              ]
+            }
+          },
+          "8": {
+            "class_type": "SaveWEBM",
+            "inputs": {
+              "images": [
+                "7",
+                0
+              ],
+              "filename_prefix": "AI_Ship/shot",
+              "codec": "vp9",
+              "fps": 8.0,
+              "crf": 20
+            }
+          },
+          "9": {
+            "class_type": "LoadImage",
+            "inputs": {
+              "image": "reference.png"
+            }
+          },
+          "10": {
+            "class_type": "ImageScale",
+            "inputs": {
+              "image": [
+                "9",
+                0
+              ],
+              "upscale_method": "lanczos",
+              "width": 144,
+              "height": 256,
+              "crop": "center"
+            }
+          },
+          "11": {
+            "class_type": "VAEEncode",
+            "inputs": {
+              "pixels": [
+                "10",
+                0
+              ],
+              "vae": [
+                "13",
+                0
+              ]
+            }
+          },
+          "12": {
+            "class_type": "RepeatLatentBatch",
+            "inputs": {
+              "samples": [
+                "11",
+                0
+              ],
+              "amount": 4
+            }
+          },
+          "13": {
+            "class_type": "VAELoader",
+            "inputs": {
+              "vae_name": "taesd"
+            }
+          }
+        },
+        "image_input": [
+          "9",
+          "image"
+        ]
+      },
+      "prompt": "The existing coffee ceremony table with tan clay cups and a dark dish on white cloth, patterned backdrop. Preserve the arrangement, natural colours and outlines. Slight natural camera movement.",
+      "seed": 48185,
+      "source": {
+        "asset_ref": {
+          "id": "asset_776e466a97834d07be3133dcdfe352ba",
+          "kind": "Asset",
+          "version": 1
+        },
+        "bytes": 747814,
+        "filename": "atlas-ref-8fd9800867794079-697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59.png",
+        "frame_end_seconds": 1.24,
+        "frame_pts_seconds": 1.2,
+        "frame_pts_ticks": 15360,
+        "frame_ref": {
+          "id": "assetversion_c417153aa5106124afeebf4595ac4336c049a832",
+          "kind": "AssetVersion",
+          "version": 1
+        },
+        "height": 768,
+        "kind": "video_frame",
+        "original_sha256": "afacd0313fdcd967f135c6220a326c47c84038cf987b59af9b655a50aec21b48",
+        "png_sha256": "697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59",
+        "source_start_seconds": 0.0,
+        "source_time_seconds": 1.239,
+        "time_base": "1/12800",
+        "width": 432
+      },
+      "file": {
+        "sha256": "0bab4fb77cafbce0321a8d32ce05f4bebfed794d13476cab773d9cc6154bb783",
+        "bytes": 57576,
+        "video_stream": {
+          "codec_name": "vp9",
+          "width": 144,
+          "height": 256,
+          "r_frame_rate": "8/1",
+          "time_base": "1/1000"
+        },
+        "decoded_frames": 4,
+        "distinct_decoded_frames": 4
+      },
+      "provider_receipt": "28ade5ab-c821-4b9a-abff-727d6a7e3485",
+      "asset_id": "asset_f391acf6ecf24d59a846de5833f38861"
+    },
+    "low-denoise-full": {
+      "worker_device": "CPU",
+      "elapsed_seconds": 35.81,
+      "events": [
+        {
+          "stage": "queued",
+          "seconds": 0.074
+        },
+        {
+          "stage": "running",
+          "seconds": 2.126
+        },
+        {
+          "stage": "ready",
+          "seconds": 35.652
+        }
+      ],
+      "profile": {
+        "label": "参考图生成短片 · 8 帧",
+        "model": "Stable Diffusion 1.5 + AnimateDiff-Lightning image conditioned",
+        "base_url": "http://127.0.0.1:18218",
+        "text_input": [
+          "2",
+          "text"
+        ],
+        "seed_input": [
+          "6",
+          "seed"
+        ],
+        "output_node": "8",
+        "workflow": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd15.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": ""
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "letters, price, text, watermark"
+            }
+          },
+          "4": {
+            "class_type": "ADE_AnimateDiffLoaderGen1",
+            "inputs": {
+              "model": [
+                "1",
+                0
+              ],
+              "model_name": "animatediff_lightning_2step_comfyui.safetensors",
+              "beta_schedule": "sqrt_linear (AnimateDiff)"
+            }
+          },
+          "6": {
+            "class_type": "KSampler",
+            "inputs": {
+              "model": [
+                "4",
+                0
+              ],
+              "seed": 1,
+              "steps": 2,
+              "cfg": 1.0,
+              "sampler_name": "euler",
+              "scheduler": "sgm_uniform",
+              "positive": [
+                "2",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "latent_image": [
+                "12",
+                0
+              ],
+              "denoise": 0.12
+            }
+          },
+          "7": {
+            "class_type": "VAEDecodeTiled",
+            "inputs": {
+              "samples": [
+                "6",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ],
+              "tile_size": 96,
+              "overlap": 32,
+              "temporal_size": 8,
+              "temporal_overlap": 4
+            }
+          },
+          "8": {
+            "class_type": "SaveWEBM",
+            "inputs": {
+              "images": [
+                "7",
+                0
+              ],
+              "filename_prefix": "AI_Ship/shot",
+              "codec": "vp9",
+              "fps": 8.0,
+              "crf": 20
+            }
+          },
+          "9": {
+            "class_type": "LoadImage",
+            "inputs": {
+              "image": "reference.png"
+            }
+          },
+          "10": {
+            "class_type": "ImageScale",
+            "inputs": {
+              "image": [
+                "9",
+                0
+              ],
+              "upscale_method": "lanczos",
+              "width": 144,
+              "height": 256,
+              "crop": "center"
+            }
+          },
+          "11": {
+            "class_type": "VAEEncodeTiled",
+            "inputs": {
+              "pixels": [
+                "10",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ],
+              "tile_size": 96,
+              "overlap": 32,
+              "temporal_size": 8,
+              "temporal_overlap": 4
+            }
+          },
+          "12": {
+            "class_type": "RepeatLatentBatch",
+            "inputs": {
+              "samples": [
+                "11",
+                0
+              ],
+              "amount": 4
+            }
+          }
+        },
+        "image_input": [
+          "9",
+          "image"
+        ]
+      },
+      "prompt": "The existing coffee ceremony table with tan clay cups and a dark dish on white cloth, patterned backdrop. Preserve the arrangement, natural colours and outlines. Slight natural camera movement.",
+      "seed": 48185,
+      "source": {
+        "asset_ref": {
+          "id": "asset_776e466a97834d07be3133dcdfe352ba",
+          "kind": "Asset",
+          "version": 1
+        },
+        "bytes": 747814,
+        "filename": "atlas-ref-8fd9800867794079-697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59.png",
+        "frame_end_seconds": 1.24,
+        "frame_pts_seconds": 1.2,
+        "frame_pts_ticks": 15360,
+        "frame_ref": {
+          "id": "assetversion_c417153aa5106124afeebf4595ac4336c049a832",
+          "kind": "AssetVersion",
+          "version": 1
+        },
+        "height": 768,
+        "kind": "video_frame",
+        "original_sha256": "afacd0313fdcd967f135c6220a326c47c84038cf987b59af9b655a50aec21b48",
+        "png_sha256": "697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59",
+        "source_start_seconds": 0.0,
+        "source_time_seconds": 1.239,
+        "time_base": "1/12800",
+        "width": 432
+      },
+      "file": {
+        "sha256": "b7fbd17c789ba0d6f5e4b3add523e0cbd0fc1ec73026c926ca42880811bf7d9c",
+        "bytes": 63946,
+        "video_stream": {
+          "codec_name": "vp9",
+          "width": 144,
+          "height": 256,
+          "r_frame_rate": "8/1",
+          "time_base": "1/1000"
+        },
+        "decoded_frames": 4,
+        "distinct_decoded_frames": 4
+      },
+      "provider_receipt": "831d32d6-4843-44c3-8d8b-901c48877606",
+      "asset_id": "asset_1a933379957f4eb0963ec45c2466f467"
+    }
+  },
+  "model_provider_workflow": "https://huggingface.co/ByteDance/AnimateDiff-Lightning/blob/main/comfyui/animatediff_lightning_workflow.json",
+  "visual_review": {
+    "initial": "No recognizable cup identity; reject.",
+    "low-denoise-tiny": "Layout, tablecloth and the warm group of vessels are more recognizable, while the individual cup outlines and backdrop still drift. Reject for product-faithful use.",
+    "low-denoise-full": "Similar broad composition, stronger inaccurate colour patches and changing outlines within the first four frames. Reject for product-faithful use."
+  }
+}

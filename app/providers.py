@@ -177,27 +177,31 @@ def prices(config: dict) -> tuple[Decimal, Decimal]:
     return incoming, outgoing
 
 
+def wire_messages(messages, json_output):
+    if json_output and not any("json" in message["content"].lower() for message in messages):
+        return [
+            {
+                "role": "system",
+                "content": "Return a valid JSON object. Do not invent evidence or external execution results.",
+            },
+            *messages,
+        ]
+    return messages
+
+
 def wire_payload(
     model: str, messages: list[dict], max_tokens: int, temperature: float, json_output: bool
 ) -> dict:
     """Build once: the same payload is fingerprinted and passed to transport."""
     payload = {
         "model": model,
-        "messages": messages,
+        "messages": wire_messages(messages, json_output),
         "max_tokens": max_tokens,
         "temperature": temperature,
         "stream": False,
     }
     if json_output:
         payload["response_format"] = {"type": "json_object"}
-        if not any("json" in message["content"].lower() for message in messages):
-            payload["messages"] = [
-                {
-                    "role": "system",
-                    "content": "Return a valid JSON object. Do not invent evidence or external execution results.",
-                },
-                *messages,
-            ]
     return payload
 
 
@@ -287,6 +291,27 @@ def availability(request: Request, actor: Actor = Depends(current_actor)):
     return ok({"providers": result, "executed": False, "automatic_tool_execution": False}, request)
 
 
+def input_upper_bound(messages, schema=None):
+    bound = sum(len(m["content"].encode("utf-8")) + 32 for m in messages) + 256
+    if schema:
+        bound += len(json.dumps(schema, ensure_ascii=False).encode("utf-8")) + 32
+    return bound
+
+
+def context_capacity(profile_data, config):
+    limits = []
+    for settings in (config, profile_data):
+        if "context_limit" not in settings or settings["context_limit"] is None:
+            continue
+        value = settings["context_limit"]
+        if type(value) is str and value.isascii() and value.isdecimal() and len(value) <= 12:
+            value = int(value)
+        if type(value) is not int or value <= 0:
+            raise DomainError("MODEL_CONTEXT_LIMIT", "模型上下文容量必须是正整数。", 409)
+        limits.append(value)
+    return min(limits, default=32768)
+
+
 def chat(body: ChatInput, actor: Actor, client_factory=None, *, response_schema=None) -> dict:
     require_write(actor)
     if not actor_still_authorized(actor):
@@ -319,10 +344,8 @@ def chat(body: ChatInput, actor: Actor, client_factory=None, *, response_schema=
     messages = [m.model_dump() for m in body.messages]
     # Byte-level bound is conservative; tokenizer-specific measured usage is saved afterwards.
     strict_schema = response_schema if config.get("structured_schema") is True else None
-    input_bound = sum(len(m["content"].encode("utf-8")) + 32 for m in messages) + 256
-    if strict_schema:
-        input_bound += len(json.dumps(strict_schema, ensure_ascii=False).encode("utf-8")) + 32
-    context_limit = int(pd.get("context_limit") or config.get("context_limit", 32768))
+    input_bound = input_upper_bound(wire_messages(messages, body.json_output), strict_schema)
+    context_limit = context_capacity(pd, config)
     if input_bound + body.max_tokens > context_limit:
         raise DomainError(
             "CONTEXT_BUDGET", "保守输入上界和输出预算超过模型上下文上限；请缩短输入或调整配置。"

@@ -15,6 +15,7 @@ from pydantic import Field, StrictInt, model_validator
 from . import batch_queue as queue
 from . import batch_acceptance, batch_market, batch_observability, batch_workflows, generation
 from .api import ok
+from .batch_combinations import choices_for, dimensions, generation_counts, item_generation_flags
 from .auth import Actor, actor_still_authorized, current_actor, require_approval, require_write
 from .errors import DomainError
 from .media import MAX_DURATION, MAX_PIXELS, check_revision, render_timeline, resolve_media
@@ -43,6 +44,7 @@ class GeneratedSlot(Body):
     duration: float = Field(ge=0.04, le=MAX_DURATION)
     reference_asset_id: str | None = None
     reference_asset_version: StrictInt | None = Field(default=None, ge=1)
+    reference_end_seconds: float | None = Field(default=None, strict=True, gt=0, le=3600)
     reference_time_seconds: float | None = Field(default=None, strict=True, ge=0, lt=3600)
 
 
@@ -52,8 +54,8 @@ class Slot(Body):
 
     @model_validator(mode="after")
     def source(self):
-        if bool(self.choices) == bool(self.generate):
-            raise ValueError("每个镜头须选择一个素材池或一个生成任务。")
+        if not self.choices and not self.generate:
+            raise ValueError("每个镜头位至少需要一个素材区间或生成配置。")
         if len({(c.asset_id, c.source_in, c.source_out) for c in self.choices}) != len(
             self.choices
         ):
@@ -87,37 +89,18 @@ class Recipe(Body):
 
     @model_validator(mode="after")
     def bounds(self):
-        gen_count = sum(s.generate is not None for s in self.slots)
+        has_generation = any(s.generate for s in self.slots)
+        required_generators = sum(s.generate is not None and not s.choices for s in self.slots)
         if self.width * self.height > MAX_PIXELS:
             raise ValueError("画面像素超过编码器限制。")
         if (
             self.max_generation_calls is not None
-            and gen_count * self.count > self.max_generation_calls
+            and required_generators * self.count > self.max_generation_calls
         ):
             raise ValueError("所有生成镜头的推理次数超过本批次允许的调用数。")
-        if not gen_count and self.count > capacity(self.slots):
+        if not has_generation and self.count > math.prod(len(s.choices) for s in self.slots):
             raise ValueError("批次数量超出来源区间的不重复组合数。")
         return self
-
-
-def capacity(slots):
-    return math.prod(len(s.choices) or 1 for s in slots)
-
-
-def choices_for(recipe, ordinal):
-    # A coprime affine permutation of mixed-radix indices avoids materializing products.
-    # Every combination is visited exactly once per cycle, with reproducible seeded ordering.
-    size = capacity(recipe.slots)
-    step = digest([recipe.seed, "stride"])
-    stride = int(step[:16], 16) % size or 1
-    while math.gcd(stride, size) != 1:
-        stride += 1
-    rank = (recipe.seed + (ordinal - 1) * stride) % size
-    result = []
-    for slot in recipe.slots:
-        rank, pos = divmod(rank, len(slot.choices) or 1)
-        result.append(slot.choices[pos] if slot.choices else None)
-    return result
 
 
 def source(actor, project, cut, cache):
@@ -154,7 +137,9 @@ def template_for(actor, recipe):
         if not all(isinstance(clip.get(k), (float, int)) for k in ("source_in", "source_out")):
             raise DomainError("BATCH_TEMPLATE_RANGE", "请先在模板中固定每个源片段的入点与出点。")
         original = clip["source_out"] - clip["source_in"]
-        durations = [k.source_out - k.source_in for k in slot.choices] or [slot.generate.duration]
+        durations = [k.source_out - k.source_in for k in slot.choices]
+        if slot.generate:
+            durations.append(slot.generate.duration)
         if any(abs(length - original) > 1e-6 for length in durations):
             raise DomainError("BATCH_TEMPLATE_TIMING", "替代源区间须保持人工样片中的镜头时长。")
     return item
@@ -168,26 +153,41 @@ def freeze(actor, recipe):
     cfg_hash = {}
     ceiling = 0
     for slot in recipe.slots:
+        durations = []
+        for cut in slot.choices:
+            item = source(actor, recipe.project_id, cut, assets)
+            refs[item["id"]] = ref(item)
+            durations.append(cut.source_out - cut.source_in)
         if slot.generate:
             gen = slot.generate
             cfg = generation.profile(gen.profile_id)
             if cfg.get("output_kind", "video") != "video":
                 raise DomainError("BATCH_VIDEO_PROFILE", "生成镜头需要视频输出配置。")
-            if ("image_input" in cfg) != bool(gen.reference_asset_id) or bool(
+            if ("image_input" in cfg or "video_input" in cfg) != bool(
                 gen.reference_asset_id
-            ) != bool(gen.reference_asset_version):
+            ) or bool(gen.reference_asset_id) != bool(gen.reference_asset_version):
                 raise DomainError(
                     "BATCH_REFERENCE_REQUIRED", "参考图及其版本须与生成配置要求一致。"
                 )
+            if gen.reference_end_seconds is not None and "video_input" not in cfg:
+                raise DomainError("REFERENCE_SEGMENT_UNSUPPORTED", "此流程未配置视频区间输入。")
             if gen.reference_time_seconds is not None and not gen.reference_asset_id:
                 raise DomainError("BATCH_REFERENCE_REQUIRED", "取帧须绑定项目视频及其精确版本。")
             if gen.reference_asset_id:
-                item, _, _ = generation.pinned_reference(
+                item, _, reference_path = generation.pinned_reference(
                     actor,
                     recipe.project_id,
                     {"id": gen.reference_asset_id, "version": gen.reference_asset_version},
                 )
-                if gen.reference_time_seconds is not None:
+                if "video_input" in cfg:
+                    generation.generation_segments.bounds(
+                        item["data"].get("probe", {}),
+                        gen.reference_time_seconds,
+                        gen.reference_end_seconds,
+                        cfg,
+                        reference_path,
+                    )
+                elif gen.reference_time_seconds is not None:
                     generation.generation_frames.checked_time(
                         item["data"].get("probe", {}), gen.reference_time_seconds
                     )
@@ -195,12 +195,8 @@ def freeze(actor, recipe):
                     raise DomainError("REFERENCE_IMAGE_REQUIRED", "请选择单帧参考图。")
                 refs[item["id"]] = ref(item)
             cfg_hash[gen.profile_id] = digest(cfg)
-            ceiling += gen.duration
-        else:
-            for cut in slot.choices:
-                item = source(actor, recipe.project_id, cut, assets)
-                refs[item["id"]] = ref(item)
-            ceiling += max(k.source_out - k.source_in for k in slot.choices)
+            durations.append(gen.duration)
+        ceiling += max(durations)
     if not template and ceiling > MAX_DURATION:
         raise DomainError("MEDIA_RESOURCE_LIMIT", "批次中的最长时间线超过本地编码上限。")
     dag_generations = 0
@@ -208,9 +204,8 @@ def freeze(actor, recipe):
         workflow, graph, _, _ = batch_workflows.blueprint(actor, recipe)
         refs[workflow["id"]] = ref(workflow)
         dag_generations = sum(n["route_id"] in {"G02-R2", "G03-R2"} for n in graph["nodes"])
-    limit = recipe.count * (
-        sum(slot.generate is not None for slot in recipe.slots) + dag_generations
-    )
+    counts = generation_counts(dimensions(recipe.slots), recipe.seed, recipe.count)
+    limit = sum(counts) + recipe.count * dag_generations
     if recipe.max_generation_calls is not None and limit > recipe.max_generation_calls:
         raise DomainError("BATCH_GENERATION_BUDGET", "工作流和生成镜头所需的调用次数超过提交预算。")
     if recipe.market_brief:
@@ -219,7 +214,15 @@ def freeze(actor, recipe):
     if recipe.acceptance_contract:
         requirement = batch_acceptance.preflight(actor, recipe, limit)
         refs[requirement["id"]] = ref(requirement)
-    return list(refs.values()), cfg_hash, limit
+    return (
+        list(refs.values()),
+        cfg_hash,
+        {
+            "generation_calls": limit,
+            "slot_calls": list(counts),
+            "workflow_calls": recipe.count * dag_generations,
+        },
+    )
 
 
 def authorize(actor, output):
@@ -230,6 +233,14 @@ def authorize(actor, output):
         raise DomainError("IDENTITY_REVOKED", "提交本次批量工作的身份授权已失效。", 403)
 
 
+@router.post("/estimate")
+def estimate(body: Recipe, request: Request, actor: Actor = Depends(current_actor)):
+    authorize(actor, body.output)
+    record(actor, body.project_id, "Project")
+    _, _, usage = freeze(actor, body)
+    return ok(usage, request)
+
+
 @router.post("")
 def enqueue(body: Recipe, request: Request, actor: Actor = Depends(current_actor)):
     authorize(actor, body.output)
@@ -238,8 +249,10 @@ def enqueue(body: Recipe, request: Request, actor: Actor = Depends(current_actor
     queue.initialize(store)
     spec = body.model_dump()
     for slot in spec["slots"]:
-        if slot.get("generate") and slot["generate"]["reference_time_seconds"] is None:
-            slot["generate"].pop("reference_time_seconds")
+        if slot.get("generate"):
+            for time_field in ("reference_time_seconds", "reference_end_seconds"):
+                if slot["generate"][time_field] is None:
+                    slot["generate"].pop(time_field)
     bid = "batch_" + digest([actor.tenant_id, body.project_id, body.idempotency_key])[:40]
     intent = digest(spec)
 
@@ -255,7 +268,8 @@ def enqueue(body: Recipe, request: Request, actor: Actor = Depends(current_actor
         old = existing(db)
     if old:
         return ok(old, request)
-    pins, cfg_hash, generation_limit = freeze(actor, body)
+    pins, cfg_hash, usage = freeze(actor, body)
+    generation_limit = usage["generation_calls"]
     with store.transaction(), store.connection() as db:
         old = existing(db)
         if old:
@@ -267,6 +281,7 @@ def enqueue(body: Recipe, request: Request, actor: Actor = Depends(current_actor
                 "run_type": "production_batch",
                 "recipe": spec,
                 "generator_hashes": cfg_hash,
+                "planned_generation": usage,
                 "output_scope": body.output,
             },
             project_id=body.project_id,
@@ -320,8 +335,11 @@ def enqueue(body: Recipe, request: Request, actor: Actor = Depends(current_actor
             ),
         )
         db.executemany(
-            "INSERT INTO production_items(batch,ordinal) VALUES(?,?)",
-            ((bid, i) for i in range(1, body.count + 1)),
+            "INSERT INTO production_items(batch,ordinal,needs_generation) VALUES(?,?,?)",
+            (
+                (bid, i, flag)
+                for i, flag in enumerate(item_generation_flags(body, usage["workflow_calls"]), 1)
+            ),
         )
         result = queue.page(db, queue.get_batch(db, actor.tenant_id, bid))
     signal.set()
@@ -333,17 +351,37 @@ def list_batches(
     project_id: str,
     request: Request,
     limit: int = Query(20, ge=1, le=100),
+    before: str | None = Query(None, min_length=1, max_length=160),
     actor: Actor = Depends(current_actor),
 ):
     record(actor, project_id, "Project")
     store = get_store()
     queue.initialize(store)
     with store.read_snapshot() as db:
+        scope = (actor.tenant_id, project_id)
+        clause, args = "", scope
+        if before:
+            cursor = db.execute(
+                "SELECT created,id FROM production_batches WHERE tenant=? AND project=? AND id=?",
+                (*scope, before),
+            ).fetchone()
+            if cursor is None:
+                raise DomainError("BATCH_CURSOR", "该项目没有此批次游标。", 400)
+            clause = " AND (created,id) < (?,?)"
+            args = (*scope, cursor["created"], cursor["id"])
         rows = db.execute(
-            "SELECT * FROM production_batches WHERE tenant=? AND project=? ORDER BY created DESC LIMIT ?",
-            (actor.tenant_id, project_id, limit),
+            "SELECT * FROM production_batches WHERE tenant=? AND project=?"
+            + clause
+            + " ORDER BY created DESC,id DESC LIMIT ?",
+            (*args, limit + 1),
+        ).fetchall()
+        return ok(
+            {
+                "batches": [queue.summary(db, row) for row in rows[:limit]],
+                "next_before": rows[limit - 1]["id"] if len(rows) > limit else None,
+            },
+            request,
         )
-        return ok({"batches": [queue.summary(db, row) for row in rows]}, request)
 
 
 @router.get("/{bid}")
@@ -523,6 +561,7 @@ def generated_cut(store, item, actor, recipe, index, cfg_hash):
             reference_asset_id=slot.reference_asset_id,
             reference_asset_version=slot.reference_asset_version,
             reference_time_seconds=slot.reference_time_seconds,
+            reference_end_seconds=slot.reference_end_seconds,
             idempotency_key=job_key,
         )
         receipt = generation.generate(body, None, actor)["data"]
@@ -678,7 +717,7 @@ def execute_item(store, item):
     cuts = choices_for(recipe, item["ordinal"])
     if not item["timeline_id"]:
         for index, slot in enumerate(recipe.slots):
-            if not slot.generate:
+            if cuts[index] is not None:
                 continue
             state = control_state(store, item)
             if state == "paused":

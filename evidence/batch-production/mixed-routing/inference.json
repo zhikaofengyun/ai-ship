@@ -1,0 +1,494 @@
+{
+  "source": {
+    "page_id": 188828736,
+    "title": "File:Traditional Ethiopian Coffee Roasting Ceremony.webm",
+    "mime": "video/webm",
+    "size_bytes": 6112712,
+    "sha1": "0a8930d4fe50dcc98bc792819540b0c4f9e2e850",
+    "description_url": "https://commons.wikimedia.org/wiki/File:Traditional_Ethiopian_Coffee_Roasting_Ceremony.webm",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "author": "Keria T",
+    "credit": "Own work",
+    "attribution_required": "true",
+    "file_timestamp": "2026-04-11T19:00:43Z"
+  },
+  "source_sha256": "afacd0313fdcd967f135c6220a326c47c84038cf987b59af9b655a50aec21b48",
+  "items": [
+    {
+      "ordinal": 1,
+      "route": "generated",
+      "artifact_id": "artifact_db226e5ee97e4401b9c67125291d74e4",
+      "timeline_id": "timeline_0c9c7aef140f45dc915fed17b8ecb958",
+      "sha256": "0fc2d70f8879105aefbb94cb1717be00bc0b462f8ff6cbbeda4dbae1dce37aa4",
+      "bytes": 45722,
+      "video_stream": {
+        "codec_name": "h264",
+        "width": 256,
+        "height": 256,
+        "r_frame_rate": "24/1",
+        "time_base": "1/12288"
+      },
+      "decoded_frames": 12,
+      "distinct_decoded_frames": 11,
+      "generation_id": "gen_293dd049e866dc5a03f0c9a837bb0fefc846",
+      "seed": 48185,
+      "reference_input": {
+        "asset_ref": {
+          "id": "asset_2367b69261f5485fa36136e920e36c0f",
+          "kind": "Asset",
+          "version": 1
+        },
+        "bytes": 747814,
+        "filename": "atlas-ref-c394f8c4f2e73c65-697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59.png",
+        "frame_end_seconds": 1.24,
+        "frame_pts_seconds": 1.2,
+        "frame_pts_ticks": 15360,
+        "frame_ref": {
+          "id": "assetversion_9455b1c20492d8e65008fc9b993d5eedd2105ec0",
+          "kind": "AssetVersion",
+          "version": 1
+        },
+        "height": 768,
+        "kind": "video_frame",
+        "original_sha256": "afacd0313fdcd967f135c6220a326c47c84038cf987b59af9b655a50aec21b48",
+        "png_sha256": "697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59",
+        "source_start_seconds": 0.0,
+        "source_time_seconds": 1.239,
+        "time_base": "1/12800",
+        "width": 432
+      },
+      "uploaded_reference_sha256": "697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59",
+      "model_output": {
+        "sha256": "efe61be7110cf102d4776968b6a5bafe42b2606772063a56cb56ba73dbd51eb5",
+        "bytes": 46382,
+        "video_stream": {
+          "codec_name": "vp9",
+          "width": 160,
+          "height": 160,
+          "r_frame_rate": "8/1",
+          "time_base": "1/1000"
+        },
+        "decoded_frames": 4,
+        "distinct_decoded_frames": 4
+      }
+    },
+    {
+      "ordinal": 2,
+      "route": "camera",
+      "artifact_id": "artifact_e26e8a6c5462448ba67a1dd7aa1135c7",
+      "timeline_id": "timeline_6f14309cc0bd4242978457d6da9b6805",
+      "sha256": "f031d979fe22a4156d31ab4e368a5858c16ea20749a228f88b58f6dc28f1b749",
+      "bytes": 41060,
+      "video_stream": {
+        "codec_name": "h264",
+        "width": 256,
+        "height": 256,
+        "r_frame_rate": "24/1",
+        "time_base": "1/12288"
+      },
+      "decoded_frames": 12,
+      "distinct_decoded_frames": 12
+    }
+  ],
+  "worker": {
+    "os": "posix",
+    "comfyui_version": "0.3.70",
+    "python_version": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "pytorch_version": "2.8.0+cpu"
+  },
+  "estimate": {
+    "generation_calls": 1,
+    "slot_calls": [
+      1
+    ],
+    "workflow_calls": 0
+  },
+  "batch_id": "batch_a19397c31bea9f0420ca0fb368642b44c9458490",
+  "states": [
+    {
+      "seconds": 0.489,
+      "states": [
+        "waiting",
+        "queued"
+      ]
+    },
+    {
+      "seconds": 0.906,
+      "states": [
+        "waiting",
+        "succeeded"
+      ]
+    },
+    {
+      "seconds": 30.225,
+      "states": [
+        "succeeded",
+        "succeeded"
+      ]
+    }
+  ],
+  "elapsed_seconds": 30.225,
+  "profile": {
+    "label": "参考图生成短片 · 8 帧",
+    "model": "Stable Diffusion 1.5 + AnimateDiff-Lightning image conditioned",
+    "base_url": "http://127.0.0.1:18218",
+    "text_input": [
+      "2",
+      "text"
+    ],
+    "seed_input": [
+      "6",
+      "seed"
+    ],
+    "output_node": "8",
+    "workflow": {
+      "1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": "sd15.safetensors"
+        }
+      },
+      "2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": ""
+        }
+      },
+      "3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": "letters, price, text, watermark"
+        }
+      },
+      "4": {
+        "class_type": "ADE_AnimateDiffLoaderGen1",
+        "inputs": {
+          "model": [
+            "1",
+            0
+          ],
+          "model_name": "animatediff_lightning_2step_comfyui.safetensors",
+          "beta_schedule": "autoselect"
+        }
+      },
+      "6": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "4",
+            0
+          ],
+          "seed": 1,
+          "steps": 3,
+          "cfg": 1.0,
+          "sampler_name": "euler",
+          "scheduler": "sgm_uniform",
+          "positive": [
+            "2",
+            0
+          ],
+          "negative": [
+            "3",
+            0
+          ],
+          "latent_image": [
+            "12",
+            0
+          ],
+          "denoise": 0.35
+        }
+      },
+      "7": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "6",
+            0
+          ],
+          "vae": [
+            "13",
+            0
+          ]
+        }
+      },
+      "8": {
+        "class_type": "SaveWEBM",
+        "inputs": {
+          "images": [
+            "7",
+            0
+          ],
+          "filename_prefix": "AI_Ship/shot",
+          "codec": "vp9",
+          "fps": 8.0,
+          "crf": 20
+        }
+      },
+      "9": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": "reference.png"
+        }
+      },
+      "10": {
+        "class_type": "ImageScale",
+        "inputs": {
+          "image": [
+            "9",
+            0
+          ],
+          "upscale_method": "lanczos",
+          "width": 160,
+          "height": 160,
+          "crop": "center"
+        }
+      },
+      "11": {
+        "class_type": "VAEEncode",
+        "inputs": {
+          "pixels": [
+            "10",
+            0
+          ],
+          "vae": [
+            "13",
+            0
+          ]
+        }
+      },
+      "12": {
+        "class_type": "RepeatLatentBatch",
+        "inputs": {
+          "samples": [
+            "11",
+            0
+          ],
+          "amount": 4
+        }
+      },
+      "13": {
+        "class_type": "VAELoader",
+        "inputs": {
+          "vae_name": "taesd"
+        }
+      }
+    },
+    "image_input": [
+      "9",
+      "image"
+    ]
+  },
+  "single_text": {
+    "source": "text prompt only",
+    "elapsed_seconds": 16.761,
+    "events": [
+      {
+        "stage": "queued",
+        "seconds": 0.092
+      },
+      {
+        "stage": "running",
+        "seconds": 2.11
+      },
+      {
+        "stage": "ready",
+        "seconds": 16.6
+      }
+    ],
+    "profile": {
+      "label": "文生短片 · 本机 8 帧",
+      "model": "Stable Diffusion 1.5 + AnimateDiff-Lightning 2-step",
+      "base_url": "http://127.0.0.1:18218",
+      "text_input": [
+        "2",
+        "text"
+      ],
+      "seed_input": [
+        "6",
+        "seed"
+      ],
+      "output_node": "8",
+      "workflow": {
+        "1": {
+          "class_type": "CheckpointLoaderSimple",
+          "inputs": {
+            "ckpt_name": "sd15.safetensors"
+          }
+        },
+        "2": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "clip": [
+              "1",
+              1
+            ],
+            "text": ""
+          }
+        },
+        "3": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "clip": [
+              "1",
+              1
+            ],
+            "text": "letters, price, text, watermark"
+          }
+        },
+        "4": {
+          "class_type": "ADE_AnimateDiffLoaderGen1",
+          "inputs": {
+            "model": [
+              "1",
+              0
+            ],
+            "model_name": "animatediff_lightning_2step_comfyui.safetensors",
+            "beta_schedule": "autoselect"
+          }
+        },
+        "5": {
+          "class_type": "EmptyLatentImage",
+          "inputs": {
+            "width": 160,
+            "height": 160,
+            "batch_size": 4
+          }
+        },
+        "6": {
+          "class_type": "KSampler",
+          "inputs": {
+            "model": [
+              "4",
+              0
+            ],
+            "seed": 1,
+            "steps": 2,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "sgm_uniform",
+            "positive": [
+              "2",
+              0
+            ],
+            "negative": [
+              "3",
+              0
+            ],
+            "latent_image": [
+              "5",
+              0
+            ],
+            "denoise": 1.0
+          }
+        },
+        "7": {
+          "class_type": "VAEDecode",
+          "inputs": {
+            "samples": [
+              "6",
+              0
+            ],
+            "vae": [
+              "13",
+              0
+            ]
+          }
+        },
+        "8": {
+          "class_type": "SaveWEBM",
+          "inputs": {
+            "images": [
+              "7",
+              0
+            ],
+            "filename_prefix": "AI_Ship/shot",
+            "codec": "vp9",
+            "fps": 8.0,
+            "crf": 20
+          }
+        },
+        "13": {
+          "class_type": "VAELoader",
+          "inputs": {
+            "vae_name": "taesd"
+          }
+        }
+      }
+    },
+    "prompt": "Close-up of dark roasted coffee beans in a rustic pan, warm natural light, gentle camera movement, realistic food photography.",
+    "seed": 48186,
+    "file": {
+      "sha256": "0c47cabe3779fd2ed000b7e32cf419703b02aee5dd22af9b755e5d4081d522ad",
+      "bytes": 22537,
+      "video_stream": {
+        "codec_name": "vp9",
+        "width": 160,
+        "height": 160,
+        "r_frame_rate": "8/1",
+        "time_base": "1/1000"
+      },
+      "decoded_frames": 4,
+      "distinct_decoded_frames": 4
+    },
+    "job": "gen_6f9d77bef01f5d278293c48379ced6d69600",
+    "provider_id": "b3a33144-b600-46f7-84aa-8161ab248a39",
+    "asset_id": "asset_c4b561a37e724bb28498c6e0eb12e2a6"
+  },
+  "independent_reference_pixels": {
+    "requested_seconds": 1.239,
+    "displayed_pts_seconds": 1.2,
+    "zero_based_source_frame_number": 30,
+    "verified_rgba_sha256": "7ecc7aa7289025592d9474a1ab68b627e3a81705e2009193491aeaf8f154a5c5",
+    "uploaded_png_sha256": "697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59"
+  },
+  "configuration": {
+    "comfy_commit": "b5c8be8b1db44ded07cb1b437b9f33ebff5848c1",
+    "animatediff_evolved_commit": "90fb1331201a4b29488089e4fbffc0d82cc6d0a9",
+    "worker_flags": [
+      "--cpu",
+      "--cpu-vae",
+      "--fp8_e4m3fn-unet",
+      "--fp8_e4m3fn-text-enc",
+      "--fp32-vae"
+    ],
+    "cpu_threads": 3,
+    "weights": {
+      "sd15.safetensors": {
+        "bytes": 2132696762,
+        "sha256": "e9476a13728cd75d8279f6ec8bad753a66a1957ca375a1464dc63b37db6e3916",
+        "upstream": "https://huggingface.co/Comfy-Org/stable-diffusion-1.5/blob/main/v1-5-pruned-emaonly-fp16.safetensors"
+      },
+      "motion.safetensors": {
+        "bytes": 908929664,
+        "sha256": "29b4879520056657b897f48821760285b3eef371576e80c86c2ef1fdf95f6c1d",
+        "upstream": "https://huggingface.co/ByteDance/AnimateDiff-Lightning/blob/main/animatediff_lightning_2step_comfyui.safetensors"
+      },
+      "taesd_encoder.pth": {
+        "bytes": 4912826,
+        "sha256": "15bc6128f0ac51c673d3427216082ebfa62402ffc89763af74edfe259b32d49d",
+        "upstream": "https://github.com/madebyollin/taesd/blob/main/taesd_encoder.pth"
+      },
+      "taesd_decoder.pth": {
+        "bytes": 4913399,
+        "sha256": "02873377c3f4659cd9f9adb2f718dcb434ba4c7bba3af3ee7bb95cbdabe2d3cf",
+        "upstream": "https://github.com/madebyollin/taesd/blob/main/taesd_decoder.pth"
+      }
+    }
+  },
+  "technical_acceptance": "Two mixed batch outputs and the independent text-only model output decoded in full; the mixed item selected the exact registered model/asset path and used its original provider receipt.",
+  "visual_review": {
+    "direct_cut": "Coffee table and vessels are legible in the camera edit. Black sides result from fitting portrait footage in the selected square output.",
+    "conditioned": "Colored shapes deform across four frames. They fail to preserve the vessels and table in the camera frame.",
+    "text_only": "High contrast horizontal colors and unstable edges; no identifiable coffee-bean close-up.",
+    "decision": "Reject both generated samples for product publication."
+  }
+}

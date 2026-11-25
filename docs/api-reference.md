@@ -148,6 +148,9 @@
 | POST | `/api/v1/production/score-policies/approve` | Approve | `ApprovalRequest` |
 | POST | `/api/v1/production/score-policies/activate` | Activate | `Activate` |
 | POST | `/api/v1/production/score-policies/rollback` | Rollback | `Rollback` |
+| POST | `/api/v1/production/score-policies/trials/start` | Start Trial | `StartTrial` |
+| POST | `/api/v1/production/score-policies/trials/stop` | Stop Trial | `StopTrial` |
+| GET | `/api/v1/production/score-policies/{project_id}/trial` | Read Trial | `—` |
 | POST | `/api/v1/production/comment-feedback/observe` | Observe | `app__comment_feedback__Observation` |
 | GET | `/api/v1/production/comment-feedback/{project_id}/{comment_id}/body` | Get Body | `—` |
 | POST | `/api/v1/production/comment-feedback/classify` | Classify | `Classification` |
@@ -155,6 +158,8 @@
 | POST | `/api/v1/production/post-reviews/retention-mapping` | Map Retention | `RetentionMapping` |
 | GET | `/api/v1/production/post-reviews/placement-performance` | Performance | `—` |
 | POST | `/api/v1/production/post-reviews/placement-hypotheses` | Freeze Hypothesis | `ReuseHypothesis` |
+| POST | `/api/v1/production/post-reviews/placement-comparisons` | Compare Placements | `PlacementComparison` |
+| POST | `/api/v1/production/post-reviews/placement-comparison-hypotheses` | Freeze Comparison | `ComparisonHypothesis` |
 | POST | `/api/v1/production/post-reviews/archive` | Import Archive | `Archive` |
 | POST | `/api/v1/production/post-reviews/compare` | Compare | `Comparison` |
 | GET | `/api/v1/production/auto-edits` | List Edits | `—` |
@@ -169,10 +174,16 @@
 | GET | `/api/v1/production/batches/contracts` | List Contracts | `—` |
 | POST | `/api/v1/production/batches/market-briefs` | Create | `MarketBrief` |
 | GET | `/api/v1/production/batches/market-briefs` | List Briefs | `—` |
+| POST | `/api/v1/production/batches/estimate` | Estimate | `Recipe` |
 | POST | `/api/v1/production/batches` | Enqueue | `Recipe` |
 | GET | `/api/v1/production/batches` | List Batches | `—` |
 | GET | `/api/v1/production/batches/{bid}` | Get Batch | `—` |
 | POST | `/api/v1/production/batches/{bid}/{action}` | Control | `—` |
+| GET | `/api/v1/production/generation/{jid}/visual-review` | Details | `—` |
+| POST | `/api/v1/production/generation/{jid}/visual-review` | Decide | `VisualDecision` |
+| GET | `/api/v1/production/generation/{jid}/visual-review/reference.png` | Reference Png | `—` |
+| GET | `/api/v1/production/generation/{jid}/visual-review/reference.mp4` | Reference Video | `—` |
+| GET | `/api/v1/production/generation/{jid}/visual-review/candidate.png` | Candidate Png | `—` |
 | GET | `/api/v1/production/generation/profiles` | Available | `—` |
 | GET | `/api/v1/production/generation` | Jobs | `—` |
 | POST | `/api/v1/production/generation` | Generate | `Generate` |
@@ -228,7 +239,7 @@
 | POST | `/api/v1/production/soundtrack/remove-music` | Remove Music | `RemoveMusic` |
 | POST | `/api/v1/production/soundtrack/listen-review` | Listen Review | `ListeningReview` |
 
-共 199 个 HTTP 操作。完整 path/query/header 条件、枚举、范围、错误与二进制声明在 OpenAPI 中。
+共 210 个 HTTP 操作。完整 path/query/header 条件、枚举、范围、错误与二进制声明在 OpenAPI 中。
 
 ## 工作流和组件扩展
 

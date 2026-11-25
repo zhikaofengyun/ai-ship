@@ -147,7 +147,13 @@ OPERATION_SCHEMAS = {
                 "type": "number",
                 "minimum": 0,
                 "exclusiveMaximum": 3600,
-                "title": "视频参考帧源时码（秒）",
+                "title": "视频取帧或连续参考入点（秒）",
+            },
+            "reference_end_seconds": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 3600,
+                "title": "连续视频参考出点（秒）",
             },
             "reference": {
                 "type": "object",
@@ -681,6 +687,7 @@ def _call_handler(store, actor, run, node, args, input_refs):
             reference_asset_id=reference.get("id"),
             reference_asset_version=reference.get("version"),
             reference_time_seconds=args.get("reference_time_seconds"),
+            reference_end_seconds=args.get("reference_end_seconds"),
         )
         result = generation.generate(body, None, actor)["data"]
         job = result["job"]

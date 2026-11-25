@@ -1,0 +1,155 @@
+{
+  "animatediff-video-segment": {
+    "label": "连续实拍区间生成短片 · 8 fps",
+    "model": "Stable Diffusion 1.5 + AnimateDiff-Lightning video-to-video",
+    "base_url": "http://127.0.0.1:8188",
+    "text_input": [
+      "2",
+      "text"
+    ],
+    "seed_input": [
+      "6",
+      "seed"
+    ],
+    "output_node": "8",
+    "workflow": {
+      "1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": "sd15.safetensors"
+        }
+      },
+      "2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": ""
+        }
+      },
+      "3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "clip": [
+            "1",
+            1
+          ],
+          "text": "letters, price, text, watermark"
+        }
+      },
+      "4": {
+        "class_type": "ADE_AnimateDiffLoaderGen1",
+        "inputs": {
+          "model": [
+            "1",
+            0
+          ],
+          "model_name": "animatediff_lightning_2step_comfyui.safetensors",
+          "beta_schedule": "sqrt_linear (AnimateDiff)"
+        }
+      },
+      "6": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "4",
+            0
+          ],
+          "seed": 1,
+          "steps": 2,
+          "cfg": 1.0,
+          "sampler_name": "euler",
+          "scheduler": "sgm_uniform",
+          "positive": [
+            "2",
+            0
+          ],
+          "negative": [
+            "3",
+            0
+          ],
+          "latent_image": [
+            "11",
+            0
+          ],
+          "denoise": 0.12
+        }
+      },
+      "7": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "6",
+            0
+          ],
+          "vae": [
+            "1",
+            2
+          ]
+        }
+      },
+      "8": {
+        "class_type": "SaveWEBM",
+        "inputs": {
+          "images": [
+            "7",
+            0
+          ],
+          "filename_prefix": "AI_Ship/shot",
+          "codec": "vp9",
+          "fps": 8.0,
+          "crf": 20
+        }
+      },
+      "9": {
+        "class_type": "LoadVideo",
+        "inputs": {
+          "file": "reference.mp4"
+        }
+      },
+      "10": {
+        "class_type": "ImageScale",
+        "inputs": {
+          "image": [
+            "14",
+            0
+          ],
+          "upscale_method": "lanczos",
+          "width": 144,
+          "height": 256,
+          "crop": "center"
+        }
+      },
+      "11": {
+        "class_type": "VAEEncode",
+        "inputs": {
+          "pixels": [
+            "10",
+            0
+          ],
+          "vae": [
+            "1",
+            2
+          ]
+        }
+      },
+      "14": {
+        "class_type": "GetVideoComponents",
+        "inputs": {
+          "video": [
+            "9",
+            0
+          ]
+        }
+      }
+    },
+    "video_input": [
+      "9",
+      "file"
+    ],
+    "reference_fps": 8,
+    "max_reference_frames": 16
+  }
+}

@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 import json
+from itertools import groupby
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -20,11 +21,11 @@ router = APIRouter()
 # Restrict evidence to verified retention-writing operations and the same current
 # post revision. Multiple imports of the same curve must not multiply exposures.
 CURVES = """
-SELECT i.id AS insight_id, i.latest_version AS insight_version, v.content_hash AS receipt_hash, v.data_json AS data, p.id AS post_id,
+SELECT i.id AS insight_id, v.version AS insight_version, i.latest_version != v.version AS receipt_revised, v.content_hash AS receipt_hash, v.data_json AS data, p.id AS post_id,
        json_extract(pv.data_json,'$.actual_published_at') AS published
 FROM command_results c
 JOIN records i ON i.tenant_id=c.tenant_id AND i.id=json_extract(c.response_json,'$.insight.id')
-JOIN revisions v ON v.tenant_id=i.tenant_id AND v.record_id=i.id AND v.version=i.latest_version
+JOIN revisions v ON v.tenant_id=i.tenant_id AND v.record_id=i.id AND v.version=json_extract(c.response_json,'$.insight.version')
     AND v.content_hash=json_extract(c.response_json,'$.insight.hash')
 JOIN records p ON p.tenant_id=i.tenant_id AND p.id=json_extract(v.data_json,'$.observed_curve.post.id')
     AND p.latest_version=json_extract(v.data_json,'$.observed_curve.post.version') AND p.kind='Post'
@@ -33,9 +34,57 @@ WHERE c.tenant_id=? AND c.idempotency_key GLOB 'retention-mapping:*'
   AND i.project_id=? AND p.project_id=i.project_id AND i.kind='Insight'
   AND json_extract(pv.data_json,'$.account_id')=? AND json_extract(v.data_json,'$.observed_curve.traffic')=?
   AND json_extract(pv.data_json,'$.final_media_status')='verified_same'
-ORDER BY julianday(json_extract(v.data_json,'$.observed_curve.observed_at')) DESC,
+ORDER BY p.id, julianday(json_extract(v.data_json,'$.observed_curve.observed_at')) DESC,
          v.created_at DESC, i.id DESC
 """
+
+
+def latest_cohort(rows, after_hours, hours, published_from, published_through):
+    """Choose one observation per post, keeping conflicting same-time corrections unresolved."""
+    for post, versions in groupby(rows, key=lambda row: row["post_id"]):
+        newest = None
+        chosen = None
+        conflict = revised = False
+        for row in versions:
+            data = json.loads(row["data"])
+            curve = data["observed_curve"]
+            start, end = map(timestamp, (curve["window_start"], curve["window_end"]))
+            published = timestamp(row["published"])
+            if (published_from and published.date() < published_from) or (
+                published_through and published.date() > published_through
+            ):
+                continue
+            if (end - start).total_seconds() != hours * 3600 or (
+                start - published
+            ).total_seconds() != after_hours * 3600:
+                continue
+            at = timestamp(curve["observed_at"])
+            if newest is None or at > newest:
+                newest = at
+                chosen = (row, data, published)
+                conflict = False
+                revised = bool(row["receipt_revised"])
+            elif at == newest:
+                revised |= bool(row["receipt_revised"])
+                previous = chosen[1]["observed_curve"]
+                if (previous["points"], previous["denominator"]) != (
+                    curve["points"],
+                    curve["denominator"],
+                ):
+                    conflict = True
+        if chosen:
+            yield post, chosen, revised, conflict
+
+
+def covers_interval(ranges, start, end):
+    covered_to = start
+    for lo, hi in sorted(ranges):
+        if lo > covered_to:
+            return False
+        covered_to = max(covered_to, hi)
+        if covered_to >= end:
+            return True
+    return False
 
 
 @router.get("/placement-performance")
@@ -76,30 +125,34 @@ def placement_report(
     cohort_after_hours,
     cohort_hours,
     selected=None,
+    published_from=None,
+    published_through=None,
 ):
     lo, hi = round(start_seconds * 1e6), round(end_seconds * 1e6)
     if lo >= hi:
         raise DomainError("POSITION_RANGE", "终点必须晚于起点。")
-    account = record(actor, account_id, "Account", project=project_id)
-    if current_dependency_problem(account):
-        raise DomainError("ACCOUNT_NOT_CURRENT", "该账号当前不可用于复盘。", 409)
     records = defaultdict(list)
-    seen = set()
+    matching = conflicts = revised_receipts = 0
     no_curve, no_entrants = 0, 0
+    selected_sources = {(key[0], key[1]) for key in selected} if selected else set()
     store = get_store()
     with store.read_snapshot() as db:
-        for row in db.execute(CURVES, (actor.tenant_id, project_id, account_id, traffic)):
-            post = row["post_id"]
-            if post in seen:
+        account = record(actor, account_id, "Account", project=project_id)
+        if current_dependency_problem(account):
+            raise DomainError("ACCOUNT_NOT_CURRENT", "该账号当前不可用于复盘。", 409)
+        cursor = db.execute(CURVES, (actor.tenant_id, project_id, account_id, traffic))
+        for post, chosen, revised, conflict in latest_cohort(
+            cursor, cohort_after_hours, cohort_hours, published_from, published_through
+        ):
+            matching += 1
+            if revised:
+                revised_receipts += 1
                 continue
-            data = json.loads(row["data"])
+            if conflict:
+                conflicts += 1
+                continue
+            row, data, published = chosen
             curve = data["observed_curve"]
-            start, end = map(timestamp, (curve["window_start"], curve["window_end"]))
-            if (end - start).total_seconds() != cohort_hours * 3600 or (
-                start - timestamp(row["published"])
-            ).total_seconds() != cohort_after_hours * 3600:
-                continue
-            seen.add(post)
             points = {round(p["at_seconds"] * 1e6): p["retained"] for p in curve["points"]}
             if lo not in points or hi not in points:
                 no_curve += 1
@@ -108,18 +161,21 @@ def placement_report(
                 no_entrants += 1
                 continue
             occurrences = defaultdict(set)
+            ranges = defaultdict(list)
             for interval in data["intervals"]:
                 for layer in interval["contributors"]:
                     a, b = (round(s * 1e6) for s in layer["output_interval_seconds"])
                     if b <= lo or a >= hi:
                         continue
                     pin = layer["source_ref"]
-                    occurrences[(pin["id"], pin["version"], layer["role"])].add(
-                        layer["clip_use_id"]
-                    )
-            multiple = len({k[0] for k in occurrences}) > 1
+                    key = (pin["id"], pin["version"], layer["role"])
+                    occurrences[key].add(layer["clip_use_id"])
+                    if selected and key in selected:
+                        ranges[key].append((a, b))
+            source_pins = {(k[0], k[1]) for k in occurrences}
+            multiple = len(source_pins) > 1
             for key, uses in occurrences.items():
-                if selected is not None and key != selected:
+                if selected is not None and key not in selected:
                     continue
                 records[key].append(
                     {
@@ -128,6 +184,15 @@ def placement_report(
                         "receipt_version": row["insight_version"],
                         "receipt_hash": row["receipt_hash"],
                         "post_version": curve["post"]["version"],
+                        "published_day_utc": published.date().isoformat(),
+                        "cohort_denominator": curve["denominator"],
+                        "source_note": curve["source"][:300] if selected else None,
+                        "entrants": points[lo],
+                        "retained": points[hi],
+                        "covers_interval": (
+                            covers_interval(ranges[key], lo, hi) if selected else None
+                        ),
+                        "overlaps_comparator": len(source_pins & selected_sources) > 1,
                         "conditional_retention": points[hi] / points[lo],
                         "multiple_sources_in_interval": multiple,
                         "uses": len(uses),
@@ -162,6 +227,8 @@ def placement_report(
                     ),
                     **({"evidence_records": samples} if selected else {}),
                     "posts": len(samples),
+                    "entrants": sum(x["entrants"] for x in samples),
+                    "retained": sum(x["retained"] for x in samples),
                     "clip_uses": sum(x["uses"] for x in samples),
                     "multi_source_posts": sum(x["multiple_sources_in_interval"] for x in samples),
                     "mean_post_retention": sum(x["conditional_retention"] for x in samples)
@@ -183,7 +250,9 @@ def placement_report(
     return {
         "items": rows,
         "total": len(rows),
-        "matching_posts": len(seen),
+        "matching_posts": matching,
+        "conflicting_latest_posts": conflicts,
+        "revised_latest_receipts": revised_receipts,
         "missing_boundary_points": no_curve,
         "zero_entrants": no_entrants,
         "statistic": "equal_post_mean_of_end_retained_over_start_retained",
@@ -219,7 +288,7 @@ class ReuseHypothesis(SelectionBody):
 
 def audited_sample(actor, project, cohort, source, role, expected):
     report = placement_report(
-        actor, project, **cohort.model_dump(), selected=(source.id, source.version, role)
+        actor, project, **cohort.model_dump(), selected={(source.id, source.version, role)}
     )
     if not report["items"] or report["items"][0]["evidence_hash"] != expected:
         raise DomainError(

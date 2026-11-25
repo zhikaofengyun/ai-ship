@@ -12,10 +12,13 @@ def feedback_context(actor, project, selected):
         if item["version"] != pin.version or item["kind"] not in {"Trend", "Insight"}:
             raise DomainError("FEEDBACK_VERSION", "请选择本项目当前的热点或效果分析版本。", 409)
         scope = item["data"].get("scope")
+        comparison = (
+            isinstance(scope, dict) and scope.get("level") == "matched_placement_hypothesis"
+        )
         placement = (
             item["kind"] == "Insight"
             and isinstance(scope, dict)
-            and scope.get("level") == "placement_reuse_hypothesis"
+            and (scope.get("level") == "placement_reuse_hypothesis" or comparison)
         )
         # The joined cohort query below checks all signed receipts and the exact current
         # Post revisions in one snapshot. Avoid an additional query per post/receipt.
@@ -56,7 +59,7 @@ def feedback_context(actor, project, selected):
             with get_store().connection() as conn:
                 verified = conn.execute(
                     """SELECT 1 FROM command_results WHERE tenant_id=?
-                    AND (idempotency_key LIKE 'post-level-review:%' OR idempotency_key LIKE 'retention-mapping:%' OR idempotency_key LIKE 'placement-hypothesis:%')
+                    AND (idempotency_key LIKE 'post-level-review:%' OR idempotency_key LIKE 'retention-mapping:%' OR idempotency_key LIKE 'placement-hypothesis:%' OR idempotency_key LIKE 'placement-comparison-hypothesis:%')
                     AND json_extract(response_json,'$.insight.id')=?
                     AND json_extract(response_json,'$.insight.hash')=? LIMIT 1""",
                     (actor.tenant_id, item["id"], item["hash"]),
@@ -65,7 +68,11 @@ def feedback_context(actor, project, selected):
                 raise DomainError(
                     "FEEDBACK_PROVENANCE", "请选择由帖子复盘或留存映射生成的分析。", 409
                 )
-            if placement:
+            if comparison:
+                from .placement_comparisons import recheck_comparison
+
+                recheck_comparison(actor, project, data["observation"])
+            elif placement:
                 from .placement_performance import recheck_hypothesis
 
                 recheck_hypothesis(actor, project, data)
@@ -92,23 +99,41 @@ def feedback_context(actor, project, selected):
                 encoded = value.encode("utf-8")
                 note[key] = encoded[:180].decode("utf-8", errors="ignore")
                 shortened |= len(encoded) > 180
-            excerpt = {
-                "placement_cohort": data["placement_cohort"],
-                "observation": {
-                    k: obs[k]
-                    for k in (
-                        "source_id",
-                        "source_version",
-                        "role",
-                        "posts",
-                        "mean_post_retention",
-                        "multi_source_posts",
-                        "evidence_hash",
-                    )
-                },
-                "editor_hypothesis": note,
-                "causal_claim": False,
-            }
+            if comparison:
+                excerpt = {
+                    "observation": {
+                        k: obs[k]
+                        for k in (
+                            "scope",
+                            "matched_days",
+                            "matched_baseline",
+                            "matched_candidate",
+                            "difference_pp",
+                            "leave_one_day_out_range_pp",
+                            "evidence_hash",
+                        )
+                    },
+                    "editor_hypothesis": note,
+                    "causal_claim": False,
+                }
+            else:
+                excerpt = {
+                    "placement_cohort": data["placement_cohort"],
+                    "observation": {
+                        k: obs[k]
+                        for k in (
+                            "source_id",
+                            "source_version",
+                            "role",
+                            "posts",
+                            "mean_post_retention",
+                            "multi_source_posts",
+                            "evidence_hash",
+                        )
+                    },
+                    "editor_hypothesis": note,
+                    "causal_claim": False,
+                }
         serialized = canonical(excerpt).encode("utf-8")
         # Keep provenance and mark the excerpt boundary. Never send the entire raw ledger.
         result.append(
@@ -134,6 +159,16 @@ def revision_context(plan):
             {key: shot[key] for key in ("asset_id", "source_in", "source_out")}
             for shot in data["shots"]
         ],
+        **(
+            {
+                "verified_opening_options": [
+                    {k: row[k] for k in ("asset_id", "asset_version", "source_in", "source_out")}
+                    for row in data["opening_check"].get("alternatives", [])
+                ]
+            }
+            if data.get("opening_check", {}).get("status") in {"conflict", "unverified"}
+            else {}
+        ),
         "review_blocker": data["review_blocker"],
         "reviews": [
             {

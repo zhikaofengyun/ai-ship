@@ -37,6 +37,37 @@ export function frameFields(project, asset, time = 0) {
   return `${field("源视频时码（秒）", "reference_time_seconds", time, "number", 'required min="0" step="any" max="' + esc(Math.max(0, duration - 0.000001)) + '"')}<div data-reference-preview>${framePreview(project, asset, time)}</div>`;
 }
 
+export function segmentEnd(asset, profile, start = 0) {
+  const fps = profile.reference_fps;
+  const frames = Math.min(
+    4,
+    profile.max_reference_frames,
+    Math.floor((mediaDuration(asset) - Number(start)) * fps),
+  );
+  return Number(start) + Math.max(0, frames) / fps;
+}
+
+export function segmentFields(asset, profile, start = 0, end) {
+  if (!asset) return "";
+  const finish = end ?? segmentEnd(asset, profile, start);
+  const constraints =
+    'required min="0" step="any" max="' + esc(mediaDuration(asset)) + '"';
+  return `<div class="generation-reference-segment">${field("连续参考入点（秒）", "reference_time_seconds", start, "number", constraints)}${field("连续参考出点（秒）", "reference_end_seconds", finish, "number", constraints)}<small>按 ${esc(profile.reference_fps)} fps 取样，区间须包含 2 至 ${esc(profile.max_reference_frames)} 帧。</small><video data-segment-source controls playsinline preload="metadata" class="generation-still" aria-label="实拍参考区间" src="/api/v1/media/${encodeURIComponent(asset.id)}/file#t=${esc(start)},${esc(finish)}"></video></div>`;
+}
+
+export function updateSegmentPreview(container) {
+  const player = container.querySelector("[data-segment-source]");
+  if (!player) return;
+  const start = Number(
+    container.querySelector("[name=reference_time_seconds]").value,
+  );
+  const end = Number(
+    container.querySelector("[name=reference_end_seconds]").value,
+  );
+  if (Number.isFinite(start) && end > start)
+    player.src = player.src.split("#")[0] + "#t=" + start + "," + end;
+}
+
 function referencePage(ctx, project, mode, query = "", after = "") {
   return ctx.api(
     "/production/generation/reference/assets?" +

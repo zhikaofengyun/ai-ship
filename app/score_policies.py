@@ -2,9 +2,10 @@
 
 from datetime import datetime, timezone
 from uuid import uuid4
+from typing import Literal
 
 from fastapi import APIRouter, Depends, Request
-from pydantic import Field
+from pydantic import Field, StrictInt
 
 from .api import ok
 from .auth import Actor, current_actor, require_approval, require_write
@@ -477,29 +478,55 @@ class Activate(ProjectRequest):
     approval: ChosenVersion
 
 
+def approved_candidate(actor, project, chosen):
+    approval = release_record(actor, project, chosen, "Approval")
+    data = approval["data"]
+    if (
+        data.get("operation") != "activate_asset_scoring_policy"
+        or data.get("decision") != "approved"
+    ):
+        raise DomainError("WRONG_APPROVAL", "批准未授权评分策略晋升。", 409)
+    ptr = pointer(actor, project)
+    cand = candidate_for_pointer(
+        actor,
+        project,
+        ChosenVersion(id=data["subject_id"], version=data["subject_version"]),
+        ptr,
+    )
+    if data["subject_hash"] != cand["hash"] or data["pointer_version"] != ptr["version"]:
+        raise DomainError("STALE_APPROVAL", "批准不覆盖当前策略版本。", 409)
+    exp = current(actor, project, data["evaluation_ref"], "Experiment")
+    eligible(actor, project, exp, cand)
+    return approval, ptr, cand, exp
+
+
 @router.post("/activate")
 def activate(body: Activate, request: Request, actor: Actor = Depends(current_actor)):
     require_approval(actor)
 
     def apply():
-        approval = release_record(actor, body.project_id, body.approval, "Approval")
-        data = approval["data"]
-        if (
-            data.get("operation") != "activate_asset_scoring_policy"
-            or data.get("decision") != "approved"
-        ):
-            raise DomainError("WRONG_APPROVAL", "批准未授权评分策略晋升。", 409)
-        ptr = pointer(actor, body.project_id)
-        cand = candidate_for_pointer(
-            actor,
-            body.project_id,
-            ChosenVersion(id=data["subject_id"], version=data["subject_version"]),
-            ptr,
-        )
-        if data["subject_hash"] != cand["hash"] or data["pointer_version"] != ptr["version"]:
-            raise DomainError("STALE_APPROVAL", "批准不覆盖当前策略版本。", 409)
-        exp = current(actor, body.project_id, data["evaluation_ref"], "Experiment")
-        eligible(actor, body.project_id, exp, cand)
+        approval, ptr, cand, exp = approved_candidate(actor, body.project_id, body.approval)
+        # Inspect this candidate's latest enrollment even if a different candidate ran afterwards.
+        trial_id, _ = trial_head(actor, body.project_id)
+        with get_store().connection() as db:
+            last = db.execute(
+                """SELECT version FROM revisions WHERE tenant_id=? AND record_id=?
+                AND json_extract(data_json,'$.candidate.id')=? AND json_extract(data_json,'$.baseline_pointer.version')=?
+                ORDER BY version DESC LIMIT 1""",
+                (actor.tenant_id, trial_id, cand["id"], ptr["version"]),
+            ).fetchone()
+        trial = None
+        if last:
+            trial = record(actor, trial_id, "Experiment", last["version"], body.project_id)
+            if (
+                trial["data"].get("status") != "stopped"
+                or trial["data"].get("review_decision") != "recommend_release"
+            ):
+                raise DomainError(
+                    "TRIAL_REVIEW_REQUIRED",
+                    "该候选已进入限量试用，须先审阅两组观察并明确建议推广。",
+                    409,
+                )
         old = ptr["data"]
         return revise(
             actor,
@@ -511,9 +538,10 @@ def activate(body: Activate, request: Request, actor: Actor = Depends(current_ac
                 "previous_evaluation": old["active_evaluation"],
                 "release_state": "active",
                 "activation_approval": ref(approval),
+                "trial_review": ref(trial) if trial else None,
             },
             "项目素材评分策略已生效",
-            [ref(cand), old["active"], ref(exp), ref(approval)],
+            [ref(cand), old["active"], ref(exp), ref(approval), *([ref(trial)] if trial else [])],
         )
 
     return ok(on_request("score-policy-activate", body, actor, apply), request)
@@ -609,3 +637,191 @@ def rollback(body: Rollback, request: Request, actor: Actor = Depends(current_ac
         )
 
     return ok(on_request("score-policy-rollback", body, actor, apply), request)
+
+
+class StartTrial(Activate):
+    percent: StrictInt = Field(ge=1, le=99)
+    expected_trial_version: StrictInt = Field(ge=0)
+    stop_condition: Note
+
+
+class StopTrial(ProjectRequest):
+    expected_trial_version: StrictInt = Field(ge=1)
+    reason: Note
+    decision: Literal["no_recommendation", "recommend_release"] = "no_recommendation"
+
+
+def trial_head(actor, project):
+    rid = PREFIX + "trial_" + digest([actor.tenant_id, project])
+    try:
+        return rid, record(actor, rid, "Experiment", project=project)
+    except DomainError as exc:
+        if exc.code != "NOT_FOUND":
+            raise
+        return rid, None
+
+
+def live_trial(actor, project, trial, ptr):
+    if not trial or trial["data"]["status"] != "running":
+        return None
+    spec = trial["data"]
+    if not ptr or ref(ptr) != spec["baseline_pointer"] or ptr["data"]["release_state"] != "active":
+        return "项目活动策略已变更或暂停"
+    try:
+        approved_candidate(
+            actor,
+            project,
+            ChosenVersion(id=spec["approval"]["id"], version=spec["approval"]["version"]),
+        )
+    except DomainError as exc:
+        return exc.message
+    return None
+
+
+@router.post("/trials/start")
+def start_trial(body: StartTrial, request: Request, actor: Actor = Depends(current_actor)):
+    require_approval(actor)
+
+    def apply():
+        approval, ptr, cand, exp = approved_candidate(actor, body.project_id, body.approval)
+        if ptr["data"]["release_state"] != "active":
+            raise DomainError("SCORING_PAUSED", "项目评分已暂停。", 409)
+        rid, previous = trial_head(actor, body.project_id)
+        if (previous["version"] if previous else 0) != body.expected_trial_version:
+            raise DomainError("REVISION_CONFLICT", "试用版本已更新。", 409)
+        if (
+            previous
+            and previous["data"]["status"] == "running"
+            and not live_trial(actor, body.project_id, previous, ptr)
+        ):
+            raise DomainError("TRIAL_RUNNING", "请先结束正在进行的试用。", 409)
+        data = {
+            "name": "素材评分 · 限量试用",
+            "status": "running",
+            "candidate": ref(cand),
+            "baseline": ptr["data"]["active"],
+            "baseline_pointer": ref(ptr),
+            "approval": ref(approval),
+            "evaluation": ref(exp),
+            "percent": body.percent,
+            "stop_condition": body.stop_condition,
+            "stop_reason": None,
+            "review_decision": None,
+            "reviewed_arms": None,
+            "assignment_salt": digest([rid, body.request_id, cand["hash"]]),
+        }
+        pins = [ref(cand), ref(ptr), data["baseline"], ref(approval), ref(exp)]
+        if previous:
+            return revise(actor, previous, data, "开始新一轮限量评分", pins)
+        return managed(actor, "Experiment", body.project_id, data, pins, rid)
+
+    return ok(on_request("score-trial-start", body, actor, apply), request)
+
+
+def trial_weights(actor, project, item, weights, policy_refs):
+    _, trial = trial_head(actor, project)
+    if not trial or trial["data"]["status"] != "running":
+        return weights, policy_refs, None
+    ptr = pointer(actor, project)
+    problem = live_trial(actor, project, trial, ptr)
+    if problem:
+        revise(actor, trial, {"status": "stopped", "stop_reason": problem}, "依据变化，停止试用")
+        return weights, policy_refs, None
+    data = trial["data"]
+    # All versions under the same asset stay together. A standalone imported version falls back
+    # to its byte fingerprint, or finally its immutable record ID if there is no measured hash.
+    unit = item["data"].get("asset_id") or item["data"].get("content_hash") or item["id"]
+    unit_hash = digest([data["assignment_salt"], unit])
+    bucket = int(unit_hash[:16], 16) % 100
+    candidate = bucket < data["percent"]
+    if candidate:
+        cand = current(actor, project, data["candidate"], "Policy")
+        weights = cand["data"]["typed_config"]["weights"]
+        policy_refs = [ref(cand), *policy_refs[1:]]
+    assignment = {
+        "trial": ref(trial),
+        "arm": "candidate" if candidate else "baseline",
+        "unit_hash": unit_hash,
+        "bucket": bucket,
+        "percent": data["percent"],
+    }
+    return weights, [*policy_refs, ref(trial)], assignment
+
+
+def trial_counts(db, actor, rid, enrollment):
+    sql = """SELECT json_extract(v.data_json,'$.trial_assignment.arm') arm,
+                count(DISTINCT json_extract(v.data_json,'$.trial_assignment.unit_hash')) units,
+                count(*) scores, count(json_extract(v.data_json,'$.observed_score')) measured,
+                count(DISTINCT CASE WHEN json_type(v.data_json,'$.observed_score') IN ('real','integer') THEN
+                    json_extract(v.data_json,'$.trial_assignment.unit_hash') END) measured_units
+                FROM reference_index i JOIN revisions v ON v.tenant_id=i.tenant_id
+                AND v.record_id=i.source_id AND v.version=i.source_version
+                WHERE i.tenant_id=? AND i.target_id=? AND i.target_version=? AND v.version=1
+                AND i.source_id GLOB 'score_release_observation_*'
+                GROUP BY arm"""
+    return {row["arm"]: dict(row) for row in db.execute(sql, (actor.tenant_id, rid, enrollment))}
+
+
+@router.post("/trials/stop")
+def stop_trial(body: StopTrial, request: Request, actor: Actor = Depends(current_actor)):
+    require_approval(actor)
+
+    def apply():
+        _, trial = trial_head(actor, body.project_id)
+        if (
+            not trial
+            or trial["version"] != body.expected_trial_version
+            or trial["data"]["status"] != "running"
+        ):
+            raise DomainError("REVISION_CONFLICT", "试用已变化，请刷新。", 409)
+        with get_store().connection() as db:
+            counts = trial_counts(db, actor, trial["id"], trial["version"])
+        if body.decision == "recommend_release":
+            if live_trial(actor, body.project_id, trial, pointer(actor, body.project_id)):
+                raise DomainError("TRIAL_STALE", "试用的批准或回归依据已变化。", 409)
+            if not all(
+                counts.get(arm, {}).get("measured_units", 0) for arm in ("candidate", "baseline")
+            ):
+                raise DomainError(
+                    "TRIAL_OBSERVATIONS_REQUIRED", "两组均须有实际素材评分，才能建议推广。", 409
+                )
+        return revise(
+            actor,
+            trial,
+            {
+                "status": "stopped",
+                "stop_reason": body.reason,
+                "review_decision": body.decision,
+                "reviewed_arms": counts,
+            },
+            "保存限量评分观察与人工处置",
+        )
+
+    return ok(on_request("score-trial-stop", body, actor, apply), request)
+
+
+@router.get("/{project_id}/trial")
+def read_trial(
+    project_id: str,
+    request: Request,
+    version: int | None = None,
+    actor: Actor = Depends(current_actor),
+):
+    record(actor, project_id, "Project")
+    with get_store().read_snapshot() as db:
+        rid, latest = trial_head(actor, project_id)
+        trial = (
+            record(actor, rid, "Experiment", version=version, project=project_id)
+            if version
+            else latest
+        )
+        arms = {}
+        reason = None
+        if trial:
+            enrollment = (
+                trial["version"] if trial["data"]["status"] == "running" else trial["version"] - 1
+            )
+            arms = trial_counts(db, actor, rid, enrollment)
+            if trial == latest:
+                reason = live_trial(actor, project_id, trial, pointer(actor, project_id))
+    return ok({"trial": trial, "arms": arms, "ineligible_reason": reason}, request)

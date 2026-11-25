@@ -49,7 +49,57 @@ def measure():
         }
         cancelled = case.post(case.path + "/" + bid + "/cancel", {})
         assert cancelled["counts"]["cancelled"] == 100000
+        profiles = json.loads(
+            (
+                Path(__file__).resolve().parents[1] / "contracts/examples/comfy-animatediff.json"
+            ).read_text()
+        )
+        os.environ["AI_SHIP_COMFY_PROFILES"] = json.dumps(profiles)
+        mixed_spec = {
+            **spec,
+            "idempotency_key": "mixed-queue-capacity",
+            "slots": [
+                *spec["slots"][:-1],
+                {
+                    "choices": case.choices,
+                    "generate": {
+                        "profile_id": "animatediff-local",
+                        "prompt": "A moving close-up",
+                        "duration": 0.4,
+                    },
+                },
+            ],
+        }
+        estimate = case.post(case.path + "/estimate", mixed_spec)
+        expected = estimate["slot_calls"][-1]
+        assert 0 < expected < 100000
+        before_mixed = time.monotonic()
+        mixed = case.post(case.path, {**mixed_spec, "max_generation_calls": expected})
+        mixed_seconds = time.monotonic() - before_mixed
+        with Store(case.store.path).connection() as db:
+            mixed_counts = dict(
+                db.execute(
+                    "SELECT needs_generation,count(*) FROM production_items WHERE batch=? GROUP BY needs_generation",
+                    (mixed["id"],),
+                )
+            )
+        assert mixed_counts == {0: 100000 - expected, 1: expected}
+        assert mixed["generation_limit"] == expected
+        assert case.get(mixed["id"], "?after=99998&limit=2")["items"][-1]["ordinal"] == 100000
+        assert (
+            case.post(case.path + "/" + mixed["id"] + "/cancel", {})["counts"]["cancelled"]
+            == 100000
+        )
         return {
+            "mixed_slot": {
+                "requested": 100000,
+                "camera_only_items": mixed_counts[0],
+                "model_items": mixed_counts[1],
+                "estimated_model_calls": expected,
+                "enqueue_seconds": round(mixed_seconds, 3),
+                "inference_submissions": 0,
+                "renders": 0,
+            },
             "requested": 100000,
             "persisted_rows": durable,
             "distinct_generated_cut_combinations": len(combinations),

@@ -1,4 +1,9 @@
-import { area, esc, field, formData, modal, select, toast, uid } from "./ui.js";
+import {
+  cohortFrom,
+  comparePlacements,
+  hypothesisForm,
+} from "./placement-comparisons.js";
+import { esc, field, formData, modal, select, toast } from "./ui.js";
 
 export function placementPerformance(ctx, onReturn, previous = {}) {
   const project_id = ctx.requireProject();
@@ -47,6 +52,7 @@ export function placementPerformance(ctx, onReturn, previous = {}) {
       '<button type="submit" class="button primary">查看素材表现</button><button class="button secondary" type="button" data-return>返回帖子复盘</button></form>',
     async (f) => {
       const filters = { ...formData(f), project_id };
+      let baseline = null;
       async function page(offset) {
         const openDialog = document.querySelector("#dialog");
         const openId = openDialog.dataset.modalId;
@@ -81,7 +87,11 @@ export function placementPerformance(ctx, onReturn, previous = {}) {
               row.clip_uses +
               " 处使用 · " +
               row.multi_source_posts +
-              " 篇包含其他来源</p>" +
+              " 篇包含其他来源 · 区间起点 " +
+              row.entrants +
+              " 人次，终点 " +
+              row.retained +
+              " 人次</p>" +
               "<details><summary>帖子与留存依据</summary>" +
               row.example_evidence
                 .map(
@@ -90,7 +100,9 @@ export function placementPerformance(ctx, onReturn, previous = {}) {
                 .join("") +
               '</details><button type="button" class="button small secondary" data-learn="' +
               index +
-              '">沉淀为选材假设</button></article>',
+              '">沉淀为选材假设</button><button type="button" class="button small secondary" data-compare="' +
+              index +
+              '"></button></article>',
           )
           .join("");
         const d = modal(
@@ -107,7 +119,11 @@ export function placementPerformance(ctx, onReturn, previous = {}) {
             result.missing_boundary_points +
             " 篇缺少指定时间点，" +
             result.zero_entrants +
-            " 篇起点无人。同一区间内先后出现或重叠的素材共享观测。</p>" +
+            " 篇起点无人，" +
+            result.conflicting_latest_posts +
+            " 篇最新回填冲突，" +
+            result.revised_latest_receipts +
+            " 篇回执已改版待复核。同一区间内先后出现或重叠的素材共享观测。</p>" +
             '<div class="dialog-actions"><button class="button secondary" data-back>更改条件</button><button class="button secondary" data-return>返回帖子复盘</button>' +
             (offset
               ? '<button class="button secondary" data-prev>上一页</button>'
@@ -121,86 +137,62 @@ export function placementPerformance(ctx, onReturn, previous = {}) {
         );
         for (const b of d.querySelectorAll("[data-learn]")) {
           b.onclick = () => {
-            const row = result.items[Number(b.dataset.learn)],
-              request_id = uid();
-            modal(
+            const row = result.items[Number(b.dataset.learn)];
+            hypothesisForm(
+              ctx,
               "沉淀选材假设",
-              "<p>" +
-                esc(row.name) +
+              row.name +
                 " · " +
                 row.posts +
                 " 篇同口径帖子 · 区间留存 " +
                 (100 * row.mean_post_retention).toFixed(1) +
-                "%</p>" +
-                '<form data-form class="form-stack">' +
-                area(
-                  "推测这个位置表现好的或差的原因",
-                  "hypothesis",
-                  "",
-                  "required maxlength=3000",
-                ) +
-                area(
-                  "其他可能解释或反例",
-                  "counterevidence",
-                  "",
-                  "required maxlength=3000",
-                ) +
-                area(
-                  "下一版准备如何使用或替换这个素材",
-                  "next_edit",
-                  "",
-                  "required maxlength=3000",
-                ) +
-                area(
-                  "什么结果会让你停止沿用这个判断",
-                  "stop_rule",
-                  "",
-                  "required maxlength=3000",
-                ) +
-                '<button type="submit" class="button primary">固定证据并保存</button></form>',
-              async (edit) => {
-                const cohort = {
-                  account_id: filters.account_id,
-                  traffic: filters.traffic,
-                };
-                for (const k of [
-                  "start_seconds",
-                  "end_seconds",
-                  "cohort_after_hours",
-                  "cohort_hours",
-                ])
-                  cohort[k] = Number(filters[k]);
-                const r = await ctx.api(
-                  "/production/post-reviews/placement-hypotheses",
-                  {
-                    method: "POST",
-                    body: {
-                      project_id,
-                      request_id,
-                      cohort,
-                      source: {
-                        id: row.source_id,
-                        version: row.source_version,
-                      },
-                      role: row.role,
-                      evidence_hash: row.evidence_hash,
-                      ...formData(edit),
-                    },
-                  },
-                );
-                await ctx.reloadData();
-                const ready = modal(
-                  "选材假设已保存",
-                  "<p>" +
-                    esc(r.insight.data.name) +
-                    "。生成下一版时，可在 AI 制作台的迭代依据中选用这个版本。</p>" +
-                    '<button class="button secondary" data-return>返回帖子复盘</button>',
-                );
-                ready.querySelector("[data-return]").onclick = onReturn;
+                "%",
+              "placement-hypotheses",
+              {
+                project_id,
+                cohort: cohortFrom(filters),
+                source: { id: row.source_id, version: row.source_version },
+                role: row.role,
+                evidence_hash: row.evidence_hash,
               },
+              onReturn,
             );
           };
         }
+        const compareButtons = [...d.querySelectorAll("[data-compare]")];
+        function syncComparison() {
+          for (const button of compareButtons) {
+            const row = result.items[Number(button.dataset.compare)];
+            const same =
+              baseline &&
+              baseline.source_id === row.source_id &&
+              baseline.source_version === row.source_version;
+            button.disabled = Boolean(baseline && row.role !== baseline.role);
+            button.textContent = !baseline
+              ? "设为对照基准"
+              : same
+                ? "取消对照基准"
+                : button.disabled
+                  ? "轨道角色不同"
+                  : "与「" + baseline.name + "」对照";
+            button.onclick = () => {
+              if (!baseline || same) {
+                baseline = same ? null : row;
+                syncComparison();
+                return;
+              }
+              comparePlacements(
+                ctx,
+                filters,
+                baseline,
+                row,
+                () => page(offset).catch((e) => toast(e.message, "error")),
+                onReturn,
+              ).catch((e) => toast(e.message, "error"));
+            };
+          }
+        }
+        syncComparison();
         d.querySelector("[data-back]").onclick = () =>
           placementPerformance(ctx, onReturn, filters);
         d.querySelector("[data-return]").onclick = onReturn;

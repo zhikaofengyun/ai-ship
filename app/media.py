@@ -512,6 +512,11 @@ def check_current_media_rights(
                     403,
                     {"record_id": current["id"], "reason": hold[0]},
                 )
+        if purpose != "inspect" and pinned["kind"] in {"Asset", "AssetVersion"}:
+            from .generation_review import ensure_use_allowed
+
+            with store.connection() as conn:
+                ensure_use_allowed(conn, actor.tenant_id, pinned)
         if current["kind"] == "Source":
             from .media_admission import check_admission
 
@@ -793,10 +798,21 @@ def import_saved_file(
         with store.connection() as db:
             prior_id = db.execute(
                 """SELECT r.id FROM records r JOIN revisions v ON v.tenant_id=r.tenant_id
-                AND v.record_id=r.id AND v.version=r.latest_version WHERE v.tenant_id=?
-                AND r.project_id=? AND r.kind='Asset' AND json_extract(v.data_json,'$.content_hash')=?
+                AND v.record_id=r.id AND v.version=r.latest_version
+                LEFT JOIN records origin ON origin.tenant_id=r.tenant_id AND origin.kind='Source'
+                  AND origin.id=json_extract(v.data_json,'$.source_id')
+                LEFT JOIN revisions sv ON sv.tenant_id=origin.tenant_id AND sv.record_id=origin.id
+                  AND sv.version=origin.latest_version
+                WHERE v.tenant_id=? AND r.project_id=? AND r.kind='Asset'
+                  AND json_extract(v.data_json,'$.content_hash')=?
+                  AND json_extract(sv.data_json,'$.generation_call_ref.id') IS ?
                 LIMIT 1""",
-                (actor.tenant_id, project_id, checksum),
+                (
+                    actor.tenant_id,
+                    project_id,
+                    checksum,
+                    generated_by["id"] if generated_by else None,
+                ),
             ).fetchone()
         prior = store.get(prior_id[0], actor.tenant_id) if prior_id else None
         batch = import_batch or store.create(

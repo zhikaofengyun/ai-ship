@@ -99,6 +99,29 @@ class BatchTests(ProductionBase):
         }
         self.assertEqual(len(signatures), 10000)
 
+    def test_legacy_queue_migrates_with_pending_work_and_concurrent_startup(self):
+        bid = self.post(self.path, self.spec)["id"]
+        with self.store.transaction(), self.store.connection() as db:
+            db.execute("DROP INDEX batch_local_ready")
+            db.execute("DROP INDEX batch_generation_active")
+            db.execute("ALTER TABLE production_items DROP COLUMN needs_generation")
+        connections = [Store(self.store.path) for _ in range(3)]
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            list(pool.map(batch_queue.initialize, connections))
+        with self.store.connection() as db:
+            self.assertEqual(
+                [
+                    r[0]
+                    for r in db.execute(
+                        "SELECT needs_generation FROM production_items WHERE batch=?", (bid,)
+                    )
+                ],
+                [1, 1],
+            )
+        for connection in connections[:2]:
+            self.assertTrue(batches.work_once(connection))
+        self.assertEqual(self.get(bid)["counts"]["succeeded"], 2)
+
     def test_two_real_renders_and_recover_after_receipt_interruption(self):
         bid = self.post(self.path, {**self.spec, "output": "render"})["id"]
         self.assertTrue(batches.work_once(self.store))
@@ -460,3 +483,104 @@ class BatchGenerationTransport(unittest.TestCase):
         self.assertEqual(len(draft["data"]["clips"]), 2)
         self.assertEqual(draft["data"]["clips"][0]["asset_id"], asset["id"])
         self.assertEqual(t.submits, 1)
+
+    def test_one_shot_can_choose_camera_or_generation_and_bypass_a_full_window(self):
+        t = self.transport
+        source = t.client.post(
+            "/api/v1/media/import",
+            params={"project_id": t.pid, "filename": "camera.mp4"},
+            content=t.video,
+        ).json()["data"]["asset"]
+        spec = self.body({"profile_id": "demo", "prompt": "product reveal", "duration": 0.4})
+        spec.update(
+            count=5, width=160, height=120, fps=25, output="render", generation_window=1, seed=2
+        )
+        spec["slots"][0]["choices"] = [
+            {"asset_id": source["id"], "version": 1, "source_in": a, "source_out": a + 0.2}
+            for a in (0, 0.4)
+        ]
+        estimate = t.client.post(self.path + "/estimate", json=spec)
+        self.assertEqual(estimate.status_code, 200, estimate.text)
+        self.assertEqual(
+            estimate.json()["data"], {"slot_calls": [3], "workflow_calls": 0, "generation_calls": 3}
+        )
+        self.assertEqual(t.submits, 0)
+        self.assertEqual(
+            t.client.get(self.path, params={"project_id": t.pid}).json()["data"]["batches"], []
+        )
+        self.assertEqual(
+            t.client.post(self.path, json={**spec, "max_generation_calls": 2}).status_code, 422
+        )
+        saved = t.client.post(self.path, json={**spec, "max_generation_calls": 3}).json()["data"]
+        bid = saved["id"]
+        self.assertEqual(saved["generation_limit"], 3)
+        first = self.cycle(bid)
+        self.assertEqual(first["items"][0]["status"], "waiting", first)
+        self.assertEqual(t.submits, 1)
+        # The pending provider receipt holds the sole permit. Both camera-only items
+        # must still render while all remaining provider submissions stay parked.
+        for _ in range(2):
+            self.assertTrue(batches.work_once(self.store))
+        self.assertFalse(batches.work_once(self.store))
+        partial = t.client.get(self.path + "/" + bid).json()["data"]
+        self.assertEqual(partial["counts"]["succeeded"], 2, partial)
+        raw_cuts = [
+            self.store.get(item["timeline_id"], "local")["data"]["clips"][0]
+            for item in partial["items"]
+            if item["status"] == "succeeded"
+        ]
+        self.assertEqual({clip["source_in"] for clip in raw_cuts}, {0, 0.4})
+        self.assertTrue(all(clip["asset_id"] == source["id"] for clip in raw_cuts))
+        self.assertEqual(t.submits, 1)
+        t.status = "done"
+        for _ in range(8):
+            result = self.cycle(bid)
+            if result["status"] == "completed":
+                break
+        self.assertEqual(result["counts"]["succeeded"], 5, result)
+        self.assertEqual(t.submits, 3)
+        seeds = set()
+        for item in result["items"]:
+            if item["generation_jobs"]:
+                job = self.store.get(item["generation_id"], "local")
+                seeds.add(job["data"]["seed"])
+            artifact = self.store.get(item["artifact_id"], "local")
+            self.assertTrue(artifact["data"]["qc"]["checks"]["full_decode"])
+            res = t.client.get("/api/v1/media/artifacts/" + artifact["id"] + "/file")
+            self.assertEqual(res.status_code, 200)
+            subprocess.run(
+                ["ffmpeg", "-v", "error", "-xerror", "-i", "pipe:0", "-f", "null", "-"],
+                input=res.content,
+                check=True,
+            )
+        self.assertEqual(len(seeds), 3)
+
+    def test_ten_thousand_mixed_ordinals_cost_and_recipe_replay(self):
+        from app.batch_combinations import dimensions, generation_counts, item_generation_flags
+
+        generate = {"profile_id": "demo", "prompt": "view", "duration": 0.4}
+        spec = self.body(generate, generate)
+        for i, slot in enumerate(spec["slots"]):
+            slot["choices"] = [
+                dict(asset_id=f"camera-{j}", version=1, source_out=1) for j in range(3 + i)
+            ]
+        recipe = batches.Recipe(**{**spec, "seed": 73, "count": 10000})
+        hard_counts = [0, 0]
+        sources = set()
+        replayed = batches.Recipe(**recipe.model_dump())
+        flags = item_generation_flags(recipe, 0)
+        for ordinal in range(1, recipe.count + 1):
+            selected = batches.choices_for(recipe, ordinal)
+            self.assertEqual(selected, batches.choices_for(replayed, ordinal))
+            self.assertEqual(next(flags), int(None in selected))
+            for i, cut in enumerate(selected):
+                hard_counts[i] += cut is None
+            if all(selected):
+                key = tuple(c.asset_id for c in selected)
+                self.assertNotIn(key, sources)
+                sources.add(key)
+        self.assertEqual(len(sources), 12)
+        self.assertEqual(
+            list(generation_counts(dimensions(recipe.slots), recipe.seed, recipe.count)),
+            hard_counts,
+        )

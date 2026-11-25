@@ -1330,6 +1330,146 @@ CURRENT_CODE_GROUPS += [
 TEST_GROUPS += [("G02 G03", "scripts/browser_generation_frames.py", "run")]
 
 
+CURRENT_CODE_GROUPS += [
+    (
+        "N04 O03 G03",
+        [
+            "app/batch_combinations.py",
+            "app/batches.py",
+            "app/batch_queue.py",
+            "web/batch-workspace.js",
+        ],
+    ),
+    ("O04 W07", ["app/batches.py", "web/batch-queue.js", "web/batch-workspace.css"]),
+    (
+        "M03 M09 X01",
+        [
+            "app/placement_performance.py",
+            "app/placement_comparisons.py",
+            "web/placement-comparisons.js",
+        ],
+    ),
+    ("M09", ["app/edit_feedback.py", "web/placement-performance.js"]),
+    ("C05 C09 H04", ["app/auto_edits.py", "app/edit_context.py", "app/providers.py"]),
+    ("X04 X05 X06", ["app/score_policies.py", "app/production.py", "web/score-policies.js"]),
+]
+ENDPOINT_GROUPS += [
+    ("N04 O03 G03", ["POST /api/v1/production/batches"]),
+    ("O04 W07", ["GET /api/v1/production/batches", "GET /api/v1/production/batches/{bid}"]),
+    ("M03 M09 X01", ["POST /api/v1/production/post-reviews/placement-comparisons"]),
+    ("M09 X01", ["POST /api/v1/production/post-reviews/placement-comparison-hypotheses"]),
+    ("C05 C09 H04", ["POST /api/v1/production/auto-edits"]),
+    (
+        "X04 X05 X06",
+        [
+            "POST /api/v1/production/score-policies/trials/start",
+            "POST /api/v1/production/score-policies/trials/stop",
+            "GET /api/v1/production/score-policies/{project_id}/trial",
+            "POST /api/v1/production/assets/score",
+        ],
+    ),
+]
+TEST_GROUPS += [
+    (
+        "N04 O03 G03",
+        "tests/test_batches.py",
+        "BatchGenerationTransport.test_ten_thousand_mixed_ordinals_cost_and_recipe_replay",
+    ),
+    (
+        "N04 O03 G03",
+        "tests/test_batches.py",
+        "BatchGenerationTransport.test_one_shot_can_choose_camera_or_generation_and_bypass_a_full_window",
+    ),
+    ("O04 W07", "scripts/browser_batch_navigation.py", "run"),
+    (
+        "M03 M09 X01",
+        "tests/test_placement_comparisons.py",
+        "PlacementComparisonTests.test_matching_denominators_mixed_sources_exclusions_and_recheck",
+    ),
+    (
+        "M03 M09 X01",
+        "tests/test_placement_comparisons.py",
+        "PlacementComparisonTests.test_total_views_and_edited_receipts_do_not_fill_missing_curves",
+    ),
+    ("M03 M09 X01", "scripts/browser_batch_workbench.py", "check_placement"),
+    (
+        "C05",
+        "tests/test_auto_edits.py",
+        "AutoEditTests.test_repair_invalid_source_interval_then_review_without_duplicating_paid_calls",
+    ),
+    (
+        "C09",
+        "tests/test_auto_edits.py",
+        "AutoEditTests.test_role_receives_its_own_failed_citation_and_chinese_units_validate",
+    ),
+    (
+        "H04",
+        "tests/test_auto_edits.py",
+        "AutoEditTests.test_director_turn_budget_preserves_hard_fields_and_matches_provider_measure",
+    ),
+    (
+        "X04 X05 X06",
+        "tests/test_score_policies.py",
+        "ScorePolicyTests.test_limited_trial_sticky_assignment_counts_history_stop_and_stale_guard",
+    ),
+]
+
+
+CURRENT_CODE_GROUPS += [
+    (
+        "G05 G06",
+        [
+            "app/generation_review.py",
+            "web/generation-review.js",
+            "app/generation_frames.py",
+            "app/media.py",
+            "web/generation-controls.js",
+        ],
+    ),
+]
+ENDPOINT_GROUPS += [
+    (
+        "G05 G06",
+        [
+            "GET /api/v1/production/generation/{jid}/visual-review",
+            "GET /api/v1/production/generation/{jid}/visual-review/reference.png",
+            "GET /api/v1/production/generation/{jid}/visual-review/reference.mp4",
+            "GET /api/v1/production/generation/{jid}/visual-review/candidate.png",
+            "POST /api/v1/production/generation/{jid}/visual-review",
+        ],
+    ),
+]
+TEST_GROUPS += [
+    (
+        "G05 G06",
+        "tests/test_generation.py",
+        "GenerationTests.test_visual_review_uses_sent_bytes_and_real_pts_and_blocks_queued_render",
+    ),
+    (
+        "G05",
+        "tests/test_generation.py",
+        "GenerationTests.test_visual_review_anamorphic_preview_uses_display_aspect_and_source_pts",
+    ),
+    ("G05 G06", "scripts/browser_generation_frames.py", "run"),
+    ("G05 G06", "scripts/browser_generation_review.py", "main"),
+    (
+        "G02 G05 G06",
+        "tests/test_generation.py",
+        "GenerationTests.test_continuous_segment_receipt_replay_boundaries_permissions_and_mixed_batch",
+    ),
+    (
+        "G05 G06",
+        "tests/test_generation.py",
+        "GenerationTests.test_identical_output_has_independent_origin_and_legacy_receipts_recover",
+    ),
+    (
+        "G05 C08 P04",
+        "tests/test_generation.py",
+        "GenerationTests.test_batch_can_require_signed_visual_review_before_first_render",
+    ),
+]
+
+
 def read_audit_rows():
     rows = {}
     for line in (ROOT / "docs/source-coverage-review.md").read_text().splitlines():

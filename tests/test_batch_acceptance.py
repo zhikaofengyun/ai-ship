@@ -90,6 +90,7 @@ class BatchAcceptanceTests(ProductionBase):
                 "min_distinct_sources": 1,
                 "max_generation_calls": 0,
                 "require_full_decode": True,
+                "require_reference_review": True,
             }
         )
         bid = self.submit(c)["id"]
@@ -103,6 +104,7 @@ class BatchAcceptanceTests(ProductionBase):
             checks = {v["name"]: v for v in reports[phase]["checks"]}
             self.assertEqual(checks["require_full_decode"]["status"], full)
             self.assertEqual(checks["width"]["observed"], 128)
+            self.assertEqual(checks["require_reference_review"]["observed"], [])
         self.assertEqual(
             self.client.get(
                 "/api/v1" + self.base + "/contracts", params={"project_id": self.pid}

@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import time
 from urllib.parse import parse_qs, urlsplit
 
 import httpx
@@ -182,7 +183,9 @@ def run(output, engine):
     }
     with (
         tempfile.TemporaryDirectory() as td,
-        sample_generator(source) as (env, issued),
+        sample_generator(
+            source, segment_clip=ROOT / "evidence/batch-production/video-segment/candidate.webm"
+        ) as (env, issued),
         server(Path(td), output, fixture_env=env) as base,
         httpx.Client(base_url=base + "/api/v1", trust_env=False, timeout=30) as api,
         sync_playwright() as pw,
@@ -327,6 +330,132 @@ def run(output, engine):
             "batch": True,
         }
         report["one_click_submit_from_focused_time_field"] = {"single": True, "batch": True}
+        # A compact submission opens the full-width queue. Resume the same saved composition.
+        page.get_by_role("button", name="返回编排").click()
+        expect(form.get_by_label("源视频时码（秒）")).to_have_value("6.717")
+        form.get_by_role("button", name="混用原片与生成").click()
+        form.get_by_role("button", name="检索全部素材").click()
+        dlg = page.locator("dialog[open]")
+        dlg.get_by_label("名称或镜头标注").fill("咖啡烘焙")
+        dlg.get_by_label("检索方式").select_option("source")
+        dlg.get_by_role("button", name="查找", exact=True).click()
+        dlg.get_by_role("button", name="加入制作").first.click()
+        form.get_by_label("出点（秒）").fill("0.6")
+        form.get_by_label("本批作品数").fill("2")
+        form.get_by_label("交付目标").select_option("render")
+        form.locator(".batch-options summary").click()
+        form.get_by_label("宽度").fill("320")
+        form.get_by_label("高度").fill("240")
+        form.get_by_label("帧率").select_option("25")
+        with page.expect_response(
+            lambda r: r.url.endswith("/production/batches/estimate")
+        ) as estimated:
+            form.get_by_role("button", name="核算生成用量").click()
+        assert data_from_browser(estimated.value) == {
+            "generation_calls": 1,
+            "slot_calls": [1],
+            "workflow_calls": 0,
+        }
+        expect(form.locator("[data-forecast]")).to_contain_text("预计生成 1 次")
+        assert len(issued) == 2
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        page.screenshot(path=output / "mixed-narrow.png")
+        with page.expect_response(
+            lambda r: r.request.method == "POST" and r.url.endswith("/production/batches")
+        ) as submitted:
+            form.get_by_role("button", name="提交批量渲染").click()
+        mixed = data_from_browser(submitted.value)
+        expect(page.locator(".batch-progress")).to_have_attribute("value", "2", timeout=60000)
+        detail = data(api.get("/production/batches/" + mixed["id"]))
+        assert detail["counts"]["succeeded"] == 2 and len(issued) == 3, detail
+        mixed_rows = []
+        for item in detail["items"]:
+            video = api.get("/media/artifacts/" + item["artifact_id"] + "/file")
+            video.raise_for_status()
+            subprocess.run(
+                ["ffmpeg", "-v", "error", "-xerror", "-i", "pipe:0", "-f", "null", "-"],
+                input=video.content,
+                check=True,
+            )
+            mixed_rows.append(
+                {
+                    "ordinal": item["ordinal"],
+                    "generator": bool(item["generation_jobs"]),
+                    "mp4_sha256": hashlib.sha256(video.content).hexdigest(),
+                    "mp4_bytes": len(video.content),
+                }
+            )
+        assert {row["generator"] for row in mixed_rows} == {True, False}
+        report["mixed_slot"] = {"estimate": 1, "submissions": 1, "decoded": mixed_rows}
+        queue_job = page.locator(".batch-rows li").filter(has=page.locator("details"))
+        queue_job.locator("details > summary").click()
+        queue_job.get_by_role("button", name="对照审片").click()
+        review = page.locator("dialog[open]")
+        expect(review.get_by_alt_text("生成模型当时收到的参考帧")).to_be_visible()
+        expect(review.get_by_alt_text("所选候选时码的实际画面")).to_be_visible()
+        # This protocol fixture echoes the complete original clip. Compare the same PTS on
+        # both sides before accepting this exact-match control through the compact batch queue.
+        with page.expect_response(
+            lambda r: "visual-review/candidate.png" in r.url and "time_seconds=6.717" in r.url
+        ) as selected:
+            review.get_by_label("候选时码（秒）").fill("6.717")
+        matched = selected.value.headers["x-frame-sha256"]
+        assert matched == frame["png_sha256"]
+        reason = "同一时码的参考帧与原片回传夹具逐像素一致。"
+        review.get_by_label("审片结论").select_option("accept")
+        review.get_by_label("判断依据").fill(reason)
+        with page.expect_response(
+            lambda r: r.request.method == "POST" and r.url.endswith("/visual-review")
+        ) as reviewed:
+            review.get_by_role("button", name="保存审片结果").click()
+        decision = data_from_browser(reviewed.value)["audit"]["data"]
+        assert decision["decision"] == "accept" and decision["reference_sha256"] == matched
+        assert decision["candidate_frame_sha256"] == matched and decision["reason"] == reason
+        review.get_by_role("button", name="关闭", exact=True).click()
+        report["batch_queue_reference_review"] = {"decision": "accept", "matched_frame": matched}
+        # Switch the existing mixed slot from a frame to a continuous source and retain both routes.
+        page.get_by_role("button", name="返回编排").click()
+        form.get_by_label("生成服务").select_option("segment-protocol")
+        form.get_by_role("button", name="检索全部参考素材").click()
+        lookup = page.locator("dialog[open]")
+        lookup.get_by_label("名称或素材编号").fill(asset["id"])
+        lookup.get_by_role("button", name="查找", exact=True).click()
+        lookup.locator("[data-pick]").first.click()
+        form.get_by_label("连续参考入点（秒）").fill("1")
+        form.get_by_label("连续参考出点（秒）").fill("1.5")
+        form.get_by_label("连续参考出点（秒）").press("Tab")
+        page.reload()
+        expect(form.get_by_label("连续参考入点（秒）")).to_have_value("1")
+        expect(form.get_by_label("连续参考出点（秒）")).to_have_value("1.5")
+        expect(form.get_by_label("实拍参考区间")).to_be_visible()
+        with page.expect_response(
+            lambda r: r.request.method == "POST" and r.url.endswith("/production/batches")
+        ) as submitted:
+            form.get_by_role("button", name="提交批量渲染").click()
+        submit = submitted.value
+        gen = submit.request.post_data_json["slots"][0]["generate"]
+        assert gen["reference_time_seconds"] == 1 and gen["reference_end_seconds"] == 1.5
+        assert (
+            gen["reference_asset_id"] == asset["id"]
+            and gen["reference_asset_version"] == asset["version"]
+        )
+        bid = data_from_browser(submit)["id"]
+        deadline = time.monotonic() + 60
+        while time.monotonic() < deadline:
+            page_data = data(api.get("/production/batches/" + bid))
+            if page_data["counts"]["failed"] or page_data["counts"]["succeeded"] == 2:
+                break
+            time.sleep(0.25)
+        assert page_data["counts"]["succeeded"] == 2 and len(issued) == 4, page_data
+        sha = issued[-1]["fixture_observed_segment_sha256"]
+        frozen = ROOT / "evidence/batch-production/video-segment/reference.mp4"
+        assert sha == hashlib.sha256(frozen.read_bytes()).hexdigest()
+        report["continuous_mixed_slot"] = {
+            "submitted_interval": [1, 1.5],
+            "confirmed_input_sha256": sha,
+            "completed": 2,
+            "provider_calls": 1,
+        }
         assert not report["page_errors"]
         browser.close()
     (output / "result.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")

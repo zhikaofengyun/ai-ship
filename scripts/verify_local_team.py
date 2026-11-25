@@ -311,6 +311,7 @@ def main():
                         "round": pin["round"],
                         "prompt_hash": pin["prompt_hash"],
                         "context_hash": pin["context_hash"],
+                        "context_receipt": pin.get("context_receipt"),
                         "call": ref_summary(raw),
                         "provider_request_id": info["provider_request_id"],
                         "requested_model": info["requested_provider_model"],
@@ -328,8 +329,12 @@ def main():
             assert [turn["role"] for turn in report["decisions"]] == list(ROLES) * len(
                 history
             ), report
+            report["loop_stop"] = d["session"]["data"].get("loop_stop")
             if report["stage"] == "blocked":
-                assert len(history) == a.review_rounds
+                assert (
+                    len(history) == a.review_rounds
+                    or report["loop_stop"] == "repeated_rejected_cut"
+                )
             report["review_rounds"] = [
                 {
                     "round": turn["round"],

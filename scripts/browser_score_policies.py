@@ -15,7 +15,9 @@ from browser_regression import server
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--output", required=True, type=Path)
-    out = ap.parse_args().output.resolve()
+    ap.add_argument("--engine", choices=["chromium", "webkit"], default="chromium")
+    args = ap.parse_args()
+    out = args.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
     with (
         tempfile.TemporaryDirectory() as tmp,
@@ -31,7 +33,7 @@ def main():
 
         project = post("/projects", name="素材策略测试")
         pid = project["id"]
-        ids = []
+        ids, assets = [], []
         for i in range(4):
             asset = post(
                 "/records",
@@ -60,10 +62,12 @@ def main():
                 dimensions=dims,
             )
             ids.append(score["id"])
-        browser = pw.chromium.launch(
-            executable_path=os.getenv("AI_SHIP_CHROMIUM") or shutil.which("chromium"),
-            chromium_sandbox=True,
-        )
+            assets.append(asset["id"])
+        executable = os.getenv("AI_SHIP_" + args.engine.upper())
+        if args.engine == "chromium" and not executable:
+            executable = shutil.which("chromium-headless-shell") or shutil.which("chromium")
+        options = {"chromium_sandbox": True} if args.engine == "chromium" else {}
+        browser = getattr(pw, args.engine).launch(executable_path=executable, **options)
         try:
             page = browser.new_page(viewport={"width": 1440, "height": 960})
             errors = []
@@ -103,6 +107,67 @@ def main():
             submit()
             expect(dlg).to_have_count(0)
             feature("X06")
+            dlg.locator("[data-trial-start]").click()
+            dlg.locator("[name=approval]").select_option(index=1)
+            dlg.locator("[name=percent]").fill("50")
+            dlg.locator("[name=stop_condition]").fill("抽检排序失真时停止")
+            submit()
+            expect(dlg.locator("[data-trial-summary]")).to_contain_text("50% 候选分流 · 试用中")
+            arms = {"baseline": [set(), 0, 0], "candidate": [set(), 0, 0]}
+
+            expect(dlg.locator("[data-activate]")).to_be_disabled()
+
+            def observe(aid, dimensions):
+                observed = post(
+                    "/production/assets/score",
+                    project_id=pid,
+                    asset_version_id=aid,
+                    dimensions=dimensions,
+                )
+                arm = observed["data"]["trial_assignment"]["arm"]
+                arms[arm][0].add(aid)
+                arms[arm][1] += 1
+                arms[arm][2] += int(observed["data"]["observed_score"] is not None)
+
+            for aid in assets:
+                observe(aid, {"quality": 0.6})
+            observe(assets[0], {})
+            # At 50% assignment a small cohort can legitimately land in one arm.
+            # Enroll fresh independent units until each arm has an observed score.
+            for n in range(128):
+                if all(stats[2] for stats in arms.values()):
+                    break
+                extra = post(
+                    "/records",
+                    kind="AssetVersion",
+                    project_id=pid,
+                    data={"name": f"独立试用素材 {n}"},
+                    reason="试用分组验收",
+                )
+                observe(extra["id"], {"quality": 0.8})
+            assert all(stats[2] for stats in arms.values())
+            page.set_viewport_size({"width": 390, "height": 844})
+            dlg.locator("[data-trial-refresh]").click()
+            for arm, arm_label in (("baseline", "基线"), ("candidate", "候选")):
+                row = dlg.locator("tbody tr").filter(has_text=arm_label)
+                expect(row.locator("td").nth(0)).to_have_text(str(len(arms[arm][0])))
+                expect(row.locator("td").nth(1)).to_have_text(str(len(arms[arm][0])))
+                expect(row.locator("td").nth(2)).to_have_text(str(arms[arm][1]))
+                expect(row.locator("td").nth(3)).to_have_text(str(arms[arm][2]))
+            assert dlg.evaluate("e => e.scrollWidth <= e.clientWidth + 1")
+            page.screenshot(path=str(out / "limited-trial.png"))
+            dlg.locator("[data-trial-stop]").click()
+            dlg.locator("[name=decision]").select_option("recommend_release")
+            dlg.locator("[name=reason]").fill("小范围核对结束")
+            submit()
+            expect(dlg.locator("[data-trial-summary]")).to_contain_text("已停止")
+            expect(dlg.locator("[data-trial-summary]")).to_contain_text("小范围核对结束")
+            expect(dlg.locator("[data-trial-summary]")).to_contain_text("评审结论 · 建议全量生效")
+            assert (
+                api.get("/production/score-policies/" + pid).json()["data"]["pointer"]["version"]
+                == 1
+            )
+            page.set_viewport_size({"width": 1440, "height": 960})
             dlg.locator("[data-activate]").click()
             dlg.locator("[name=approval]").select_option(index=1)
             submit()
@@ -120,12 +185,54 @@ def main():
             assert (
                 restored["version"] == 3 and restored["data"]["active"] == live["data"]["previous"]
             )
+            dlg.get_by_role("button", name="关闭", exact=True).click()
+            page.goto(base + "/#module/assetops/U03")
+            page.locator(".feature-title [data-action=feature-action]").click()
+            dlg.locator("[name=asset_version_id]").select_option(assets[0])
+            dlg.locator("[name=quality]").fill("0.8")
+            dlg.locator("[name=weight_mode]").select_option("manual")
+            for weight in dlg.locator('input[name^="weight_"]').all():
+                weight.fill("0")
+            observed_requests = []
+
+            def intercept(route):
+                key = route.request.post_data_json["request_id"]
+                reply = route.fetch()
+                content = reply.json()
+                observed_requests.append((key, reply.status, content.get("data", {}).get("id")))
+                if len(observed_requests) == 2:
+                    # The isolated server committed the score but the caller lost the reply.
+                    route.abort("failed")
+                else:
+                    route.fulfill(response=reply)
+
+            page.route("**/api/v1/production/assets/score", intercept)
+            submit()
+            expect(dlg.locator("form[data-form] button[type=submit]")).to_be_enabled()
+            dlg.locator("[name=weight_quality]").fill("1")
+            submit()
+            expect(dlg.locator("form[data-form] button[type=submit]")).to_be_enabled()
+            submit()
+            expect(dlg).to_have_count(0)
+            invalid, committed, replayed = observed_requests
+            assert invalid[1] >= 400 and invalid[0] != committed[0]
+            assert committed == replayed and committed[1] == 200 and committed[2]
             assert not errors, errors
             (out / "result.json").write_text(
                 json.dumps(
                     {
                         "features": ["X02", "X03", "X06", "X07"],
                         "pointer_versions": [1, 2, 3],
+                        "browser": browser.version,
+                        "trial": {
+                            "percent": 50,
+                            "units": sum(len(a[0]) for a in arms.values()),
+                            "scores": sum(a[1] for a in arms.values()),
+                            "measured": sum(a[2] for a in arms.values()),
+                            "stopped": True,
+                            "review": "recommend_release",
+                        },
+                        "retried_score_reused_record": True,
                         "page_errors": errors,
                     }
                 )

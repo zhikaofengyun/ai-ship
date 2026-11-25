@@ -1,6 +1,9 @@
 import {
   referenceSource,
   frameFields,
+  segmentFields,
+  segmentEnd,
+  updateSegmentPreview,
   framePreview,
   chooseReference,
   recentReferences,
@@ -32,7 +35,7 @@ const number = (label, name, value, attrs) =>
 const slot = () => ({ choices: [] });
 const maxCount = 100000;
 const optionCount = (slots) =>
-  slots.some((s) => !s.generate && !s.choices.length)
+  slots.some((s) => (!s.generate || s.mixed) && !s.choices?.length)
     ? 0
     : slots.reduce(
         (a, s) =>
@@ -71,7 +74,8 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
     submitting = false,
     profiles = [],
     timelines = [],
-    profileError = "";
+    profileError = "",
+    forecastRevision = 0;
   const availableRefs = new Map();
   const cache = new Map(ctx.state.records.map((r) => [r.id, r]));
   const persist = () => {
@@ -86,7 +90,7 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
       cache.set(id, await ctx.api("/records/" + encodeURIComponent(id)));
     return cache.get(id);
   };
-  root.innerHTML = `<div class="page batch-page"><header class="batch-head"><h1>批量制作</h1><div class="batch-controls"><a href="#production" class="button small ghost">单条制作</a><a href="#workflow" class="button small ghost">流程画布</a><button type="button" class="button small ghost" data-pane-toggle aria-controls="batch-inspector"></button><button type="button" class="button small ghost" data-pane-move></button></div></header>
+  root.innerHTML = `<div class="page batch-page"><header class="batch-head"><h1>批量制作</h1><div class="batch-controls"><a href="#production" class="button small ghost">单条制作</a><a href="#workflow" class="button small ghost">流程画布</a><button type="button" class="button small secondary" data-focus-queue aria-controls="batch-inspector">查看队列</button><button type="button" class="button small ghost" data-pane-toggle aria-controls="batch-inspector"></button><button type="button" class="button small ghost" data-pane-move></button></div></header>
     <div class="adjustable-layout"><section class="batch-main" aria-label="创建批次"></section><aside class="batch-inspector" id="batch-inspector" data-inspector aria-label="批次队列"></aside></div></div>`;
   const main = $(".batch-main", root);
   const releaseLayout = installInspectorLayout(
@@ -95,7 +99,25 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
     "ship-batch-inspector-v1",
     "队列",
   );
-  const queue = mountBatchQueue($("#batch-inspector", root), ctx, pid);
+  const inspector = $("#batch-inspector", root);
+  const queue = mountBatchQueue(inspector, ctx, pid);
+  const page = $(".batch-page", root);
+  let wasHidden = false;
+  function focusQueue() {
+    wasHidden = inspector.hidden;
+    if (wasHidden) $("[data-pane-toggle]", root).click();
+    page.dataset.queueFocus = "true";
+    main.hidden = true;
+    $("h2", inspector).focus({ preventScroll: true });
+    inspector.scrollIntoView({ block: "start" });
+  }
+  $("[data-action=back-to-composer]", inspector).onclick = () => {
+    delete page.dataset.queueFocus;
+    main.hidden = false;
+    if (wasHidden && !inspector.hidden) $("[data-pane-toggle]", root).click();
+    $("[name=name]", main)?.focus();
+  };
+  $("[data-focus-queue]", root).onclick = focusQueue;
   ctx.state.cleanup.push(() => {
     disposed = true;
     releaseLayout();
@@ -105,6 +127,9 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
     if (!disposed) $("[data-notice]", main).textContent = msg;
   };
   const profile = (s) => profiles.find((p) => p.id === s.generate?.profile_id);
+  const segment = (s) => profile(s)?.reference_kind === "video_segment";
+  const referenceMode = (s) =>
+    segment(s) ? "video" : s.generate?.reference_mode || "image";
   function choiceMarkup(c, i) {
     return `<li data-choice="${i}"><div class="batch-source-name"><img src="/api/v1/media/${encodeURIComponent(c.asset_id)}/frame?time=${encodeURIComponent(c.source_in)}&amp;width=144" alt="" width="72" height="42" loading="lazy" decoding="async"><strong>${esc(c.name)} <small>v${esc(c.version)}</small></strong></div>
       ${number("入点（秒）", "source_in", c.source_in, 'min="0" step="any" required')}
@@ -114,7 +139,7 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
   function slotMarkup(s, i) {
     const gen = s.generate;
     const tpl = !!draft.template;
-    const mode = gen?.reference_mode || "image";
+    const mode = referenceMode(s);
     const choices = mediaLibrary([...availableRefs.values()]).filter(
       (r) => r.kind === "Asset" && mediaType(r) === mode,
     );
@@ -123,10 +148,11 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
         r.id === gen?.reference_asset_id &&
         r.version === gen?.reference_asset_version,
     );
-    return `<section class="batch-slot" data-slot="${i}"><header class="batch-slot-head"><strong>镜头 ${i + 1}<small>${gen ? "AI 生成" : "素材剪取"}${tpl ? " · 样片位置" : ""}</small></strong><div class="batch-controls">
+    return `<section class="batch-slot" data-slot="${i}"><header class="batch-slot-head"><strong>镜头 ${i + 1}<small>${s.mixed ? "原片与生成混用" : gen ? "AI 生成" : "素材剪取"}${tpl ? " · 样片位置" : ""}</small></strong><div class="batch-controls">
       ${i > 0 && !tpl ? iconBtn("将此镜头前移", "up-slot", "up") : ""}
       ${i < draft.slots.length - 1 && !tpl ? iconBtn("将此镜头后移", "down-slot", "down") : ""}
       ${btn(gen ? "用素材" : "用生成", "switch-kind", "", "button small ghost")}
+      ${btn(s.mixed ? "仅用生成" : "混用原片与生成", "mix-kind", "", "button small ghost")}
       ${!tpl ? iconBtn("移除此镜头位", "remove-slot", "close") : ""}</div></header>
       ${
         gen
@@ -134,9 +160,14 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
         ${select("生成服务", "profile_id", [["", "选择视频模型"], ...profiles.map((p) => [p.id, p.label || p.model])], gen.profile_id, "required")}
         ${number("使用时长（秒）", "duration", gen.duration, 'min="0.04" max="3600" step="any" required')}
         ${area("画面描述", "prompt", gen.prompt, 'maxlength="6000" required')}
-        ${profile(s)?.requires_reference ? referenceSource(mode) + select(mode === "video" ? "项目参考视频" : "项目参考图", "reference_asset_id", [["", mode === "video" ? "选择视频" : "选择参考图"], ...choices.map((r) => [r.id, mediaName(r) + " · v" + r.version])], chosen?.id, "required") + btn("检索全部参考素材", "search-reference", "search", "button small ghost") + (mode === "video" ? frameFields(pid, chosen, gen.reference_time_seconds ?? 0) : chosen ? `<img class="generation-still" alt="选中的项目参考图" src="${esc(ctx.assetUrl(chosen))}">` : "") : ""}
+        ${profile(s)?.requires_reference ? (segment(s) ? "" : referenceSource(mode)) + select(mode === "video" ? "项目参考视频" : "项目参考图", "reference_asset_id", [["", mode === "video" ? "选择视频" : "选择参考图"], ...choices.map((r) => [r.id, mediaName(r) + " · v" + r.version])], chosen?.id, "required") + btn("检索全部参考素材", "search-reference", "search", "button small ghost") + (segment(s) ? segmentFields(chosen, profile(s), gen.reference_time_seconds ?? 0, gen.reference_end_seconds) : mode === "video" ? frameFields(pid, chosen, gen.reference_time_seconds ?? 0) : chosen ? `<img class="generation-still" alt="选中的项目参考图" src="${esc(ctx.assetUrl(chosen))}">` : "") : ""}
       </div>${!profiles.length ? `<p class="batch-notice">${esc(profileError || "当前未配置视频生成服务。")}</p>` : ""}`
-          : `<ul class="batch-segments">${s.choices.map(choiceMarkup).join("")}</ul><div class="batch-controls">${btn("选素材", "choose-assets", "plus", "button small secondary")}${btn("检索全部素材", "search-asset", "search", "button small ghost")}</div>`
+          : ""
+      }
+      ${
+        !gen || s.mixed
+          ? `<ul class="batch-segments">${(s.choices || []).map(choiceMarkup).join("")}</ul><div class="batch-controls">${btn("选素材", "choose-assets", "plus", "button small secondary")}${btn("检索全部素材", "search-asset", "search", "button small ghost")}</div>`
+          : ""
       }
     </section>`;
   }
@@ -153,8 +184,8 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
       </div>
       <div class="form-grid">${number("本批作品数", "count", draft.count, 'min="1" max="100000" step="1" required')}
       ${number("组合种子", "seed", draft.seed, 'min="0" max="2147483647" step="1" required')}</div>
-      <div data-forecast class="batch-meta"></div>
-      ${draft.slots.some((s) => s.generate) ? `<div class="form-grid">${number("最多生成调用次数", "max_generation_calls", draft.max_generation_calls ?? "", 'min="1" step="1" placeholder="默认按本批需求"')}${number("同时在途作品数", "generation_window", draft.generation_window ?? 4, 'min="1" max="16" step="1" required')}</div>` : ""}
+      <div class="batch-controls"><div data-forecast class="batch-meta" role="status"></div>${draft.slots.some((s) => s.generate) || draft.tail ? btn("核算生成用量", "estimate", "", "button small ghost") : ""}</div>
+      ${draft.slots.some((s) => s.generate) || draft.tail ? `<div class="form-grid">${number("最多生成调用次数", "max_generation_calls", draft.max_generation_calls ?? "", 'min="0" step="1" placeholder="默认按本批需求"')}${number("同时在途作品数", "generation_window", draft.generation_window ?? 4, 'min="1" max="16" step="1" required')}</div>` : ""}
       <div class="batch-controls">${btn(draft.tail ? "更换后续流程" : "串接后续工作流", "choose-workflow", "flow", "button small secondary")}${draft.tail ? `<span>${esc(draft.tail.name)} · v${esc(draft.tail.version)} · ${esc(draft.tail.label)}</span>${btn("移除流程", "unlink-workflow", "", "button small ghost")}` : ""}</div>
       <div class="batch-controls">${btn(draft.contract ? "更换验收版本" : "添加验收要求", "choose-contract", "checkcircle", "button small secondary")}${draft.contract ? `<span>${esc(draft.contract.name)} · v${esc(draft.contract.version)}</span>${btn("移除要求", "unlink-contract", "", "button small ghost")}` : ""}</div>
       <div class="batch-controls">${btn(draft.marketBrief ? "更换市场简报" : "添加市场简报", "choose-market", "layers", "button small secondary")}${draft.marketBrief ? `<span>${esc(draft.marketBrief.name)} · v${esc(draft.marketBrief.version)} · ${esc(draft.marketBrief.market)} / ${esc(draft.marketBrief.language)}</span>${btn("移除简报", "unlink-market", "", "button small ghost")}` : ""}</div>
@@ -172,19 +203,25 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
     forecast();
   }
   function forecast() {
+    forecastRevision++;
     const n = optionCount(draft.slots);
     const jobs =
       draft.slots.filter((s) => s.generate).length * Number(draft.count);
     $("[data-forecast]", main).textContent = !n
       ? "先为每个素材镜头选择至少一个候选。"
-      : draft.slots.some((s) => s.generate)
-        ? "本批将提交 " +
+      : draft.slots.some((s) => s.mixed)
+        ? "本批镜头最多 " +
           jobs.toLocaleString() +
-          " 次模型生成。每项使用独立种子。"
-        : "当前可选组合" +
-          (n === maxCount ? "至少 " : " ") +
-          n.toLocaleString() +
-          " 种";
+          " 次模型生成，可核算各镜头和后续流程的具体用量。"
+        : draft.slots.some((s) => s.generate)
+          ? "本批镜头需要 " +
+            jobs.toLocaleString() +
+            " 次模型生成。" +
+            (draft.tail ? "后续流程用量可另行核算。" : "每项使用独立种子。")
+          : "当前可选组合" +
+            (n === maxCount ? "至少 " : " ") +
+            n.toLocaleString() +
+            " 种";
   }
   function candidate(rec, start = 0, end = null, duration = null) {
     const length = mediaDuration(rec);
@@ -274,38 +311,44 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
       throw new Error("作品数超过可用组合数，请添加候选或减少数量。");
     if (!draft.slots.length) throw new Error("至少需要一个镜头位。");
     const slots = draft.slots.map((s) => {
+      const out = {};
       if (s.generate) {
         const g = { ...s.generate, duration: Number(s.generate.duration) };
         delete g.reference_mode;
-        if (
-          profile(s)?.requires_reference &&
-          s.generate.reference_mode === "video"
-        )
+        if (profile(s)?.requires_reference && referenceMode(s) === "video")
           g.reference_time_seconds = Number(
             s.generate.reference_time_seconds ?? 0,
           );
         else delete g.reference_time_seconds;
+        if (segment(s)) {
+          const asset = cache.get(g.reference_asset_id);
+          if (!asset) throw new Error("请选择连续参考的项目视频及准确版本。");
+          g.reference_end_seconds = Number(
+            g.reference_end_seconds ??
+              segmentEnd(asset, profile(s), g.reference_time_seconds),
+          );
+        } else delete g.reference_end_seconds;
         if (!profile(s)?.requires_reference) {
           delete g.reference_asset_id;
           delete g.reference_asset_version;
         }
-        return { generate: g };
+        out.generate = g;
+        if (!s.mixed) return out;
       }
-      if (!s.choices.length) throw new Error("每个镜头位至少需要一个候选。");
-      return {
-        choices: s.choices.map((c) => {
-          const start = Number(c.source_in),
-            end = Number(c.source_out);
-          if (end <= start || end > c.length + 0.001)
-            throw new Error("请检查「" + c.name + "」的入点和出点。");
-          return {
-            asset_id: c.asset_id,
-            version: c.version,
-            source_in: start,
-            source_out: end,
-          };
-        }),
-      };
+      if (!s.choices?.length) throw new Error("每个镜头位至少需要一个候选。");
+      out.choices = s.choices.map((c) => {
+        const start = Number(c.source_in),
+          end = Number(c.source_out);
+        if (end <= start || end > c.length + 0.001)
+          throw new Error("请检查「" + c.name + "」的入点和出点。");
+        return {
+          asset_id: c.asset_id,
+          version: c.version,
+          source_in: start,
+          source_out: end,
+        };
+      });
+      return out;
     });
     return {
       project_id: pid,
@@ -321,10 +364,11 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
             },
           }
         : {}),
-      ...(slots.some((s) => s.generate)
+      ...(slots.some((s) => s.generate) || draft.tail
         ? {
             generation_window: Number(draft.generation_window || 4),
-            ...(draft.max_generation_calls
+            ...(draft.max_generation_calls != null &&
+            draft.max_generation_calls !== ""
               ? { max_generation_calls: Number(draft.max_generation_calls) }
               : {}),
           }
@@ -354,20 +398,29 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
           delete s.generate.reference_asset_id;
           delete s.generate.reference_asset_version;
           delete s.generate.reference_time_seconds;
+          delete s.generate.reference_end_seconds;
           if (t.name === "profile_id") delete s.generate.reference_mode;
         }
         if (t.name === "reference_asset_id") {
           s.generate.reference_asset_version = cache.get(t.value)?.version;
-          if (s.generate.reference_mode === "video")
+          delete s.generate.reference_end_seconds;
+          if (referenceMode(s) === "video")
             s.generate.reference_time_seconds = 0;
         }
       }
     } else draft[t.name] = t.value;
-    if (t.name === "count") forecast();
+    forecast();
     persist();
   };
   main.onchange = (e) => {
-    if (e.target.name === "reference_time_seconds") {
+    if (
+      ["reference_time_seconds", "reference_end_seconds"].includes(
+        e.target.name,
+      )
+    ) {
+      const container = e.target.closest("[data-slot]");
+      if (container.querySelector("[data-segment-source]"))
+        return updateSegmentPreview(container);
       const row = e.target.closest("[data-slot]");
       const g = draft.slots[Number(row.dataset.slot)].generate;
       row.querySelector("[data-reference-preview]").innerHTML = framePreview(
@@ -395,22 +448,33 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
       i = Number(b.closest("[data-slot]")?.dataset.slot),
       s = draft.slots[i];
     try {
+      if (op === "estimate") {
+        const ticket = ++forecastRevision;
+        const body = { ...payload(), idempotency_key: "estimate-only" };
+        body.name ||= "用量预估";
+        delete body.max_generation_calls;
+        const estimate = await ctx.api("/production/batches/estimate", {
+          method: "POST",
+          body,
+        });
+        if (!disposed && ticket === forecastRevision) {
+          $("[data-forecast]", main).textContent =
+            `预计生成 ${estimate.generation_calls.toLocaleString()} 次（镜头 ${estimate.slot_calls.map((n, i) => `${i + 1}：${n}`).join("、")}，后续流程 ${estimate.workflow_calls} 次）。`;
+        }
+        return;
+      }
       if (op === "search-reference")
-        return await chooseReference(
-          ctx,
-          pid,
-          s.generate.reference_mode || "image",
-          (r) => {
-            if (disposed) return;
-            cache.set(r.id, r);
-            availableRefs.set(r.id, r);
-            s.generate.reference_asset_id = r.id;
-            s.generate.reference_asset_version = r.version;
-            delete s.generate.reference_time_seconds;
-            persist();
-            draw();
-          },
-        );
+        return await chooseReference(ctx, pid, referenceMode(s), (r) => {
+          if (disposed) return;
+          cache.set(r.id, r);
+          availableRefs.set(r.id, r);
+          s.generate.reference_asset_id = r.id;
+          s.generate.reference_asset_version = r.version;
+          delete s.generate.reference_time_seconds;
+          delete s.generate.reference_end_seconds;
+          persist();
+          draw();
+        });
       if (op === "choose-market")
         return await chooseBatchMarket(ctx, pid, draft.marketBrief, (brief) => {
           if (!disposed) {
@@ -457,17 +521,19 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
           }
         });
       if (op === "use-template") return await useTemplate();
-      if (op === "switch-kind") {
-        if (s.generate) {
+      if (op === "switch-kind" || op === "mix-kind") {
+        s.mixed = op === "mix-kind" && !s.mixed;
+        s.choices ||= [];
+        if (op === "switch-kind" && s.generate) {
           s.previousGenerator = s.generate;
           delete s.generate;
-          s.choices ||= [];
         } else {
-          s.generate = s.previousGenerator || {
-            profile_id: profiles[0]?.id || "",
-            prompt: "",
-            duration: s.requiredDuration || 3,
-          };
+          s.generate = s.generate ||
+            s.previousGenerator || {
+              profile_id: profiles[0]?.id || "",
+              prompt: "",
+              duration: s.requiredDuration || 3,
+            };
         }
       } else if (op === "unlink-template") {
         delete draft.template;
@@ -539,6 +605,8 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
       persist();
       if (!disposed) {
         queue.selectBatch(result.id);
+        if ($(".adjustable-layout", root).dataset.split === "false")
+          focusQueue();
         ctx.toast("已登记 " + result.total + " 条作品。");
       }
     } catch (err) {
@@ -576,7 +644,8 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
         availableRefs.set(asset.id, asset);
       }
       const requests = new Map();
-      for (const { generate: g } of draft.slots) {
+      for (const s of draft.slots) {
+        const g = s.generate;
         if (
           !g?.reference_asset_id ||
           availableRefs.get(g.reference_asset_id)?.version ===
@@ -584,7 +653,7 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
         )
           continue;
         const key = JSON.stringify([
-          g.reference_mode,
+          referenceMode(s),
           g.reference_asset_id,
           g.reference_asset_version,
         ]);
@@ -594,7 +663,7 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
             pinnedReference(
               ctx,
               pid,
-              g.reference_mode,
+              referenceMode(s),
               g.reference_asset_id,
               g.reference_asset_version,
             ),

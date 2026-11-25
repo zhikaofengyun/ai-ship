@@ -33,7 +33,15 @@ def num(value):
         return None
 
 
-def decode(path, at):
+def preview_scale(display_aspect):
+    if display_aspect:
+        # Browser PNGs use square pixels. Preserve display aspect for anamorphic movies
+        # after FFmpeg autorotation, while bounding either preview dimension to 4096.
+        return "scale=w='max(1,round(min(4096,min(iw*if(gt(sar,0),sar,1),4096*dar))))':h='max(1,round(min(4096,min(ih,4096/dar))))',setsar=1"
+    return "scale=w='min(4096,iw)':h='min(4096,ih)':force_original_aspect_ratio=decrease"
+
+
+def decode(path, at, *, display_aspect=False):
     probe = [
         "ffprobe",
         "-v",
@@ -130,7 +138,7 @@ def decode(path, at):
             "-filter_threads",
             "1",
             "-vf",
-            "showinfo,scale=w='min(4096,iw)':h='min(4096,ih)':force_original_aspect_ratio=decrease",
+            "showinfo," + preview_scale(display_aspect),
             "-pix_fmt",
             "rgba",
             "-threads",

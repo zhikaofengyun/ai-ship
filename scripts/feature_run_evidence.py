@@ -82,6 +82,72 @@ LEGACY = {
 }
 
 
+for browser, version in (("chromium", "158.0.8127.0"), ("webkit", "26.5")):
+    LEGACY[f"matched-placement-{browser}-v1"] = (
+        f"evidence/matched-placements/{browser}.json",
+        {
+            "/browser": version,
+            "/fixture": "Two local FFmpeg MP4s, each independently downloaded and verified against its synthetic post and observed first-play cohort.",
+            "/interval_seconds": [0, 0.5],
+            "/paid_posts": 0,
+            "/organic_posts": 2,
+            "/evidence/0/conditional_retention": "80.0%",
+            "/evidence/1/conditional_retention": "55.0%",
+            "/matched_comparison/published_days": 1,
+            "/matched_comparison/difference_pp": -25.0,
+            "/matched_comparison/baseline": {
+                "posts": 1,
+                "entrants": 100,
+                "retained": 80,
+                "other_source_posts": 0,
+            },
+            "/matched_comparison/candidate": {
+                "posts": 1,
+                "entrants": 100,
+                "retained": 55,
+                "other_source_posts": 0,
+            },
+            "/matched_comparison/causal_claim": False,
+            "/counterevidence_and_stop_rule_preserved": True,
+            "/returned_to_post_review": True,
+        },
+        {"M09": ["Q02", "Q03", "Q06"]},
+        f"{browser} {version} 在两条本地编码成片核对后，按合成帖子和留存回执比较同日首个半秒。"
+        "基准 80/100、候选 55/100，差值为 −25 个百分点。付费过滤无样本。"
+        "编辑保存复用假设、反证、下一版改法和停止条件。此记录只覆盖夹具中的局部行为。",
+    )
+
+    LEGACY[f"candidate-review-{browser}-v1"] = (
+        f"evidence/batch-production/mixed-routing/visual-review/{browser}.json",
+        {
+            "/engine": browser,
+            "/browser": version,
+            "/page_errors": [],
+            "/viewports": [1440, 390],
+            "/source_sha256": "afacd0313fdcd967f135c6220a326c47c84038cf987b59af9b655a50aec21b48",
+            "/model_output_sha256": "efe61be7110cf102d4776968b6a5bafe42b2606772063a56cb56ba73dbd51eb5",
+            "/reference_frame_sha256": "697ead1cdd4c8f6580b1c91d68facc3463d250289393a82b022f5484c3f80c59",
+            "/candidate_frame_sha256": "c530d7297095eb309303b9678fbcb54f394f18e572405abe1e688fec6d854ec6",
+            "/candidate_frame_pts_seconds": 0.375,
+            "/review_revisions/0/version": 1,
+            "/review_revisions/0/decision": "needs_revision",
+            "/review_revisions/1/version": 2,
+            "/review_revisions/1/decision": "reject",
+            "/segment_playback_and_review/native_playback_advanced": True,
+            "/segment_playback_and_review/native_player_error": None,
+            "/segment_playback_and_review/wire_sha256": "609639a45d818fa1ccc8a5753725f5db6558b8a96203428ed18071465cd6d874",
+            "/segment_playback_and_review/recorded_model_output_sha256": "8ff0f21468e96bd8629c648b09089063b21acabdbce6ea626ef8a9b2cd82c727",
+            "/segment_playback_and_review/submitted_source_interval": [1, 1.5],
+            "/segment_playback_and_review/input_pts_seconds": 0.25,
+            "/segment_playback_and_review/original_pts_seconds": 1.24,
+            "/segment_playback_and_review/decision": "needs_revision",
+        },
+        {"G05": ["Q01", "Q05"], "G06": ["Q04"]},
+        f"{browser} {version} 对照实拍杯具和已记录的真实模型输出；该浏览器轮次使用已生成字节。"
+        "输出 0.375 秒的显示帧有摘要，先保存待修订再保存拒绝及原因，保留两版。连续参考的回放实测将片段 0.25 秒对应回原片 1.24 秒并保存修订决定。",
+    )
+
+
 def require(value, reason):
     if not value:
         raise ValueError(reason)

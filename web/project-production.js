@@ -45,11 +45,30 @@ const at = (seconds) =>
 const roleName = { director: "导演", reviewer: "镜头复核", judge: "独立裁决" };
 function showDecisions(plan, run) {
   const checks = arr(plan.reviews || run.issue?.details?.verdicts);
-  const rounds = arr(plan.review_rounds);
+  const rounds = arr(run.review_rounds || plan.review_rounds);
+  const stopped = {
+    repeated_rejected_cut:
+      "镜头区间和复核意见与前轮相同，已停止继续调用。可检查引用的原片或手动修订。",
+    repeated_invalid_answer: "模型再次返回了相同的无效答案，已停止继续调用。",
+    round_limit: "已达到本次设定的复核轮数。",
+  }[run.loop_stop];
   const history =
     rounds.length &&
     (rounds.length > 1 || run.mode === "team" || plan.planning_mode === "team")
-      ? `<details class="director-decisions"><summary>小队复核 · ${rounds.length} 轮</summary>${rounds.map((r) => `<div><strong>第 ${esc(r.round)} 轮 · ${r.decision === "revise" ? "要求修订" : "进入人工审阅"}</strong>${r.blocker ? `<p>${esc(typeof r.blocker === "string" ? r.blocker : r.blocker.message || r.blocker.reason || r.blocker.code)}</p>` : ""}<small>${arr(r.call_refs).length} 次调用</small></div>`).join("")}</details>`
+      ? `<details class="director-decisions"><summary>小队复核 · ${rounds.length} 轮</summary>${rounds
+          .map(
+            (r) =>
+              `<div><strong>第 ${esc(r.round)} 轮 · ${r.decision === "revise" ? "要求修订" : "进入人工审阅"}</strong>${r.blocker ? `<p>${esc(typeof r.blocker === "string" ? r.blocker : r.blocker.message || r.blocker.reason || r.blocker.code)}</p>` : ""}<small>${arr(r.call_refs).length} 次调用</small>${arr(
+                r.call_refs,
+              )
+                .filter((c) => c.context_receipt?.omissions?.length)
+                .map(
+                  (c) =>
+                    `<p>${esc(roleName[c.role])}压缩了可回查的画面观测，上下文输入上界由 ${esc(c.context_receipt.full_input_upper_bound)} 降至 ${esc(c.context_receipt.sent_input_upper_bound)}。</p>`,
+                )
+                .join("")}</div>`,
+          )
+          .join("")}${stopped ? `<p>${esc(stopped)}</p>` : ""}</details>`
       : "";
   if (!checks.length) return history;
   return (

@@ -63,6 +63,110 @@ class ScorePolicyTests(ProductionBase):
         )
         return cand, pairs, exp, approval
 
+    def test_limited_trial_sticky_assignment_counts_history_stop_and_stale_guard(self):
+        from app.production import digest
+
+        candidate, cases, evaluation, approval = self.approved()
+        body = {
+            "approval": self.pin(approval),
+            "percent": 15,
+            "expected_trial_version": 0,
+            "stop_condition": "停用任一训练样本或复核发现排序退化",
+        }
+        key = uuid4().hex
+        trial = self.call("trials/start", request_id=key, **body)
+        self.assertEqual(self.call("trials/start", request_id=key, **body)["id"], trial["id"])
+        self.call("trials/start", code=409, **body)
+        read = lambda tail="": self.client.get(
+            f"/api/v1/production/score-policies/{self.pid}/trial" + tail
+        ).json()["data"]
+        self.assertEqual(
+            self.call("activate", approval=self.pin(approval), code=409)["error"]["code"],
+            "TRIAL_REVIEW_REQUIRED",
+        )
+        self.assertEqual(
+            self.call(
+                "trials/stop",
+                expected_trial_version=1,
+                decision="recommend_release",
+                reason="过早",
+                code=409,
+            )["error"]["code"],
+            "TRIAL_OBSERVATIONS_REQUIRED",
+        )
+        self.assertEqual(read()["arms"], {})
+        arms = {}
+        for n in range(1000):
+            unit = f"camera-{n}"
+            bucket = int(digest([trial["data"]["assignment_salt"], unit])[:16], 16) % 100
+            arms.setdefault("candidate" if bucket < 15 else "baseline", unit)
+            if len(arms) == 2:
+                break
+        for arm, unit in arms.items():
+            self.store.create(
+                "Asset", {"name": unit}, tenant_id="local", project_id=self.pid, record_id=unit
+            )
+            item = self.create("AssetVersion", {"name": "recorded take", "asset_id": unit})
+            twin = self.create("AssetVersion", {"name": "another version", "asset_id": unit})
+            score_key = uuid4().hex
+            a = self.score(0.9, 0.1, asset=item, request_id=score_key)
+            again = self.score(0.9, 0.1, asset=item, request_id=score_key)
+            self.assertTrue(again["idempotent_replay"])
+            self.assertEqual(again["id"], a["id"])
+            self.post(
+                "/production/assets/score",
+                {
+                    "project_id": self.pid,
+                    "asset_version_id": item["id"],
+                    "request_id": score_key,
+                    "dimensions": {"quality": 0.1},
+                },
+                409,
+            )
+            b = self.score(0.9, 0.1, asset=twin)
+            self.assertEqual(a["data"]["trial_assignment"], b["data"]["trial_assignment"])
+            self.assertEqual(a["data"]["trial_assignment"]["arm"], arm)
+            self.assertEqual(
+                a["data"]["score_policy"]["id"],
+                candidate["id"] if arm == "candidate" else candidate["data"]["parent"]["id"],
+            )
+            self.assertAlmostEqual(
+                a["data"]["observed_score"], 0.9 if arm == "candidate" else (0.9 + 5 * 0.1) / 6
+            )
+        self.score(0.9, 0.1, asset=item, weights={"relevance": 1})
+        summary = read()["arms"]
+        for arm in arms:
+            self.assertEqual(
+                (summary[arm]["units"], summary[arm]["scores"], summary[arm]["measured"]), (1, 2, 2)
+            )
+        stopped = self.call(
+            "trials/stop", expected_trial_version=trial["version"], reason="检查首轮"
+        )
+        self.assertEqual(stopped["data"]["status"], "stopped")
+        self.assertEqual(stopped["data"]["reviewed_arms"], summary)
+        self.assertEqual(
+            self.call("activate", approval=self.pin(approval), code=409)["error"]["code"],
+            "TRIAL_REVIEW_REQUIRED",
+        )
+        self.assertNotIn("trial_assignment", self.score(0.9, 0.1, asset=item)["data"])
+        self.assertEqual(read()["arms"], summary)
+        trial2 = self.call("trials/start", **{**body, "expected_trial_version": stopped["version"]})
+        self.assertEqual(read()["arms"], {})
+        self.assertEqual(read("?version=1")["arms"], summary)
+        sample = self.store.get(cases[0]["preferred"]["id"], "local")
+        self.store.update(
+            sample["id"],
+            {**sample["data"], "status": "revoked"},
+            tenant_id="local",
+            expected_revision=1,
+        )
+        self.assertTrue(read()["ineligible_reason"])
+        next_score = self.score(0.9, 0.1, asset=item)
+        self.assertNotIn("trial_assignment", next_score["data"])
+        self.assertEqual(read()["trial"]["data"]["status"], "stopped")
+        self.assertEqual(read()["trial"]["version"], trial2["version"] + 1)
+        self.assertEqual(read("?version=1")["arms"], summary)
+
     def test_freeze_activate_consume_replay_and_rollback(self):
         previous = self.score(0.9, 0.1)
         self.assertIsNone(previous["data"]["score_policy"])

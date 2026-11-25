@@ -1,0 +1,26 @@
+{
+  "workers": 3,
+  "media": "Synthetic FFmpeg testsrc2; 3 x 0.20 s per output, 160 x 90, 25 FPS. Single-machine SQLite; no provider or platform traffic.",
+  "runs": {
+    "render": {
+      "requested": 1000,
+      "completed": 1000,
+      "enqueue_seconds": 0.12,
+      "time_to_completion_seconds": 208.505,
+      "distinct_timelines": 1000,
+      "distinct_artifact_records": 1000,
+      "downloaded_and_decoded": 1000,
+      "unique_download_sha256": 1000
+    },
+    "timeline": {
+      "requested": 10000,
+      "completed": 10000,
+      "enqueue_seconds": 0.056,
+      "time_to_completion_seconds": 105.499,
+      "distinct_timelines": 10000,
+      "distinct_artifact_records": 0,
+      "downloaded_and_decoded": 0,
+      "unique_download_sha256": 0
+    }
+  }
+}

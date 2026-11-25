@@ -129,6 +129,40 @@ def check_placement(page, base, pid, account, downloads, output):
         expect(row.locator("details p")).to_contain_text(post)
         expect(row.locator("details p")).to_contain_text(insight)
     page.screenshot(path=str(output / "placement-performance.png"))
+    items.nth(0).get_by_role("button", name="设为对照基准").click()
+    with page.expect_response(
+        lambda r: "/post-reviews/placement-comparisons?" in r.url
+    ) as compared:
+        items.nth(1).locator("[data-compare]").click()
+    assert compared.value.status == 200, compared.value.text()
+    paired = compared.value.json()["data"]
+    assert paired["matched_days"] == 1 and abs(paired["difference_pp"] + 25.0) < 1e-9
+    assert paired["matched_baseline"]["entrants"] == paired["matched_candidate"]["entrants"] == 100
+    expect(dialog.locator("h2")).to_have_text("同日素材对照")
+    expect(dialog).to_contain_text("仅一个共同发布日")
+    dialog.get_by_text("2026-01-01", exact=False).first.click()
+    expect(dialog).to_contain_text("Synthetic first-play fixture")
+    page.screenshot(path=str(output / "matched-placement-comparison.png"))
+    page.get_by_role("button", name="沉淀对照假设").click()
+    for name, message in {
+        "hypothesis": "不同版本首镜的表现可能不同",
+        "counterevidence": "未控制受众",
+        "next_edit": "留出组测试首镜版本",
+        "stop_rule": "新结果不稳定时停止",
+    }.items():
+        dialog.locator(f"[name={name}]").fill(message)
+    with page.expect_response(
+        lambda r: "/post-reviews/placement-comparison-hypotheses" in r.url
+    ) as match_saved:
+        page.get_by_role("button", name="固定证据并保存").click()
+    assert match_saved.value.status == 200, match_saved.value.text()
+    match_insight = match_saved.value.json()["data"]["insight"]
+    assert match_insight["data"]["observation"]["evidence_hash"] == paired["evidence_hash"]
+    page.get_by_role("button", name="返回帖子复盘").click()
+    page.get_by_role("button", name="比较素材位置表现").click()
+    dialog.locator("[name=account_id]").select_option(account)
+    dialog.locator("[name=end_seconds]").fill("0.5")
+    page.get_by_role("button", name="查看素材表现").click()
     page.get_by_role("button", name="更改条件").click()
     expect(dialog.locator("[name=end_seconds]")).to_have_value("0.5")
     expect(dialog.locator("[name=traffic]")).to_have_value("organic")
@@ -156,7 +190,7 @@ def check_placement(page, base, pid, account, downloads, output):
     page.get_by_role("button", name="返回帖子复盘").click()
     expect(dialog.locator("h2")).to_have_text("帖子表现复盘")
     page.remove_listener("request", capture)
-    assert [call["method"] for call in calls] == ["GET", "GET", "GET"], calls
+    assert [call["method"] for call in calls] == ["GET", "GET", "GET", "GET"], calls
     report = {
         "browser": page.context.browser.version,
         "fixture": "Two local FFmpeg MP4s, each independently downloaded and verified against its synthetic post and observed first-play cohort.",
@@ -169,6 +203,14 @@ def check_placement(page, base, pid, account, downloads, output):
         ],
         "requests": calls,
         "frozen_reuse_insight": frozen["id"],
+        "matched_comparison": {
+            "published_days": paired["matched_days"],
+            "difference_pp": paired["difference_pp"],
+            "baseline": paired["matched_baseline"],
+            "candidate": paired["matched_candidate"],
+            "causal_claim": paired["causal_claim"],
+            "frozen_insight": match_insight["id"],
+        },
         "counterevidence_and_stop_rule_preserved": True,
         "filters_persisted": True,
         "returned_to_post_review": True,

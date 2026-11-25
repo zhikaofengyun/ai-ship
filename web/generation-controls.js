@@ -1,11 +1,14 @@
 import {
   referenceSource,
   frameFields,
+  segmentFields,
+  updateSegmentPreview,
   framePreview,
   chooseReference,
   recentReferences,
   pinnedReference,
 } from "./reference-frame.js";
+import { openGenerationReview, reviewLabels } from "./generation-review.js";
 import { uploadFile } from "./upload.js";
 import { mediaType } from "./media.js";
 import { $, $$, btn, esc, field, icon, select, uid } from "./ui.js";
@@ -51,7 +54,7 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
   const selectedBySearch = new Map();
   const pin = (a) => JSON.stringify([a.id, a.version]);
   const stills = () => {
-    const mode = prefs.reference_mode || "image";
+    const mode = referenceMode();
     const unique = mode === "image" ? new Map(recentStills) : new Map();
     for (const a of selectedBySearch.values())
       if (a.project_id === projectId && mediaType(a) === mode)
@@ -60,26 +63,34 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
   };
   const profile = () =>
     profiles.find((p) => p.id === prefs.profile_id) || profiles[0];
+  const segment = () => profile()?.reference_kind === "video_segment";
+  const referenceMode = () =>
+    segment() ? "video" : prefs.reference_mode || "image";
   const imageByPin = (value) => stills().find((a) => pin(a) === value);
   function imageFields() {
     if (!profile()?.requires_reference) return "";
     const items = stills(),
       a = imageByPin(prefs.reference_pin);
-    const mode = prefs.reference_mode || "image";
-    return `<div class="generation-reference">${referenceSource(mode)}${select(mode === "video" ? "项目参考视频" : "项目参考图", "reference_pin", [["", mode === "video" ? "选择视频" : "选择参考图"], ...items.map((r) => [pin(r), (r.data.name || r.data.filename || r.id) + " · v" + r.version])], a ? pin(a) : "", "required")}${btn("检索全部参考素材", "gen-search-reference", "search", "button small ghost")}${mode === "video" ? frameFields(projectId, a, prefs.reference_time_seconds ?? 0) : `${btn("导入参考图", "gen-import-reference", "upload", "button small ghost")}<input type="file" data-reference-file accept="image/png,image/jpeg,image/webp" hidden>${a ? `<img class="generation-still" alt="选中的项目参考图" src="${esc(ctx.assetUrl(a))}">` : ""}`}</div>`;
+    const mode = referenceMode();
+    return `<div class="generation-reference">${segment() ? "" : referenceSource(mode)}${select(mode === "video" ? "项目参考视频" : "项目参考图", "reference_pin", [["", mode === "video" ? "选择视频" : "选择参考图"], ...items.map((r) => [pin(r), (r.data.name || r.data.filename || r.id) + " · v" + r.version])], a ? pin(a) : "", "required")}${btn("检索全部参考素材", "gen-search-reference", "search", "button small ghost")}${segment() ? segmentFields(a, profile(), prefs.reference_time_seconds ?? 0, prefs.reference_end_seconds) : mode === "video" ? frameFields(projectId, a, prefs.reference_time_seconds ?? 0) : `${btn("导入参考图", "gen-import-reference", "upload", "button small ghost")}<input type="file" data-reference-file accept="image/png,image/jpeg,image/webp" hidden>${a ? `<img class="generation-still" alt="选中的项目参考图" src="${esc(ctx.assetUrl(a))}">` : ""}`}</div>`;
   }
   function jobMarkup(j) {
     const d = j.data,
       stage = d.stage;
+    const reviewable = stage === "ready" && d.reference_input && d.asset_ref;
+    const decision = j.visual_review?.decision;
+    const held = ["reject", "needs_revision"].includes(decision);
     const isCurrentReference =
       profile()?.requires_reference &&
       d.asset_ref &&
       pin(d.asset_ref) === prefs.reference_pin;
     return `<li data-generation-job="${esc(j.id)}"><strong>${esc(d.slot || d.prompt || "生成镜头")}</strong><div class="generation-count"><span>${esc(statusName[stage] || "等待核对")}</span><small>${esc(d.model || "")}</small></div>
+    <small data-job-review-state ${decision ? "" : "hidden"}>${decision ? "人工审片 · " + esc(reviewLabels[decision]) : ""}</small>
     ${d.issue ? `<p>${esc(d.issue.message || d.issue.code)}</p>` : ""}<div class="generation-row">
     ${needsCheck.has(stage) ? btn("核对状态", "gen-refresh", "history", "button small secondary", `data-job="${esc(j.id)}"`) : ""}
     ${["queued", "running", "outcome_unknown"].includes(stage) ? btn(cancelId === j.id ? "确认取消" : "请求取消", "gen-cancel", "stop", "button small ghost", `data-job="${esc(j.id)}"`) : ""}
-    ${stage === "ready" && d.asset_ref && d.output_kind !== "image" ? btn("用作制作素材", "gen-use", "plus", "button small secondary", `data-job="${esc(j.id)}"`) : ""}</div>
+    ${reviewable ? btn("对照审片", "gen-visual-review", "checkcircle", "button small secondary", `data-job="${esc(j.id)}"`) : ""}
+    ${stage === "ready" && d.asset_ref && d.output_kind !== "image" ? btn("用作制作素材", "gen-use", "plus", "button small secondary", `data-job="${esc(j.id)}" ${held ? "disabled" : ""}`) : ""}</div>
     ${
       stage === "ready" && d.output_kind === "image" && d.asset_ref
         ? `${isCurrentReference ? "" : `<img class="generation-still" src="/api/v1/media/${encodeURIComponent(d.asset_ref.id)}/file" loading="lazy" alt="生成的关键帧候选">`}<form data-hold-form="${esc(j.id)}" class="generation-hold">${field("定格时长（秒）", "duration", d.hold_params?.duration ?? 3, "number", 'step="any" min="1" max="60" required')}${select(
@@ -93,7 +104,7 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
               [60, "60 fps"],
             ],
             d.hold_params?.fps || 30,
-          )}<button class="button small secondary" type="submit">定格并加入制作</button></form>`
+          )}<button class="button small secondary" type="submit" ${held ? "disabled" : ""}>定格并加入制作</button></form>`
         : ""
     }</li>`;
   }
@@ -141,6 +152,7 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
         prefs.profile_id = profileSelect.value;
         delete prefs.reference_pin;
         delete prefs.reference_time_seconds;
+        delete prefs.reference_end_seconds;
         delete prefs.reference_mode;
         remember();
         repaint();
@@ -152,6 +164,7 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
           prefs.reference_mode = modeSelect.value;
           delete prefs.reference_pin;
           delete prefs.reference_time_seconds;
+          delete prefs.reference_end_seconds;
           remember();
           repaint();
         };
@@ -160,6 +173,7 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
         timeField.onchange = () => {
           prefs.reference_time_seconds = timeField.value;
           remember();
+          if (segment()) return updateSegmentPreview(form);
           form.querySelector("[data-reference-preview]").innerHTML =
             framePreview(
               projectId,
@@ -167,11 +181,19 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
               timeField.value,
             );
         };
+      const endField = form.elements.reference_end_seconds;
+      if (endField)
+        endField.onchange = () => {
+          prefs.reference_end_seconds = endField.value;
+          remember();
+          updateSegmentPreview(form);
+        };
       const reference = form.elements.reference_pin;
       if (reference)
         reference.onchange = () => {
           prefs.reference_pin = reference.value;
           delete prefs.reference_time_seconds;
+          delete prefs.reference_end_seconds;
           remember();
           repaint();
           host
@@ -183,18 +205,14 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
       );
       if (searchButton)
         searchButton.onclick = () =>
-          chooseReference(
-            ctx,
-            projectId,
-            prefs.reference_mode || "image",
-            (r) => {
-              selectedBySearch.set(r.id, r);
-              prefs.reference_pin = pin(r);
-              delete prefs.reference_time_seconds;
-              remember();
-              repaint();
-            },
-          );
+          chooseReference(ctx, projectId, referenceMode(), (r) => {
+            selectedBySearch.set(r.id, r);
+            prefs.reference_pin = pin(r);
+            delete prefs.reference_time_seconds;
+            delete prefs.reference_end_seconds;
+            remember();
+            repaint();
+          });
       const fileInput = $("[data-reference-file]", form);
       if (fileInput)
         fileInput.onchange = () => {
@@ -229,7 +247,9 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
           }
           data.reference_asset_id = image.id;
           data.reference_asset_version = image.version;
-          if (prefs.reference_mode === "video")
+          if (segment())
+            data.reference_end_seconds = Number(values.reference_end_seconds);
+          if (referenceMode() === "video")
             data.reference_time_seconds = Number(
               values.reference_time_seconds ?? 0,
             );
@@ -272,6 +292,24 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
       const b = e.target.closest("[data-action]");
       if (!b || busy || b.disabled) return;
       const j = jobById(b.dataset.job);
+      if (b.dataset.action === "gen-visual-review" && j) {
+        await openGenerationReview(ctx, projectId, j.id, (review) => {
+          j.visual_review = review;
+          if (!active()) return;
+          const row = b.closest("[data-generation-job]");
+          if (!row?.isConnected) return repaint();
+          const status = $("[data-job-review-state]", row);
+          status.textContent = "人工审片 · " + reviewLabels[review.decision];
+          status.hidden = false;
+          for (const use of row.querySelectorAll(
+            "[data-action=gen-use], [data-hold-form] [type=submit]",
+          ))
+            use.disabled = ["reject", "needs_revision"].includes(
+              review.decision,
+            );
+        });
+        return;
+      }
       if (b.dataset.action === "gen-import-reference")
         $("[data-reference-file]", host)?.click();
       if (b.dataset.action === "gen-resume")
@@ -371,7 +409,7 @@ export function generationPanel(ctx, projectId, draft, persist, onAsset) {
           const src = await pinnedReference(
             ctx,
             projectId,
-            prefs.reference_mode,
+            referenceMode(),
             pair[0],
             pair[1],
           );

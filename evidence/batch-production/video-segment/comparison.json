@@ -1,0 +1,17 @@
+{
+  "method": "Full aspect 18×32 rectangular area means, in display RGB scaled to [0,1], comparison is time aligned.",
+  "paired_frame_rgb_mae": [
+    0.072159,
+    0.072751,
+    0.075039,
+    0.077462
+  ],
+  "paired_frame_luminance_pearson": [
+    0.903661,
+    0.888925,
+    0.892566,
+    0.863585
+  ],
+  "assessment": "Rejected for product use: table composition recognizable, foreground cup geometry and patterned cloth visibly distorted across frames.",
+  "decision": "reject"
+}

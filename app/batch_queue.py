@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS production_items(
  batch TEXT NOT NULL REFERENCES production_batches(id), ordinal INTEGER NOT NULL,
  status TEXT NOT NULL DEFAULT 'queued', due REAL NOT NULL DEFAULT 0,
  token INTEGER NOT NULL DEFAULT 0, timeline_id TEXT, artifact_id TEXT, generation_id TEXT, workflow_run_id TEXT,
- error TEXT, PRIMARY KEY(batch,ordinal));
+ error TEXT, needs_generation INTEGER NOT NULL DEFAULT 1, PRIMARY KEY(batch,ordinal));
 CREATE TABLE IF NOT EXISTS production_generation_slots(
  batch TEXT NOT NULL, ordinal INTEGER NOT NULL, slot INTEGER NOT NULL,
  generation_id TEXT NOT NULL, status TEXT NOT NULL, asset_id TEXT, asset_version INTEGER,
@@ -42,6 +42,21 @@ def initialize(store):
         return
     with store.connection() as db:
         db.executescript(DDL)
+    with store.transaction(), store.connection() as db:
+        if "needs_generation" not in {
+            r["name"] for r in db.execute("PRAGMA table_info(production_items)")
+        }:
+            # A previous recipe had either fixed generation for every item, or none.
+            # has_generation=0 already bypasses admission control for all legacy source-only batches.
+            db.execute(
+                "ALTER TABLE production_items ADD COLUMN needs_generation INTEGER NOT NULL DEFAULT 1"
+            )
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS batch_local_ready ON production_items(batch,due,ordinal) WHERE status='queued' AND needs_generation=0"
+        )
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS batch_generation_active ON production_items(batch,status) WHERE needs_generation=1"
+        )
     store._batches_ready = True
 
 
@@ -119,13 +134,22 @@ def page(db, row, after=0, limit=30, state=None):
     if items and row["has_generation"]:
         ordinals = list(by_ordinal)
         jobs = db.execute(
-            "SELECT ordinal,slot,generation_id,status,asset_id,asset_version FROM production_generation_slots WHERE batch=? AND ordinal IN ("
+            """SELECT s.ordinal,s.slot,s.generation_id,s.status,s.asset_id,s.asset_version,
+                 (json_extract(v.data_json,'$.stage')='ready' AND
+                  coalesce(json_extract(v.data_json,'$.reference_input.png_sha256'), json_extract(v.data_json,'$.reference_input.segment_sha256')) IS NOT NULL AND
+                  json_extract(v.data_json,'$.asset_ref.id') IS NOT NULL) AS visual_review_available
+               FROM production_generation_slots s
+               LEFT JOIN records r ON r.id=s.generation_id AND r.tenant_id=? AND r.project_id=? AND r.kind='ToolCall'
+               LEFT JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version
+               WHERE s.batch=? AND s.ordinal IN ("""
             + ",".join("?" for _ in ordinals)
             + ") ORDER BY ordinal,slot",
-            (row["id"], *ordinals),
+            (row["tenant"], row["project"], row["id"], *ordinals),
         )
         for job in jobs:
-            by_ordinal[job["ordinal"]]["generation_jobs"].append(dict(job))
+            by_ordinal[job["ordinal"]]["generation_jobs"].append(
+                {**dict(job), "visual_review_available": bool(job["visual_review_available"])}
+            )
     return {
         **result,
         "items": items,
@@ -148,12 +172,15 @@ def resource(bid, ordinal):
 # Resolve in-flight work before opening further provider jobs. Each active generation batch
 # has a fixed window of submitted jobs, independent of requested output count.
 PICK = """
-SELECT b.* FROM production_batches b
+SELECT b.*, (:state='queued' AND b.has_generation=1 AND
+  (SELECT COUNT(*) FROM (SELECT 1 FROM production_items p
+   WHERE p.batch=b.id AND p.needs_generation=1 AND p.status IN ('running','waiting') LIMIT 16))
+  >=b.generation_window) AS provider_full
+FROM production_batches b
 WHERE (b.control='active' OR (b.control='cancelled' AND :state IN ('running','waiting')))
  AND EXISTS(SELECT 1 FROM production_items i WHERE i.batch=b.id AND i.status=:state AND i.due<=:stamp)
- AND (:state!='queued' OR b.has_generation=0 OR
-   (SELECT COUNT(*) FROM (SELECT 1 FROM production_items p
-     WHERE p.batch=b.id AND p.status IN ('running','waiting') LIMIT 16))<b.generation_window)
+ AND (NOT provider_full OR EXISTS(SELECT 1 FROM production_items p
+   WHERE p.batch=b.id AND p.status='queued' AND p.needs_generation=0 AND p.due<=:stamp))
 ORDER BY b.last_claim,b.created LIMIT 1
 """
 
@@ -163,8 +190,11 @@ def candidate(db):
     for state in ("running", "waiting", "queued"):
         batch = db.execute(PICK, {"state": state, "stamp": stamp}).fetchone()
         if batch:
+            local_only = " AND needs_generation=0" if batch["provider_full"] else ""
             row = db.execute(
-                "SELECT * FROM production_items WHERE batch=? AND status=? AND due<=? ORDER BY due,ordinal LIMIT 1",
+                "SELECT * FROM production_items WHERE batch=? AND status=? AND due<=?"
+                + local_only
+                + " ORDER BY due,ordinal LIMIT 1",
                 (batch["id"], state, stamp),
             ).fetchone()
             if row:

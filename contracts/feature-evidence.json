@@ -31,6 +31,30 @@
       "profile": "directory-browser-v1",
       "path": "evidence/batch-production/browser/directory-import.json",
       "sha256": "e7e24dc4f6a2e08fed0bec88e114d87719c3d7d55d6f98bef2f07945db0daa24"
+    },
+    {
+      "id": "matched-placement-chromium-v1",
+      "profile": "matched-placement-chromium-v1",
+      "path": "evidence/matched-placements/chromium.json",
+      "sha256": "2983687d3fdb992d2127e1c0c78feaff4624a8f0030cdfb9875eadea14a8f46c"
+    },
+    {
+      "id": "matched-placement-webkit-v1",
+      "profile": "matched-placement-webkit-v1",
+      "path": "evidence/matched-placements/webkit.json",
+      "sha256": "aa61fc7b9e38ca8ab9abc3a22b611c7ec3d2ef110f895c5fad53457e83e017dd"
+    },
+    {
+      "id": "candidate-review-chromium-v1",
+      "profile": "candidate-review-chromium-v1",
+      "path": "evidence/batch-production/mixed-routing/visual-review/chromium.json",
+      "sha256": "bd558ffa4f10ff07b056dae9e108793f8ad545fe50dde06c1e2c953314465a68"
+    },
+    {
+      "id": "candidate-review-webkit-v1",
+      "profile": "candidate-review-webkit-v1",
+      "path": "evidence/batch-production/mixed-routing/visual-review/webkit.json",
+      "sha256": "43386b237cfc72e95376bb00481eeea9b3e88b0fad181c7626f77d9c7fed543d"
     }
   ],
   "reviews": []

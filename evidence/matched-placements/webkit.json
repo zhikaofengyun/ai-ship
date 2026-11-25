@@ -1,0 +1,62 @@
+{
+  "browser": "26.5",
+  "fixture": "Two local FFmpeg MP4s, each independently downloaded and verified against its synthetic post and observed first-play cohort.",
+  "interval_seconds": [
+    0,
+    0.5
+  ],
+  "paid_posts": 0,
+  "organic_posts": 2,
+  "evidence": [
+    {
+      "conditional_retention": "80.0%",
+      "post": "post_638a63b887204c97a77702d9128b578d",
+      "insight": "insight_a043d6f1c79d429aa9258bb20ba0ecd7"
+    },
+    {
+      "conditional_retention": "55.0%",
+      "post": "post_855948d481184d3a9bc1e3b5dc2f16aa",
+      "insight": "insight_50fa209740e049389b736b9c10fd72a9"
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "query": "account_id=account_fa24c02bbd1246a494839af272b84386&traffic=paid&start_seconds=0&end_seconds=0.5&cohort_after_hours=0&cohort_hours=24&project_id=project_b2d679e3d7144e85bac13421b7b8704c&offset=0&limit=25"
+    },
+    {
+      "method": "GET",
+      "query": "account_id=account_fa24c02bbd1246a494839af272b84386&traffic=organic&start_seconds=0&end_seconds=0.5&cohort_after_hours=0&cohort_hours=24&project_id=project_b2d679e3d7144e85bac13421b7b8704c&offset=0&limit=25"
+    },
+    {
+      "method": "GET",
+      "query": "account_id=account_fa24c02bbd1246a494839af272b84386&traffic=organic&start_seconds=0&end_seconds=0.5&cohort_after_hours=0&cohort_hours=24&project_id=project_b2d679e3d7144e85bac13421b7b8704c&offset=0&limit=25"
+    },
+    {
+      "method": "GET",
+      "query": "account_id=account_fa24c02bbd1246a494839af272b84386&traffic=organic&start_seconds=0&end_seconds=0.5&cohort_after_hours=0&cohort_hours=24&project_id=project_b2d679e3d7144e85bac13421b7b8704c&offset=0&limit=25"
+    }
+  ],
+  "frozen_reuse_insight": "insight_e4098f0c2e34409fbf6e91e00d5fad52",
+  "matched_comparison": {
+    "published_days": 1,
+    "difference_pp": -25.0,
+    "baseline": {
+      "posts": 1,
+      "entrants": 100,
+      "retained": 80,
+      "other_source_posts": 0
+    },
+    "candidate": {
+      "posts": 1,
+      "entrants": 100,
+      "retained": 55,
+      "other_source_posts": 0
+    },
+    "causal_claim": false,
+    "frozen_insight": "insight_d7b1e39a9dde409ca4eb1d4633d94b2f"
+  },
+  "counterevidence_and_stop_rule_preserved": true,
+  "filters_persisted": true,
+  "returned_to_post_review": true
+}

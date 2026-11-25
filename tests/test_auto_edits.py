@@ -366,6 +366,224 @@ class AutoEditTests(ProductionBase):
                 403,
             )
 
+    def test_repair_invalid_source_interval_then_review_without_duplicating_paid_calls(self):
+        sid = self.assets[0]["id"]
+
+        def plan(end):
+            return {
+                "title": "cut",
+                "approach": "raw source",
+                "missing": [],
+                "shots": [
+                    {"asset_id": sid, "source_in": 0, "source_out": end, "reason": "opening"}
+                ],
+            }
+
+        yes = {
+            "evidence_id": "D1",
+            "observed_value": "1.6",
+            "decision": "accept",
+            "reason": "Interval falls inside 1.6 seconds",
+        }
+        seen, body = self.endpoint(
+            [plan(99), plan(1), yes, {**yes, "reason": "1.6 seconds available"}]
+        )
+        body["max_review_rounds"] = 3
+        state = self.post("", body)
+        run = state["session"]["data"]
+        self.assertEqual(run["stage"], "review", run["issue"])
+        self.assertEqual([c["round"] for c in run["call_refs"]], [1, 2, 2, 2])
+        first = run["review_rounds"][0]
+        self.assertNotIn("plan_ref", first)
+        constraint = json.loads(seen[1][1]["messages"][-1]["content"])["revision_feedback"][
+            "constraint"
+        ]
+        self.assertEqual(
+            constraint,
+            {
+                "asset_id": sid,
+                "shot_index": 1,
+                "source_in": 0,
+                "source_out": 99,
+                "source_duration": 1.6,
+                "minimum_seconds": 0.04,
+            },
+        )
+        self.assertEqual(first["invalid_output"]["validation_code"], "SHOT_OUT_OF_RANGE")
+        self.assertEqual(self.post("", body)["plan"]["id"], state["plan"]["id"])
+        self.assertEqual(len(seen), 4)
+
+    def test_repeated_invalid_director_answer_stops_with_budget_remaining(self):
+        invalid = {"title": "Empty choice", "shots": [], "missing": [], "approach": "invalid"}
+        seen, body = self.endpoint([invalid, invalid])
+        body["max_review_rounds"] = 4
+        result = self.post("", body)
+        run = result["session"]["data"]
+        self.assertIsNone(result["plan"])
+        self.assertEqual(run["stage"], "blocked")
+        self.assertEqual(run["loop_stop"], "repeated_invalid_answer")
+        self.assertEqual(
+            run["review_rounds"][0]["invalid_output"]["answer_hash"],
+            run["review_rounds"][1]["invalid_output"]["answer_hash"],
+        )
+        self.assertEqual(len(seen), 2)
+
+    def test_on_screen_quote_cannot_be_backed_by_duration_or_another_sources_ocr(self):
+        from app.auto_edits import Verdict, copied_review, evidence_problem
+
+        facts = {
+            "D1": {"kind": "duration_seconds", "observed_value": "1.6"},
+            "W1": {"kind": "frame_ocr", "observed_value": "SAMPLE"},
+        }
+
+        def problem(proof, reason):
+            v = Verdict(
+                evidence_id=proof,
+                observed_value=facts[proof]["observed_value"],
+                decision="accept",
+                reason=reason,
+            )
+            return evidence_problem(v, facts, [])
+
+        self.assertIsNotNone(
+            problem(
+                "D1",
+                "The observed value '1.6' indicates that the video contains a frame with the text 'FRESH LIME'.",
+            )
+        )
+        self.assertIsNotNone(problem("W1", "SAMPLE.mp4 shows “FRESH LIME”."))
+        self.assertIsNotNone(problem("D1", "原片长1.6秒，画面显示“限时促销”。"))
+        self.assertIsNone(
+            problem("W1", "Sampled source reads ‘SAMPLE’. Check the opening manually.")
+        )
+        self.assertIsNone(
+            problem(
+                "D1",
+                "1.6 seconds of footage are available. The editor's brief requests 'FRESH LIME'.",
+            )
+        )
+        prior = "The source has a measured duration of 1.6 seconds. The observed clip is usable but the editor should confirm that the opening matches the requested wording."
+        self.assertTrue(copied_review(prior.replace("clip", "shot"), [prior]))
+        self.assertFalse(copied_review("The 1.6 seconds are available.", [prior]))
+
+    def test_role_receives_its_own_failed_citation_and_chinese_units_validate(self):
+        plan = {
+            "title": "原片",
+            "approach": "逐镜选段",
+            "missing": [],
+            "shots": [
+                {"asset_id": self.assets[0]["id"], "source_in": 0, "source_out": 1, "reason": "cut"}
+            ],
+        }
+        wrong = {
+            "evidence_id": "D1",
+            "observed_value": "SAMPLE",
+            "decision": "accept",
+            "reason": "wrong",
+        }
+        corrected = {
+            "evidence_id": "D1",
+            "observed_value": "1.6",
+            "decision": "accept",
+            "reason": "原片时长1.6秒，片段可用。",
+        }
+        judge = {**corrected, "reason": "已测量1.6秒，本次选段在片内。"}
+        seen, body = self.endpoint([plan, wrong, judge, plan, corrected, judge])
+        result = self.post("", {**body, "max_review_rounds": 2})
+        self.assertEqual(result["session"]["data"]["stage"], "review")
+        repaired = json.loads(seen[4][1]["messages"][-1]["content"])
+        self.assertEqual(repaired["citation_feedback"]["measured_fact"]["observed_value"], "1.6")
+        self.assertEqual(repaired["citation_feedback"]["submitted_value"], "SAMPLE")
+        self.assertNotIn("citation_feedback", json.loads(seen[5][1]["messages"][-1]["content"]))
+        self.assertEqual(repaired["reviews"], [])
+
+    def test_repeated_observed_objection_and_cut_stop_even_if_title_changes(self):
+        plan = {
+            "title": "First",
+            "approach": "Measured",
+            "missing": [],
+            "shots": [
+                {"asset_id": self.assets[0]["id"], "source_in": 0, "source_out": 1, "reason": "cut"}
+            ],
+        }
+        objection = {
+            "evidence_id": "D1",
+            "observed_value": "1.6",
+            "decision": "revise",
+            "reason": "Review the 1.6 second source.",
+        }
+        judge = {**objection, "reason": "The 1.6 second source requires a different in point."}
+        seen, body = self.endpoint(
+            [plan, objection, judge, {**plan, "title": "Changed title"}, objection, judge]
+        )
+        body["max_review_rounds"] = 4
+        result = self.post("", body)
+        run = result["session"]["data"]
+        self.assertEqual(
+            (run["stage"], run["loop_stop"], len(seen)), ("blocked", "repeated_rejected_cut", 6)
+        )
+        self.assertEqual(len(self.store.list("local", kind="Plan", project_id=self.pid)), 2)
+        self.assertIsNone(result["timeline"])
+
+    def test_director_turn_budget_preserves_hard_fields_and_matches_provider_measure(self):
+        from app.edit_context import edit_messages, fit_turn, turn_bound
+        from app.providers import input_upper_bound, wire_messages as provider_messages
+
+        from app.providers import context_capacity
+
+        self.assertEqual(
+            context_capacity({"context_limit": 99000}, {"context_limit": "4096"}), 4096
+        )
+        self.assertEqual(context_capacity({"context_limit": 99000}, {}), 99000)
+        self.assertEqual(context_capacity({}, {}), 32768)
+        for bad in (0, -1, True, 4.3, "invalid"):
+            with self.assertRaises(DomainError):
+                context_capacity({"context_limit": bad}, {"context_limit": 2048})
+        brief = {
+            "goal": "保留开场原文",
+            "opening_text": "FRESH LIME",
+            "target_seconds": 2,
+            "creative_evidence": [
+                {
+                    "source": {"id": "frozen", "version": 1},
+                    "data_excerpt": "假设",
+                    "causal_claim": False,
+                }
+            ],
+            "sources": [
+                {
+                    "asset_id": "asset_A",
+                    "duration": 1.6,
+                    "ocr": {
+                        "status": "read",
+                        "words": [
+                            {"text": "FRESH", "confidence": 0.95, "box_px": [100, 100, 200, 200]}
+                        ],
+                    },
+                    "sampled_frames": [{"at": n, "contrast": 23} for n in (0, 0.8, 1.5)],
+                }
+            ],
+        }
+        schema = {"type": "object", "properties": {"title": {"type": "string"}}}
+        initial = turn_bound(edit_messages("prompt", brief), schema)
+        msgs, proof = fit_turn("prompt", brief, schema, initial + 16 - 1, 16)
+        self.assertLess(proof["sent_input_upper_bound"], initial)
+        self.assertEqual(
+            proof["sent_input_upper_bound"],
+            input_upper_bound(provider_messages(msgs, True), schema),
+        )
+        self.assertEqual(proof["omissions"][0]["kind"], "ocr_geometry")
+        sent = json.loads(msgs[1]["content"])
+        self.assertIn("box_px", brief["sources"][0]["ocr"]["words"][0])
+        self.assertEqual(sent["creative_evidence"], brief["creative_evidence"])
+        self.assertEqual(sent["opening_text"], brief["opening_text"])
+        self.assertEqual(sent["sources"][0]["ocr"]["words"][0]["text"], "FRESH")
+        self.assertEqual(fit_turn("prompt", brief, schema, initial + 15, 16), (msgs, proof))
+        with self.assertRaises(DomainError) as refused:
+            fit_turn("prompt", brief, schema, 100, 16)
+        self.assertEqual(refused.exception.code, "CONTEXT_BUDGET")
+        self.assertEqual(refused.exception.details["omissions"][-1]["sources"][0]["times"], [0.8])
+
     def test_durable_second_director_turn_consumes_failure_and_keeps_original(self):
         from app import auto_edits
 

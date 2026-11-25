@@ -139,3 +139,9 @@ N01 的简报确定创作意图，N02 区分镜头的必须证据和排序偏好
 回归测试覆盖红/蓝实拍模拟源的逐帧实色、1 秒片尾前的最后一帧、变帧率及 5 秒非零封装起点、越界、跨项目与失效版本、上传后撤权、重放和普通素材与生成槽组合。ComfyUI 集成部分使用本地 HTTP 协议夹具，测试不依赖真实模型权重。
 
 在单条制作或批次的参考来源旁点击「检索全部参考素材」，可按名称、文件名或素材 ID，在当前项目内分页选择图片或视频原件。检索实时检查原件及其上游来源的制作用途、有效期和撤回记录，排除隔离或冷藏原件。若整页都受限，仍可使用游标继续浏览后续原件。检索直接读取项目原件，独立于工作台首页最近 500 条记录和可选搜索索引。重新打开草稿时按原件 ID 与版本核对已选项；修订变化须重新选择。API 为 `GET /api/v1/production/generation/reference/assets`，参数为 `project_id`、`media_type=image|video`、`q`、`limit` 和上一页返回的 `after` 游标。
+
+## 使用连续实拍区间重生成视频
+
+在「生成补充镜头」或批量制作的生成镜头选择「连续实拍区间生成短片」，选本项目的实拍原件，输入连续参考入点、出点。时间区间按半开区间计算。生成请求及批量镜头同时传 reference_asset_id、reference_asset_version、reference_time_seconds 和 reference_end_seconds；工作流 G03-R2 通过 reference 端口锁定素材版本，使用相同的两个时间参数。混合镜头仍可同时添加原素材直剪候选。批量预估按最终选中生成分支的作品数计算。
+
+可注册 [ComfyUI 连续视频配置](../contracts/examples/comfy-video-segment.json)。配置声明 video_input 指向可达输出节点的 LoadVideo.file，同时声明 reference_fps（1–30）与 max_reference_frames（2–32）。示例接受 8 fps、2 到 16 个完整采样帧，区间可长至 2 秒。输入仅包含画面，做等比缩放、方形像素转换、长边最多 512，编码为无损 RGB Video。原作品的尺寸、fps、展示时长与生成输入可以不同。每一次采样保留相对于源容器起点的真实显示 PTS；拍摄帧率较低时，相邻采样可能选中同一显示帧。系统按项目、原件版本、源内容 SHA-256、起止位置和采样率缓存区间，重新检查源与派生文件许可、版本及指纹。ComfyUI 需回传同一文件版本并通过完整字节回读验证，随后使用 LoadVideo → GetVideoComponents → VAEEncode 编码整个图像批次。上传产物、源时间戳列表和模型文件可从 [实测记录](../evidence/batch-production/video-segment/README.md) 复核。

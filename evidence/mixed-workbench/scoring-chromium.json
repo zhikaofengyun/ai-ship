@@ -1,0 +1,1 @@
+{"features": ["X02", "X03", "X06", "X07"], "pointer_versions": [1, 2, 3], "browser": "158.0.8127.0", "trial": {"percent": 50, "units": 4, "scores": 5, "measured": 4, "stopped": true, "review": "recommend_release"}, "retried_score_reused_record": true, "page_errors": []}

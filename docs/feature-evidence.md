@@ -9,6 +9,8 @@
 | [本地三模型两轮评议](../evidence/batch-production/agent-loop.json) | C09/Q03、Q06 | 两轮模型共识都因原片证据不匹配被拦截。通过解码的是另行人工修订的方案。 |
 | [已录回执对照](../evidence/recorded-response/result.json) | D08/Q02；H10/Q02 | 回环夹具产生两份供对照的回执，回放期间模型请求数为零。该观察仅覆盖产品只读回放。 |
 | [拍摄目录导入](../evidence/batch-production/browser/directory-import.json) | A05/Q05、Q06 | 两个路径的相同字节产生一个素材和两份来源记录，重新打开可读取导入状态。 |
+| 同日素材对照 [Chromium](../evidence/matched-placements/chromium.json) · [WebKit](../evidence/matched-placements/webkit.json) | M09/Q02、Q03、Q06（局部） | 两条本地 FFmpeg 成片分别核对后，两个浏览器从帖子观察窗选择 0 至 0.5 秒。自然流量的基准留存 80/100、候选 55/100，同一发布日相差 −25 个百分点，付费流量无样本。编辑固定回执、反证、改法和停止条件。帖子与曲线使用合成数据。 |
+| 模型生成杯具失真 [Chromium](../evidence/batch-production/mixed-routing/visual-review/chromium.json) · [WebKit](../evidence/batch-production/mixed-routing/visual-review/webkit.json) | G05/Q01、Q05；G06/Q04（局部） | 审阅使用同一实拍输入和已记录的模型产物。实际候选帧位于 0.375 秒，两个浏览器均保存了待修订、拒绝两个判断和各自理由。产品保真依靠人工判断，此轮浏览器使用已生成的字节。 双浏览器实播四帧参考，将输入 PTS 0.25 秒映射至原片 1.24 秒并保存待修订决议。 |
 
 这些报告各有专用读取规则，核对正确的文件、报告字段及预期结果。单个 `passed: true` 或存在测试文件均不足以建立上述记录。这五种报告只支持表中明确列出的局部观察。运行时间、软件环境、模型能力和素材条件以各报告实际保存的内容为准；旧报告缺少统一的当前版本指纹，保留为空。
 

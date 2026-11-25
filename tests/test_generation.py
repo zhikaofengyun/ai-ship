@@ -80,7 +80,9 @@ class GenerationTests(ProductionBase):
                     image = form["image"].get_payload(decode=True)
                     assert form["type"].get_payload(decode=True) == b"input"
                     assert form["overwrite"].get_payload(decode=True) == b"false"
-                    assert form["image"].get_content_type() == "image/png"
+                    assert form["image"].get_content_type() == (
+                        "video/mp4" if name.endswith(".mp4") else "image/png"
+                    )
                     t.input_files[name] = image if t.reference_fault != "wrong_bytes" else b"other"
                     if t.on_upload:
                         t.on_upload()
@@ -221,6 +223,11 @@ class GenerationTests(ProductionBase):
         source = self.store.get(asset["data"]["source_id"], "local")
         self.assertEqual(source["data"]["kind"], "generated_candidate")
         self.assertEqual(source["data"]["generation_call_ref"]["id"], rid)
+        no_ref = self.client.get(
+            self.base + "/" + rid + "/visual-review", params={"project_id": self.pid}
+        )
+        self.assertEqual(no_ref.status_code, 409)
+        self.assertEqual(no_ref.json()["error"]["code"], "VISUAL_REVIEW_UNAVAILABLE")
         self.assertEqual(self.post("/" + rid + "/refresh")["asset"]["id"], asset["id"])
         self.assertEqual(len(self.store.list("local", kind="Asset")), 1)
         self.assertEqual(len(self.store.list("local", kind="Cost")), 1)
@@ -419,6 +426,383 @@ class GenerationTests(ProductionBase):
         source = self.store.get(ready["asset"]["data"]["source_id"], "local")
         self.assertTrue(any(r["id"] == gen["id"] for r in source["refs"]))
         self.assertEqual(gen["data"]["reference_asset_ref"]["id"], asset["id"])
+
+    def test_batch_can_require_signed_visual_review_before_first_render(self):
+        from app import batches
+
+        _, spec = self.reference_setup()
+        queued = self.post(data=spec)["job"]
+        self.status = "done"
+        receipt = self.post("/" + queued["id"] + "/refresh")
+        job, output = receipt["job"], receipt["asset"]
+        project = {"project_id": self.pid}
+        base = "/api/v1/production/batches"
+        check = self.client.post(
+            base + "/contracts",
+            json={
+                **project,
+                "name": "Review selected reference-generated footage",
+                "request_id": uuid4().hex,
+                "requirements": {"require_reference_review": True},
+            },
+        )
+        self.assertEqual(check.status_code, 200, check.text)
+        contract = check.json()["data"]["contract"]
+        recipe = {
+            **project,
+            "name": "Approved visual evidence only",
+            "count": 1,
+            "idempotency_key": uuid4().hex,
+            "output": "render",
+            "width": 160,
+            "height": 120,
+            "fps": 25,
+            "acceptance_contract": {"id": contract["id"], "version": 1},
+            "slots": [
+                {
+                    "choices": [
+                        {"asset_id": output["id"], "version": output["version"], "source_out": 0.4}
+                    ]
+                }
+            ],
+        }
+        start = self.client.post(base, json=recipe)
+        self.assertEqual(start.status_code, 200, start.text)
+        batch = base + "/" + start.json()["data"]["id"]
+
+        def work():
+            self.assertTrue(batches.work_once(self.store))
+            return self.client.get(batch).json()["data"]["items"][0]
+
+        row = work()
+        self.assertEqual(row["error"]["code"], "BATCH_ACCEPTANCE_FAILED", row)
+        self.assertIsNone(row["artifact_id"])
+        original = self.store.get(row["acceptance"][0]["audit_id"], "local")
+        self.assertEqual(original["data"]["checks"][0]["observed"][0]["decision"], "unreviewed")
+        endpoint = self.base + "/" + job["id"] + "/visual-review"
+        reference = self.client.get(endpoint + "/reference.png", params=project)
+        frame = self.client.get(endpoint + "/candidate.png", params=project)
+        approval = self.client.post(
+            endpoint,
+            json={
+                **project,
+                "expected_job_version": job["version"],
+                "expected_review_version": 0,
+                "request_id": uuid4().hex,
+                "decision": "accept",
+                "reason": "Checked the selected fixture frame",
+                "time_seconds": 0,
+                "reference_sha256": reference.headers["X-Frame-SHA256"],
+                "candidate_frame_sha256": frame.headers["X-Frame-SHA256"],
+            },
+        )
+        self.assertEqual(approval.status_code, 200, approval.text)
+        self.assertEqual(self.client.post(batch + "/retry", json={}).status_code, 200)
+        finished = work()
+        self.assertEqual(finished["status"], "succeeded", finished)
+        self.assertTrue(finished["artifact_id"])
+        for step in finished["acceptance"]:
+            rec = self.store.get(step["audit_id"], "local")
+            self.assertEqual(rec["data"]["checks"][0]["observed"][0]["decision"], "accept")
+            self.assertIn(approval.json()["data"]["audit"]["id"], [r["id"] for r in rec["refs"]])
+        from app import batch_acceptance
+        from app.auth import LOCAL_ACTOR
+        from app.errors import DomainError
+
+        which = {"batch": start.json()["data"]["id"], "ordinal": 1}
+        for selected in [job["data"]["version_ref"]["id"], finished["artifact_id"]]:
+            observed, _ = batch_acceptance.reference_decisions(
+                self.store, LOCAL_ACTOR, self.pid, which, [{"asset_id": selected}]
+            )
+            self.assertEqual(
+                [(row["job_id"], row["decision"]) for row in observed], [(job["id"], "accept")]
+            )
+        decline = self.client.post(
+            endpoint,
+            json={
+                **project,
+                "expected_job_version": job["version"],
+                "expected_review_version": 1,
+                "request_id": uuid4().hex,
+                "decision": "needs_revision",
+                "reason": "Later review supersedes the first assessment.",
+                "time_seconds": 0,
+                "reference_sha256": reference.headers["X-Frame-SHA256"],
+                "candidate_frame_sha256": frame.headers["X-Frame-SHA256"],
+            },
+        )
+        self.assertEqual(decline.status_code, 200, decline.text)
+        timeline = self.store.get(finished["timeline_id"], "local")
+        with self.assertRaises(DomainError) as held:
+            batch_acceptance.validate_output(
+                self.store, LOCAL_ACTOR, batches.Recipe(**recipe), which, timeline
+            )
+        self.assertEqual(held.exception.code, "BATCH_ACCEPTANCE_FAILED")
+
+    def test_visual_review_uses_sent_bytes_and_real_pts_and_blocks_queued_render(self):
+        from app import batches
+        from app.auth import LOCAL_ACTOR
+        from app.media import resolve_media
+        from app.errors import DomainError
+
+        asset, body = self.reference_setup()
+        queued = self.post(data=body)["job"]
+        self.status = "done"
+        ready = self.post("/" + queued["id"] + "/refresh")
+        job, output = ready["job"], ready["asset"]
+        endpoint = self.base + "/" + job["id"] + "/visual-review"
+        project = {"project_id": self.pid}
+
+        def get(suffix="", **extra):
+            return self.client.get(endpoint + suffix, params={**project, **extra})
+
+        details = get().json()["data"]
+        self.assertEqual(details["review_version"], 0)
+        self.assertEqual(details["candidate"]["asset_ref"]["id"], output["id"])
+        self.assertEqual(details["reference"]["asset_ref"]["id"], asset["id"])
+        sent = get("/reference.png")
+        self.assertEqual(sent.content, self.input_files[details["reference"]["filename"]])
+        thumbnail = get("/candidate.png", time_seconds=0.57)
+        self.assertEqual(
+            thumbnail.status_code, 200, thumbnail.text[:80] if thumbnail.status_code != 200 else ""
+        )
+        self.assertEqual(float(thumbnail.headers["X-Frame-PTS"]), 0.56)
+        self.assertNotEqual(thumbnail.content, get("/candidate.png", time_seconds=0.05).content)
+        self.assertEqual(get("/candidate.png", time_seconds=1).status_code, 422)
+
+        batch_path = "/api/v1/production/batches"
+        recipe = {
+            **project,
+            "name": "queued before visual review",
+            "idempotency_key": uuid4().hex,
+            "count": 1,
+            "output": "render",
+            "slots": [
+                {
+                    "choices": [
+                        {
+                            "asset_id": output["id"],
+                            "version": output["version"],
+                            "source_in": 0,
+                            "source_out": 0.9,
+                        }
+                    ]
+                }
+            ],
+            "width": 160,
+            "height": 120,
+            "fps": 25,
+        }
+        response = self.client.post(batch_path, json=recipe)
+        self.assertEqual(response.status_code, 200, response.text)
+        bid = response.json()["data"]["id"]
+        decision = {
+            **project,
+            "request_id": uuid4().hex,
+            "expected_job_version": job["version"],
+            "expected_review_version": 0,
+            "time_seconds": 0.57,
+            "reference_sha256": sent.headers["X-Frame-SHA256"],
+            "candidate_frame_sha256": thumbnail.headers["X-Frame-SHA256"],
+            "decision": "reject",
+            "reason": "Original reference geometry differs from produced frame",
+        }
+        invalid = self.client.post(endpoint, json={**decision, "candidate_frame_sha256": "0" * 64})
+        self.assertEqual(invalid.status_code, 409)
+
+        def post_review(data):
+            r = self.client.post(endpoint, json=data)
+            self.assertEqual(r.status_code, 200, r.text)
+            return r.json()["data"]
+
+        # Approval is human-scoped: viewers can inspect, editors and workers cannot decide.
+        with patch.dict(
+            os.environ,
+            {
+                "AI_SHIP_MODE": "team",
+                "AI_SHIP_API_KEYS": json.dumps(
+                    {
+                        role: {
+                            "tenant_id": "local",
+                            "actor_id": "review-test-" + role,
+                            "role": role,
+                        }
+                        for role in ("viewer", "editor", "worker", "reviewer")
+                    }
+                ),
+            },
+        ):
+            for role in ("viewer", "editor", "worker"):
+                hdr = {"Authorization": "Bearer " + role}
+                self.assertEqual(
+                    self.client.get(endpoint, params=project, headers=hdr).status_code, 200
+                )
+                self.assertEqual(
+                    self.client.post(endpoint, json=decision, headers=hdr).status_code, 403
+                )
+            saved = self.client.post(
+                endpoint, json=decision, headers={"Authorization": "Bearer reviewer"}
+            )
+            self.assertEqual(saved.status_code, 200, saved.text)
+            self.assertEqual(
+                saved.json()["data"]["audit"]["data"]["principal"], "review-test-reviewer"
+            )
+            self.assertEqual(
+                self.client.post(
+                    endpoint, json=decision, headers={"Authorization": "Bearer reviewer"}
+                ).json()["data"]["audit"]["id"],
+                saved.json()["data"]["audit"]["id"],
+            )
+        frozen = saved.json()["data"]
+        self.assertEqual(frozen["review_version"], 1)
+        self.assertEqual(get().json()["data"]["last_decision"]["candidate_frame_pts_seconds"], 0.56)
+        self.assertEqual(
+            self.client.post(endpoint, json={**decision, "request_id": uuid4().hex}).status_code,
+            409,
+        )
+        jobs = self.client.get(self.base, params=project).json()["data"]["jobs"]
+        self.assertEqual(
+            next(x for x in jobs if x["id"] == job["id"])["visual_review"]["decision"], "reject"
+        )
+        with self.assertRaises(DomainError) as blocked:
+            resolve_media(self.store, LOCAL_ACTOR, output["id"], project_id=self.pid)
+        self.assertEqual(blocked.exception.code, "GENERATION_VISUAL_REVIEW_HOLD")
+        self.assertTrue(batches.work_once(self.store))
+        failed = self.client.get(batch_path + "/" + bid).json()["data"]["items"][0]
+        self.assertEqual(failed["status"], "failed")
+        self.assertIsNone(failed["artifact_id"])
+        self.assertEqual(failed["error"]["code"], "GENERATION_VISUAL_REVIEW_HOLD")
+        # Inspection is still possible, including viewing the exact rejected frame again.
+        self.assertEqual(get("/candidate.png", time_seconds=0.57).content, thumbnail.content)
+        approved = post_review(
+            {
+                **decision,
+                "decision": "accept",
+                "reason": "Second editorial review accepts this use",
+                "request_id": uuid4().hex,
+                "expected_review_version": 1,
+            }
+        )
+        self.assertEqual(approved["audit"]["id"], frozen["audit"]["id"])
+        self.assertEqual(approved["review_version"], 2)
+        self.assertEqual(
+            self.store.get(frozen["audit"]["id"], "local", version=1)["data"]["decision"], "reject"
+        )
+        resolve_media(self.store, LOCAL_ACTOR, output["id"], project_id=self.pid)
+        self.assertEqual(self.client.get(endpoint, params={"project_id": "wrong"}).status_code, 409)
+
+    def test_identical_output_has_independent_origin_and_legacy_receipts_recover(self):
+        from app.auth import LOCAL_ACTOR
+        from app.media import resolve_media
+        from app.production import ref, revise
+
+        _, spec = self.reference_setup()
+        raw = self.client.post(
+            "/api/v1/media/import",
+            params={"project_id": self.pid, "filename": "camera.mp4"},
+            content=self.video,
+        ).json()["data"]
+        camera = raw["asset"]
+        jid = self.post(data=spec)["job"]["id"]
+        self.status = "done"
+        result = self.post("/" + jid + "/refresh")
+        job, candidate = result["job"], result["asset"]
+        self.assertNotEqual(camera["id"], candidate["id"])
+        self.assertEqual(camera["data"]["content_hash"], candidate["data"]["content_hash"])
+        _, _, camera_path = resolve_media(self.store, LOCAL_ACTOR, camera["id"])
+        _, _, candidate_path = resolve_media(self.store, LOCAL_ACTOR, candidate["id"])
+        self.assertEqual(camera_path, candidate_path)
+        # Model the historical exact-byte dedup schema, preserving the separate
+        # import receipt and its independently created, attributable Source.
+        evidence = self.store.get(job["data"]["import_entry_ref"]["id"], "local")
+        old = revise(
+            LOCAL_ACTOR,
+            evidence,
+            {
+                "status": "deduplicated",
+                "asset_id": camera["id"],
+                "blob_location_id": camera["data"]["blob_location_id"],
+            },
+            "legacy receipt",
+            [r for r in evidence["refs"] if r["kind"] not in {"Asset", "AssetVersion"}]
+            + [ref(camera), ref(raw["version"])],
+        )
+        shared = revise(
+            LOCAL_ACTOR,
+            job,
+            {
+                "asset_ref": ref(camera),
+                "version_ref": ref(raw["version"]),
+                "import_entry_ref": ref(old),
+            },
+            "legacy shared record",
+        )
+        endpoint = self.base + "/" + jid + "/visual-review"
+        params = {"project_id": self.pid}
+        self.assertEqual(
+            self.client.get(endpoint, params=params).json()["error"]["code"],
+            "GENERATION_ORIGIN_SHARED",
+        )
+        restored = self.post("/" + jid + "/refresh")
+        job = restored["job"]
+        self.assertEqual(job["data"]["original_shared_asset_ref"], shared["data"]["asset_ref"])
+        self.assertNotEqual(restored["asset"]["id"], camera["id"])
+        self.assertEqual(restored["asset"]["data"]["source_id"], old["data"]["source_id"])
+        self.assertEqual(self.post("/" + jid + "/refresh")["job"]["version"], job["version"])
+        decisions = self.client.post(
+            endpoint,
+            json={
+                **params,
+                "request_id": uuid4().hex,
+                "expected_job_version": job["version"],
+                "expected_review_version": 0,
+                "time_seconds": 0,
+                "reference_sha256": self.client.get(
+                    endpoint + "/reference.png", params=params
+                ).headers["X-Frame-SHA256"],
+                "candidate_frame_sha256": self.client.get(
+                    endpoint + "/candidate.png", params=params
+                ).headers["X-Frame-SHA256"],
+                "decision": "reject",
+                "reason": "Reject this generated candidate, retaining the camera source.",
+            },
+        )
+        self.assertEqual(decisions.status_code, 200, decisions.text)
+        resolve_media(self.store, LOCAL_ACTOR, camera["id"])
+        from app.errors import DomainError
+
+        with self.assertRaises(DomainError) as blocked:
+            resolve_media(self.store, LOCAL_ACTOR, restored["asset"]["id"])
+        self.assertEqual(blocked.exception.code, "GENERATION_VISUAL_REVIEW_HOLD")
+
+    def test_visual_review_anamorphic_preview_uses_display_aspect_and_source_pts(self):
+        from app.generation_frames import decode
+
+        video = Path(self.temp.name) / "anamorphic.mp4"
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-f",
+                "lavfi",
+                "-i",
+                "testsrc2=size=160x120:r=10:d=1",
+                "-vf",
+                "setsar=2",
+                "-c:v",
+                "libx264",
+                "-threads",
+                "1",
+                str(video),
+            ],
+            check=True,
+        )
+        png, timing = decode(video, 0.47, display_aspect=True)
+        self.assertEqual(
+            (int.from_bytes(png[16:20], "big"), int.from_bytes(png[20:24], "big")), (320, 120)
+        )
+        self.assertEqual(timing["frame_pts_seconds"], 0.4)
 
     def test_reference_scope_wrong_kind_stale_missing_disconnected_and_unsupported(self):
         asset, body = self.reference_setup()
@@ -688,6 +1072,12 @@ class GenerationTests(ProductionBase):
         self.assertEqual(self.submits, 1)
         self.status = "done"
         ready = self.post("/" + job["id"] + "/refresh")
+        reviewed = self.client.get(
+            self.base + "/" + job["id"] + "/visual-review/reference.png",
+            params={"project_id": self.pid},
+        )
+        self.assertEqual(reviewed.content, self.input_files[evidence["filename"]])
+        self.assertEqual(float(reviewed.headers["X-Frame-PTS"]), evidence["frame_pts_seconds"])
         self.assertEqual(ready["job"]["data"]["stage"], "ready")
         src = self.store.get(ready["asset"]["data"]["source_id"], "local")
         self.assertIn(job["id"], [r["id"] for r in src["refs"]])
@@ -701,6 +1091,171 @@ class GenerationTests(ProductionBase):
         self.assertEqual(refused["data"]["issue"]["code"], "MEDIA_REVOKED")
         self.assertEqual(self.submits, 1)
         self.assertEqual(view(0.999).status_code, 403)
+
+    def test_continuous_segment_receipt_replay_boundaries_permissions_and_mixed_batch(self):
+        from app import batches
+        import time
+
+        clip = self.client.post(
+            "/api/v1/media/import",
+            params={"project_id": self.pid, "filename": "motion.mp4"},
+            content=self.video,
+        ).json()["data"]["asset"]
+        self.cfg.update(video_input=["4", "file"], reference_fps=8, max_reference_frames=8)
+        self.cfg["workflow"]["4"] = {
+            "class_type": "LoadVideo",
+            "inputs": {"file": "placeholder.mp4"},
+        }
+        self.cfg["workflow"]["3"]["inputs"]["frames"] = ["4", 0]
+        os.environ["AI_SHIP_COMFY_PROFILES"] = json.dumps({"demo": self.cfg})
+        profile = self.client.get(self.base + "/profiles").json()["data"]["profiles"][0]
+        self.assertEqual(
+            (profile["reference_kind"], profile["reference_fps"], profile["max_reference_frames"]),
+            ("video_segment", 8, 8),
+        )
+        params = {
+            "reference_asset_id": clip["id"],
+            "reference_asset_version": 1,
+            "reference_time_seconds": 0.125,
+            "reference_end_seconds": 0.625,
+        }
+        body = {**self.body, **params}
+        for change in (
+            {"reference_end_seconds": 1.125},
+            {"reference_end_seconds": 0.25},
+            {"reference_end_seconds": 0.33},
+            {"reference_time_seconds": None},
+            {"reference_end_seconds": 0.125},
+        ):
+            self.assertEqual(
+                self.post(data={**body, **change}, status=422)["code"], "REFERENCE_SEGMENT_RANGE"
+            )
+        self.assertEqual(
+            self.post(data={**body, "reference_asset_version": 2}, status=409)["code"],
+            "REFERENCE_REVISION_CHANGED",
+        )
+        other = self.create("Project", {"name": "other"})
+        self.assertEqual(
+            self.post(data={**body, "project_id": other["id"]}, status=403)["code"],
+            "PROJECT_SCOPE_MISMATCH",
+        )
+        job = self.post(data=body)["job"]
+        proof = job["data"]["reference_input"]
+        target = self.job["prompt"]["4"]["inputs"]["file"]
+        self.assertEqual(proof["filename"], target)
+        self.assertEqual(
+            hashlib.sha256(self.input_files[target]).hexdigest(), proof["segment_sha256"]
+        )
+        self.assertEqual(
+            job["data"]["reference_upload"]["verified_sha256"], proof["segment_sha256"]
+        )
+        self.assertEqual(proof["source_frame_pts_seconds"], [0.12, 0.24, 0.36, 0.48])
+        self.assertEqual((proof["frames"], proof["duration"]), (4, 0.5))
+        self.assertIn(proof["segment_ref"]["id"], [pin["id"] for pin in job["refs"]])
+        self.assertEqual(self.post(data=body)["job"]["id"], job["id"])
+        self.assertEqual(self.submits, 1)
+        self.post(data={**body, "reference_end_seconds": 0.75}, status=409)
+        self.status = "done"
+        ready = self.post("/" + job["id"] + "/refresh")["job"]
+        self.assertEqual(ready["data"]["stage"], "ready")
+        endpoint = self.base + "/" + job["id"] + "/visual-review"
+        project = {"project_id": self.pid}
+        wire = self.client.get(
+            endpoint + "/reference.mp4", params=project, headers={"Range": "bytes=0-63"}
+        )
+        self.assertEqual((wire.status_code, wire.content), (206, self.input_files[target][:64]))
+        self.assertEqual(wire.headers["X-Reference-SHA256"], proof["segment_sha256"])
+        ref_frame = self.client.get(
+            endpoint + "/reference.png", params={**project, "time_seconds": 0.27}
+        )
+        output_frame = self.client.get(
+            endpoint + "/candidate.png", params={**project, "time_seconds": 0.39}
+        )
+        self.assertEqual(float(ref_frame.headers["X-Frame-PTS"]), 0.25)
+        self.assertEqual(float(ref_frame.headers["X-Source-Frame-PTS"]), 0.36)
+        self.assertEqual(float(output_frame.headers["X-Frame-PTS"]), 0.36)
+        choice = self.client.post(
+            endpoint,
+            json={
+                **project,
+                "request_id": uuid4().hex,
+                "expected_job_version": ready["version"],
+                "expected_review_version": 0,
+                "time_seconds": 0.39,
+                "reference_time_seconds": 0.27,
+                "reference_sha256": hashlib.sha256(ref_frame.content).hexdigest(),
+                "candidate_frame_sha256": hashlib.sha256(output_frame.content).hexdigest(),
+                "decision": "accept",
+                "reason": "Verify selected decoded frames and the signed source PTS mapping",
+            },
+        )
+        self.assertEqual(choice.status_code, 200, choice.text)
+        audit = choice.json()["data"]["audit"]["data"]
+        self.assertEqual(audit["reference_timing"]["source_frame_pts_seconds"], 0.36)
+        self.assertEqual(audit["reference_frame_pts_seconds"], 0.25)
+        self.assertEqual(audit["candidate_frame_pts_seconds"], 0.36)
+        self.assertEqual(audit["reference_wire_sha256"], proof["segment_sha256"])
+        self.assertEqual(audit["reference_segment_ref"], proof["segment_ref"])
+        # A mixed slot reaches both the raw cutting and temporal re-generation branches.
+        recipe = {
+            "project_id": self.pid,
+            "name": "interval batch",
+            "idempotency_key": uuid4().hex,
+            "width": 128,
+            "height": 96,
+            "fps": 24,
+            "count": 2,
+            "seed": 3,
+            "slots": [
+                {
+                    "generate": {
+                        **params,
+                        "profile_id": "demo",
+                        "prompt": "Keep movement",
+                        "duration": 0.5,
+                    },
+                    "choices": [
+                        {"asset_id": clip["id"], "version": 1, "source_in": 0, "source_out": 0.5}
+                    ],
+                }
+            ],
+        }
+        url = "/api/v1/production/batches"
+        invalid = json.loads(json.dumps(recipe))
+        invalid["slots"][0]["generate"]["reference_end_seconds"] = 2
+        self.assertEqual(
+            self.client.post(url + "/estimate", json=invalid).json()["error"]["code"],
+            "REFERENCE_SEGMENT_RANGE",
+        )
+        created = self.client.post(url, json=recipe)
+        self.assertEqual(created.status_code, 200, created.text)
+        bid = created.json()["data"]["id"]
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            batches.work_once(self.store)
+            page = self.client.get(url + "/" + bid).json()["data"]
+            if page["status"] == "completed" or page["counts"]["failed"]:
+                break
+            time.sleep(0.1)
+        self.assertEqual(page["counts"]["succeeded"], 2, page)
+        model = next(x for x in page["items"] if x["generation_id"])
+        self.assertEqual(
+            self.store.get(model["generation_id"], "local")["data"]["reference_input"][
+                "segment_ref"
+            ],
+            proof["segment_ref"],
+        )
+        self.assertEqual(self.submits, 2)
+        self.reference_fault = "wrong_bytes"
+        refused = self.post(data={**body, "seed": 901, "idempotency_key": uuid4().hex})["job"]
+        self.assertEqual(refused["data"]["issue"]["code"], "REFERENCE_UPLOAD_FAILED")
+        self.reference_fault = None
+        self.on_upload = lambda: self.store.update(
+            clip["data"]["source_id"], {"status": "revoked"}, tenant_id="local", expected_revision=1
+        )
+        rejected = self.post(data={**body, "seed": 902, "idempotency_key": uuid4().hex})["job"]
+        self.assertEqual(rejected["data"]["issue"]["code"], "MEDIA_REVOKED")
+        self.assertEqual(self.submits, 2)
 
     def test_variable_frame_rate_and_nonzero_origin_use_presentation_timestamps(self):
         from app.generation_frames import decode

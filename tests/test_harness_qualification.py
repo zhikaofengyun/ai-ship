@@ -91,12 +91,13 @@ class QualificationTests(ProductionBase):
                 before = harness.runtime()
                 verified = self.qualify(flow)
                 self.assertTrue(verified["passed"])
-                media = source / "media.py"
+                media = source / "generation_frames.py"
                 media.write_bytes(media.read_bytes() + b"\n# isolated deployment fixture\n")
                 current = harness.runtime()
                 self.assertEqual(before["routes"], current["routes"])
                 self.assertNotEqual(
-                    before["implementation"]["media.py"], current["implementation"]["media.py"]
+                    before["implementation"]["generation_frames.py"],
+                    current["implementation"]["generation_frames.py"],
                 )
                 self.assertEqual(
                     self.post(

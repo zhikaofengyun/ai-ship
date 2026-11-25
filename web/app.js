@@ -182,7 +182,7 @@ matchMedia("(prefers-color-scheme:dark)").addEventListener(
   "change",
   applyPrefs,
 );
-async function api(path, options = {}) {
+async function api(path, options = {}, rawResponse = false) {
   const headers = { ...options.headers };
   const token = sessionStorage.getItem("ship-token");
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -202,11 +202,16 @@ async function api(path, options = {}) {
       ...options,
       headers,
     });
-  } catch {
+  } catch (err) {
+    if (err.name === "AbortError") throw err;
     state.online = false;
     throw new Error(
       "暂时无法连接服务。当前修改仍保留在页面，请检查服务后重试。",
     );
+  }
+  if (rawResponse && response.ok) {
+    state.online = true;
+    return response;
   }
   let body;
   try {

@@ -6,11 +6,11 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Query, Request
 from pydantic import Field, StrictBool, StrictInt, model_validator
 
-from . import batch_observability
+from . import batch_observability, generation_review
 from .api import ok
 from .auth import Actor, current_actor, require_write
 from .errors import DomainError
-from .media import check_revision
+from .media import MAX_LINEAGE_RECORDS, check_revision
 from .production import Body, record, ref, revise, save
 from .selection import ChosenVersion, Label
 from .store import digest, get_store
@@ -34,11 +34,15 @@ class Requirements(Body):
         default=None, min_length=2, max_length=40, pattern=r"^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$"
     )
     require_full_decode: StrictBool | None = None
+    require_reference_review: StrictBool | None = None
 
     @model_validator(mode="after")
     def valid(self):
-        if not self.model_dump(exclude_none=True) or self.require_full_decode is False:
-            raise ValueError("请声明至少一项硬门槛；不要求全片解码时省略该字段。")
+        if not self.model_dump(exclude_none=True) or False in (
+            self.require_full_decode,
+            self.require_reference_review,
+        ):
+            raise ValueError("请声明至少一项硬门槛，并省略不启用的检查。")
         if self.duration_tolerance_seconds is not None and self.duration_seconds is None:
             raise ValueError("时长容差须与目标时长一同填写。")
         if (
@@ -158,9 +162,9 @@ def preflight(actor, recipe, generation_limit):
             speed = reference_clips[index].get("speed", 1) if reference_clips else 1
             if not isinstance(speed, (int, float)) or not 0 < speed:
                 raise DomainError("BATCH_TEMPLATE_SPEED", "模板镜头速度无法用于节奏验收。")
-            ranges = [(c.source_out - c.source_in) / speed for c in slot.choices] or [
-                slot.generate.duration / speed
-            ]
+            ranges = [(c.source_out - c.source_in) / speed for c in slot.choices]
+            if slot.generate:
+                ranges.append(slot.generate.duration / speed)
             if not any(
                 (rules.min_clip_seconds is None or length + 1e-8 >= rules.min_clip_seconds)
                 and (rules.max_clip_seconds is None or length <= rules.max_clip_seconds + 1e-8)
@@ -222,6 +226,84 @@ def actual_fps(probe):
         return None
 
 
+def reference_decisions(store, actor, project, item, clips):
+    """Bind the selected originals and this item's generation receipts to the current reviews."""
+    with store.connection() as db:
+        ids = {
+            row[0]
+            for row in db.execute(
+                "SELECT generation_id FROM production_generation_slots WHERE batch=? AND ordinal=?",
+                (item["batch"], item["ordinal"]),
+            )
+        }
+    # These edges identify the actual pixels of an original, derivative, or rendered
+    # artifact. Its Timeline/Run can also reference unused recipe choices.
+    media_kinds = {"Asset", "AssetVersion", "Artifact", "Source"}
+    pending = [(c["asset_id"], None) for c in clips]
+    visited = set()
+    while pending:
+        rid, version = pending.pop()
+        if (rid, version) in visited:
+            continue
+        selected = record(actor, rid, version=version, project=project)
+        key = (rid, selected["version"])
+        if key in visited:
+            continue
+        visited.add(key)
+        if len(visited) > MAX_LINEAGE_RECORDS:
+            raise DomainError("MEDIA_RIGHTS_GRAPH_LIMIT", "选中画面来源图超过核验上限。", 409)
+        if selected["kind"] == "Source":
+            job_ref = selected["data"].get("generation_call_ref")
+            if job_ref:
+                ids.add(job_ref["id"])
+        pins = selected.get("refs", [])
+        if selected["kind"] == "Artifact" and selected["data"].get("timeline_id"):
+            d = selected["data"]
+            timeline = record(actor, d["timeline_id"], "Timeline", d["timeline_version"], project)
+            visible = set()
+            for clip in timeline["data"].get("clips", []):
+                source_ref = clip.get("source_ref") or {}
+                source_id = source_ref.get("id") if isinstance(source_ref, dict) else source_ref
+                visible.add(
+                    clip.get("asset_version_id")
+                    or clip.get("asset_id")
+                    or clip.get("source_id")
+                    or source_id
+                )
+            pins = [p for p in pins if p["id"] in visible]
+            if visible != {p["id"] for p in pins}:
+                raise DomainError(
+                    "BATCH_SOURCE_UNVERIFIED", "成片画面来源缺少对应的固定版本。", 409
+                )
+        for pin in pins:
+            if pin["kind"] in media_kinds:
+                pending.append((pin["id"], pin["version"]))
+    observations, pins = [], []
+    for jid in sorted(ids):
+        job = record(actor, jid, "ToolCall", project=project)
+        if not job["data"].get("reference_input"):
+            continue
+        head = generation_review.audit_head(actor, job)
+        output = job["data"]["asset_ref"]
+        asset = record(actor, output["id"], "Asset", version=output["version"], project=project)
+        valid = (
+            head
+            and head["data"].get("candidate_ref") == job["data"].get("version_ref")
+            and head["data"].get("candidate_sha256") == asset["data"].get("content_hash")
+        )
+        observations.append(
+            {
+                "job_id": jid,
+                "review_version": head["version"] if valid else None,
+                "decision": head["data"]["decision"] if valid else "unreviewed",
+            }
+        )
+        pins.append(ref(job))
+        if valid:
+            pins.append(ref(head))
+    return observations, pins
+
+
 def evaluate(store, actor, recipe, item, timeline, artifact, contract, rules):
     checks = []
     evidence_refs = {}
@@ -269,6 +351,15 @@ def evaluate(store, actor, recipe, item, timeline, artifact, contract, rules):
             lambda n: n <= rules.max_generation_calls,
         )
     clips = data["clips"]
+    if rules.require_reference_review:
+        decisions, reviews = reference_decisions(store, actor, recipe.project_id, item, clips)
+        check(
+            "require_reference_review",
+            "accept",
+            decisions,
+            lambda rows: all(r["decision"] == "accept" for r in rows),
+        )
+        evidence_refs.update({r["id"]: r for r in reviews})
     lengths = [(c["source_out"] - c["source_in"]) / c.get("speed", 1) for c in clips]
     if rules.min_clip_seconds:
         check(
@@ -356,28 +447,27 @@ def validate_output(store, actor, recipe, item, timeline, artifact=None):
     if not recipe.acceptance_contract:
         return
     stage = "encoded" if artifact else "timeline"
-    with store.connection() as db:
+    with store.transaction(), store.connection() as db:
         saved = db.execute(
             "SELECT * FROM production_acceptance_results WHERE batch=? AND ordinal=? AND stage=?",
             (item["batch"], item["ordinal"], stage),
         ).fetchone()
-    if saved and saved["status"] != "blocked":
-        return
-    contract, rules = load(actor, recipe.project_id, recipe.acceptance_contract)
-    checks, pins = evaluate(store, actor, recipe, item, timeline, artifact, contract, rules)
-    failing = any(c["status"] in {"failed", "unknown"} for c in checks)
-    status = "blocked" if failing else "passed"
-    if not failing and any(c["status"] == "deferred" for c in checks):
-        status = "pending_encode"
-    if saved:
-        previous = record(actor, saved["audit_id"], "Audit", project=recipe.project_id)
-        if previous["data"]["checks"] == checks:
-            if failing:
-                raise DomainError(
-                    "BATCH_ACCEPTANCE_FAILED", "该项未满足输出契约，请核对验收记录。", 409
-                )
+        contract, rules = load(actor, recipe.project_id, recipe.acceptance_contract)
+        if saved and saved["status"] != "blocked" and not rules.require_reference_review:
             return
-    with store.transaction(), store.connection() as db:
+        checks, pins = evaluate(store, actor, recipe, item, timeline, artifact, contract, rules)
+        failing = any(c["status"] in {"failed", "unknown"} for c in checks)
+        status = "blocked" if failing else "passed"
+        if not failing and any(c["status"] == "deferred" for c in checks):
+            status = "pending_encode"
+        if saved:
+            previous = record(actor, saved["audit_id"], "Audit", project=recipe.project_id)
+            if previous["data"]["checks"] == checks:
+                if failing:
+                    raise DomainError(
+                        "BATCH_ACCEPTANCE_FAILED", "该项未满足输出契约，请核对验收记录。", 409
+                    )
+                return
         evidence = [ref(contract), ref(timeline), *pins]
         if artifact:
             evidence.append(ref(artifact))
@@ -394,6 +484,7 @@ def validate_output(store, actor, recipe, item, timeline, artifact=None):
                 "batch_ordinal": item["ordinal"],
                 "checks": checks,
                 "basis": {
+                    "require_reference_review": "latest signed visual review for each reference-conditioned generator on selected source assets and batch slots",
                     "min_editorial_roles": "human-reviewed tags covering each source range",
                     "subtitle_language": "declared subtitle cue locale; semantic translation quality unmeasured",
                     "max_generation_calls": "frozen worst-case new inference requests for this batch",

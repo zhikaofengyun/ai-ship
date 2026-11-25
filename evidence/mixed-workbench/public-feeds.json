@@ -1,0 +1,155 @@
+{
+  "scope": "Unauthenticated, read-only public trend feed sync in an isolated local project. No publication or advertising outcomes.",
+  "observations": [
+    {
+      "provider": "google_trends",
+      "region": "US",
+      "instance": null,
+      "fetched_at": "2026-11-25T16:21:08.434960+00:00",
+      "feed_sha256": "3ac4934056d1225b49beba0a17191f35512b1c95a74f7f6b32b084c1d65e3af5",
+      "skipped": 0,
+      "items": [
+        {
+          "source_id": "source_02f01369f70244c5bc9aee7021998ed2",
+          "trend_id": "trend_e4a815e9247240928ef5157dddce9eb1",
+          "version": 1,
+          "title": "miss rachel",
+          "url": "https://trends.google.com/trends/explore?geo=US&q=miss+rachel",
+          "published_at": "2026-11-25T16:00:00+00:00"
+        },
+        {
+          "source_id": "source_c455951abe3747a8881a6ec4b6af84be",
+          "trend_id": "trend_83f69dcf2ee8411cb55ed5302daaf5a9",
+          "version": 1,
+          "title": "chris evert",
+          "url": "https://trends.google.com/trends/explore?geo=US&q=chris+evert",
+          "published_at": "2026-11-25T15:20:00+00:00"
+        },
+        {
+          "source_id": "source_8bd4551bff0b4d3ba4aa84e0b744cbd8",
+          "trend_id": "trend_d09187ff1c8446d19d4b54c10e9b38b4",
+          "version": 1,
+          "title": "spcx stock",
+          "url": "https://trends.google.com/trends/explore?geo=US&q=spcx+stock",
+          "published_at": "2026-11-25T15:20:00+00:00"
+        },
+        {
+          "source_id": "source_95ce35972cde411cb4c0e68ef6e4cc01",
+          "trend_id": "trend_fa52223cd999458d96adc953e38c36eb",
+          "version": 1,
+          "title": "vix",
+          "url": "https://trends.google.com/trends/explore?geo=US&q=vix",
+          "published_at": "2026-11-25T15:20:00+00:00"
+        },
+        {
+          "source_id": "source_ff7b9cbae14d4b6b8063c73e97f1ac2d",
+          "trend_id": "trend_01b8043d7eb24f24bbcf36fa5155379d",
+          "version": 1,
+          "title": "november beaver moon supermoon",
+          "url": "https://trends.google.com/trends/explore?geo=US&q=november+beaver+moon+supermoon",
+          "published_at": "2026-11-25T15:10:00+00:00"
+        }
+      ]
+    },
+    {
+      "provider": "peertube_trending",
+      "region": null,
+      "instance": "framatube.org",
+      "fetched_at": "2026-11-25T16:21:11.261712+00:00",
+      "feed_sha256": "b2f478c4f2d0ca7a904553cbc7aa2a7665b80e205a15134e3a23c83f142581c2",
+      "skipped": 0,
+      "items": [
+        {
+          "source_id": "source_ebca6c294dce4b4dbea10408e75c39c0",
+          "trend_id": "trend_8cb4979371f544b2afc0b71051f5a7da",
+          "version": 1,
+          "title": "Grease Pencil + Performance | Blender Today LIVE #293",
+          "url": "https://video.blender.org/videos/watch/ae644b29-9e31-47f8-af40-f5d52d1f787f",
+          "published_at": "2026-11-14T08:54:22.912000+00:00"
+        },
+        {
+          "source_id": "source_d6cd692a97104ad989cf40c414df2a9c",
+          "trend_id": "trend_485bba3e380e4d92b64d24676edc33c1",
+          "version": 1,
+          "title": "Libérer INTERNET - Lancement de nos campagnes de dons avec Framasoft",
+          "url": "https://video.lqdn.fr/videos/watch/b12349fb-e8f3-4578-8b2f-7311d6f44ccf",
+          "published_at": "2026-11-20T16:55:58.951000+00:00"
+        },
+        {
+          "source_id": "source_f9322f4f1abe4ad898c4e9dbfb790fdf",
+          "trend_id": "trend_1fa544e79eca43558880ae0d0501bab8",
+          "version": 1,
+          "title": "OVERGROWN - Blender Feature Film (Teaser)",
+          "url": "https://video.blender.org/videos/watch/7ad3cbee-fe5f-41c2-93ea-b108986939f4",
+          "published_at": "2026-09-14T14:43:33.813000+00:00"
+        },
+        {
+          "source_id": "source_5e3eb860410d48dfa9a77e12ff901884",
+          "trend_id": "trend_d7a6b49570b2449680c45edb41471c89",
+          "version": 1,
+          "title": "Happy - Pharrell Williams / Heidelberg Long Edition - 24 Minuten Version",
+          "url": "https://tube.tchncs.de/videos/watch/e50e4b90-62cc-4840-a6fd-819e70d7fbbf",
+          "published_at": "2025-03-13T18:14:09.717000+00:00"
+        },
+        {
+          "source_id": "source_9c4557103657453c8addc0dda1af4305",
+          "trend_id": "trend_ebeff661b14840f18664c42cc40be7ec",
+          "version": 1,
+          "title": "What's New in Blender 5.3! Official Overview",
+          "url": "https://video.blender.org/videos/watch/1d07c26c-38e1-47ac-a086-1748813cd363",
+          "published_at": "2026-11-10T14:49:40.099000+00:00"
+        }
+      ]
+    },
+    {
+      "provider": "peertube_trending",
+      "region": null,
+      "instance": "tilvids.com",
+      "fetched_at": "2026-11-25T16:21:12.237518+00:00",
+      "feed_sha256": "16db86f7230bbe56cc9f1ca5df66ecae178963e7d487d654729f79cf37013cad",
+      "skipped": 0,
+      "items": [
+        {
+          "source_id": "source_b4073181d5c04bb98061d73702f59315",
+          "trend_id": "trend_a43fd54ee7d84f518db3ca0697db4a33",
+          "version": 1,
+          "title": "The enh*tifcation of Android continues & other Linux Weekly News",
+          "url": "https://tilvids.com/videos/watch/ff10fce2-8885-424c-ba9a-83bb7f9b02b1",
+          "published_at": "2026-11-20T19:21:26.645000+00:00"
+        },
+        {
+          "source_id": "source_8060a5110e0b463f86c26f192e54b979",
+          "trend_id": "trend_bc5830b246e84b92b71bc388ae596721",
+          "version": 1,
+          "title": "9 insane Linux and FOSS takes that I still (or said myself)",
+          "url": "https://tilvids.com/videos/watch/0e27c2f6-db8c-4ba7-b28e-ab00bf442521",
+          "published_at": "2026-11-18T15:43:36.555000+00:00"
+        },
+        {
+          "source_id": "source_a0b43576a1304aa3a9f41d391693a138",
+          "trend_id": "trend_d4c9cbd55bb049f0ab3336bc830aafd7",
+          "version": 1,
+          "title": "Proton goes A.I. crazy, Ubuntu goes all SNAP, Vibe-coded Linux compatible kernel - Linux Weekly News",
+          "url": "https://tilvids.com/videos/watch/75458950-1377-42fb-be1c-34a2c5b9f98c",
+          "published_at": "2026-10-30T14:18:10.230000+00:00"
+        },
+        {
+          "source_id": "source_0cfc751f055f41f8b7291d9de7c2e703",
+          "trend_id": "trend_1b371c9fe2de4491be46507828d4914e",
+          "version": 1,
+          "title": "Proton's official statement on AI use, MATE goes Wayland - Linux & Open Source News",
+          "url": "https://tilvids.com/videos/watch/e44f5ff1-a7ac-4e23-9095-7724dc0e9f48",
+          "published_at": "2026-11-14T08:41:53.581000+00:00"
+        },
+        {
+          "source_id": "source_092c2c698d154c4b80abc3b599c61dce",
+          "trend_id": "trend_c85ba568a7f24832a310d8ad3dbaf9d0",
+          "version": 1,
+          "title": "Pop!_OS 26.04 is out: is the Cosmic desktop ready now?",
+          "url": "https://tilvids.com/videos/watch/8cd014cd-542d-493a-aed7-0735ab1bec1c",
+          "published_at": "2026-11-25T12:10:58.089000+00:00"
+        }
+      ]
+    }
+  ]
+}

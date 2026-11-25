@@ -12,7 +12,7 @@ from urllib.parse import parse_qs, urlparse
 
 
 @contextmanager
-def sample_generator(clip: Path):
+def sample_generator(clip: Path, *, segment_clip: Path | None = None):
     issued = []
     uploads = {}
 
@@ -45,7 +45,9 @@ def sample_generator(clip: Path):
                     return
                 payload = item.get_payload(decode=True)
                 filename = item.get_filename()
-                if not filename or not payload.startswith(bytes.fromhex("89504e470d0a1a0a")):
+                is_png = payload.startswith(bytes.fromhex("89504e470d0a1a0a"))
+                is_mp4 = segment_clip is not None and payload[4:8] == b"ftyp"
+                if not filename or not (is_png or is_mp4):
                     self.send_error(400)
                     return
                 uploads[filename] = payload
@@ -63,6 +65,14 @@ def sample_generator(clip: Path):
                 body["fixture_observed_image_sha256"] = hashlib.sha256(
                     uploads[ref_name]
                 ).hexdigest()
+            if "9" in body["prompt"]:
+                ref_name = body["prompt"]["9"]["inputs"]["file"]
+                if ref_name not in uploads:
+                    self.send_error(400)
+                    return
+                body["fixture_observed_segment_sha256"] = hashlib.sha256(
+                    uploads[ref_name]
+                ).hexdigest()
             issued.append(body)
             self.reply({"prompt_id": body["prompt_id"]})
 
@@ -75,19 +85,28 @@ def sample_generator(clip: Path):
                     if payload is None:
                         self.send_error(404)
                         return
-                    self.reply(payload, "image/png")
+                    self.reply(payload, "video/mp4" if payload[4:8] == b"ftyp" else "image/png")
                     return
-                is_image = parse_qs(urlparse(self.path).query).get("filename") == [
-                    "sample-output.png"
-                ]
+                filename = query.get("filename", [""])[0]
+                is_image = filename == "sample-output.png"
+                video = segment_clip if filename.startswith("sample-segment.") else clip
                 self.reply(
-                    (clip.with_suffix(".png") if is_image else clip).read_bytes(),
-                    "image/png" if is_image else "video/mp4",
+                    (clip.with_suffix(".png") if is_image else video).read_bytes(),
+                    (
+                        "image/png"
+                        if is_image
+                        else ("video/webm" if video.suffix == ".webm" else "video/mp4")
+                    ),
                 )
                 return
             if path.startswith("/history/"):
                 entry = next((p for p in issued if path.endswith("/" + p["prompt_id"])), None)
                 is_image = entry and entry["prompt"]["90"]["inputs"].get("image") is True
+                video_name = (
+                    "sample-segment" + segment_clip.suffix
+                    if entry and segment_clip and "9" in entry["prompt"]
+                    else "sample-output" + clip.suffix
+                )
                 self.reply(
                     {
                         entry["prompt_id"]: {
@@ -97,9 +116,7 @@ def sample_generator(clip: Path):
                                     ("images" if is_image else "videos"): [
                                         {
                                             "filename": (
-                                                "sample-output.png"
-                                                if is_image
-                                                else "sample-output.mp4"
+                                                "sample-output.png" if is_image else video_name
                                             ),
                                             "type": "output",
                                             "subfolder": "",
@@ -148,6 +165,19 @@ def sample_generator(clip: Path):
             "90": {"inputs": {"frames": ["2", 0]}},
         },
     }
+    if segment_clip is not None:
+        cfg["segment-protocol"] = {
+            **cfg["browser-protocol"],
+            "label": "连续参考视频接口",
+            "video_input": ["9", "file"],
+            "reference_fps": 8,
+            "max_reference_frames": 16,
+            "workflow": {
+                "1": {"inputs": {"text": "", "seed": 0}},
+                "9": {"class_type": "LoadVideo", "inputs": {"file": ""}},
+                "90": {"inputs": {"frames": ["9", 0]}},
+            },
+        }
     try:
         yield {"AI_SHIP_COMFY_PROFILES": json.dumps(cfg)}, issued
     finally:

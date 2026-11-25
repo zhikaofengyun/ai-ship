@@ -26,6 +26,7 @@ import {
   toast,
   formData,
   time,
+  uid,
 } from "./ui.js";
 
 const DIMENSIONS = {
@@ -373,6 +374,8 @@ function reserve(ctx) {
 }
 function score(ctx) {
   const pid = ctx.requireProject();
+  const requestIds = new Map();
+  const firstRequest = uid();
   const dialog = form(
     "评价素材",
     pick(ctx, "AssetVersion", "素材", "asset_version_id", "选择素材版本") +
@@ -392,21 +395,27 @@ function score(ctx) {
       ]),
     "保存评价",
     async (v) => {
-      const keys = Object.keys(DIMENSIONS),
-        r = await post(ctx, "assets/score", {
-          project_id: pid,
-          asset_version_id: v.asset_version_id,
-          dimensions: Object.fromEntries(
-            keys.map((k) => [k, v[k] === "" ? null : Number(v[k])]),
-          ),
-          weights:
-            v.weight_mode === "manual"
-              ? Object.fromEntries(
-                  keys.map((k) => [k, Number(v["weight_" + k])]),
-                )
-              : null,
-          evidence_refs: v.evidence ? [v.evidence] : [],
-        });
+      const keys = Object.keys(DIMENSIONS);
+      const body = {
+        project_id: pid,
+        asset_version_id: v.asset_version_id,
+        dimensions: Object.fromEntries(
+          keys.map((k) => [k, v[k] === "" ? null : Number(v[k])]),
+        ),
+        weights:
+          v.weight_mode === "manual"
+            ? Object.fromEntries(keys.map((k) => [k, Number(v["weight_" + k])]))
+            : null,
+        evidence_refs: v.evidence ? [v.evidence] : [],
+      };
+      const fingerprint = JSON.stringify(body);
+      if (!requestIds.has(fingerprint)) {
+        requestIds.set(fingerprint, requestIds.size ? uid() : firstRequest);
+      }
+      const r = await post(ctx, "assets/score", {
+        ...body,
+        request_id: requestIds.get(fingerprint),
+      });
       await done(
         ctx,
         r.data.observed_score == null

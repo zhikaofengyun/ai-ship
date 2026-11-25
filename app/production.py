@@ -613,6 +613,7 @@ def release_usage(
 
 
 class ScoreInput(Body):
+    request_id: str | None = Field(default=None, min_length=1, max_length=150)
     project_id: str
     asset_version_id: str
     dimensions: dict[str, float | None]
@@ -624,39 +625,69 @@ class ScoreInput(Body):
 @router.post("/assets/score")
 def score_asset(body: ScoreInput, request: Request, actor: Actor = Depends(current_actor)):
     require_write(actor)
-    from .score_policies import checked_weights, production_weights, weighted_score
+    from .selection import on_request
 
+    def observe():
+        try:
+            return score_observation(body, actor)
+        except DomainError as exc:
+            if exc.code != "SCORING_PAUSED":
+                raise
+            # Preserve the guard's committed change even when the score itself is rejected.
+            return {"scoring_paused": True}
+
+    with get_store().transaction():
+        score = on_request("asset-score", body, actor, observe) if body.request_id else observe()
+    if score.get("scoring_paused"):
+        raise DomainError("SCORING_PAUSED", "项目素材评分已暂停。", 409)
+    return ok(score, request)
+
+
+def score_observation(body, actor):
+    from uuid import uuid4
+    from .score_policies import (
+        PREFIX,
+        checked_weights,
+        managed,
+        production_weights,
+        trial_weights,
+        weighted_score,
+    )
+
+    assignment = None
     item = record(actor, body.asset_version_id, "AssetVersion", project=body.project_id)
     if body.weights is None:
         weights, policy_refs = production_weights(actor, body.project_id)
+        weights, policy_refs, assignment = trial_weights(
+            actor, body.project_id, item, weights, policy_refs
+        )
     else:
         weights, policy_refs = checked_weights(body.weights), []
     result, coverage = weighted_score(body.dimensions, weights)
     refs = [ref(item), *policy_refs] + [
         ref(record(actor, rid, project=body.project_id)) for rid in body.evidence_refs
     ]
-    score = save(
-        actor,
-        "AssetScore",
-        body.project_id,
-        {
-            "asset_version_ref": item["id"],
-            "dimension_scores": body.dimensions,
-            "observed_score": result,
-            "coverage": coverage,
-            "score_policy": policy_refs[0] if policy_refs else None,
-            "weight_version": digest(weights),
-            "weights": weights,
-            "context_dimensions": body.context,
-            "sample_n": len(body.evidence_refs),
-            "input_snapshot_refs": body.evidence_refs,
-            "uncertainty": "缺失维度未填零；分数为已观测维度加权均值，不是因果归因。",
-            "evaluated_at": now(),
-            "eligibility": "scored" if result is not None else "insufficient_evidence",
-        },
-        refs,
-    )
-    return ok(score, request)
+    data = {
+        "asset_version_ref": item["id"],
+        "dimension_scores": body.dimensions,
+        "observed_score": result,
+        "coverage": coverage,
+        "score_policy": policy_refs[0] if policy_refs else None,
+        "weight_version": digest(weights),
+        "weights": weights,
+        "context_dimensions": body.context,
+        "sample_n": len(body.evidence_refs),
+        "input_snapshot_refs": body.evidence_refs,
+        "uncertainty": "缺失维度未填零；分数为已观测维度加权均值，不是因果归因。",
+        "evaluated_at": now(),
+        "eligibility": "scored" if result is not None else "insufficient_evidence",
+    }
+    if assignment:
+        data.update(name="限量试用 · 素材评分", trial_assignment=assignment)
+        return managed(
+            actor, "AssetScore", body.project_id, data, refs, PREFIX + "observation_" + uuid4().hex
+        )
+    return save(actor, "AssetScore", body.project_id, data, refs)
 
 
 class AlignmentInput(Body):

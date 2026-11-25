@@ -130,9 +130,9 @@ def duration_bounds(actor, recipe):
         return {"min_seconds": exact, "max_seconds": exact, "basis": "frozen_template"}
     low = high = 0
     for slot in recipe["slots"]:
-        lengths = [c["source_out"] - c["source_in"] for c in slot["choices"]] or [
-            slot["generate"]["duration"]
-        ]
+        lengths = [c["source_out"] - c["source_in"] for c in slot["choices"]]
+        if slot.get("generate"):
+            lengths.append(slot["generate"]["duration"])
         low += min(lengths)
         high += max(lengths)
     return {
