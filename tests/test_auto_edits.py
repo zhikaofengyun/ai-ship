@@ -565,6 +565,47 @@ class AutoEditTests(ProductionBase):
         self.assertEqual(placements(traffic="paid")["total"], 0)
         self.assertEqual(placements(cohort_hours=48)["matching_posts"], 0)
         self.assertEqual(placements(end_seconds=0.5)["missing_boundary_points"], 1)
+        sample = positions["items"][0]
+        cohort = dict(
+            account_id=self.account["id"],
+            start_seconds=0,
+            end_seconds=2,
+            traffic="organic",
+            cohort_after_hours=0,
+            cohort_hours=24,
+        )
+        body = dict(
+            project_id=self.pid,
+            request_id=uuid4().hex,
+            cohort=cohort,
+            source={"id": sample["source_id"], "version": sample["source_version"]},
+            role=sample["role"],
+            evidence_hash=sample["evidence_hash"],
+            hypothesis="Possible framing effect",
+            counterevidence="Co-occurring footage",
+            next_edit="Compare a different opening",
+            stop_rule="Stop if lower on held-out posts",
+        )
+        result = action("post-reviews/placement-hypotheses", body)["insight"]
+        self.assertEqual(
+            action("post-reviews/placement-hypotheses", body)["insight"]["id"], result["id"]
+        )
+        self.assertTrue(any(r["id"] == fixed["id"] for r in result["refs"]))
+        excerpt = feedback_context(LOCAL_ACTOR, self.pid, [ChosenVersion(**pin(result))])[0]
+        self.assertIn("Co-occurring footage", excerpt["data_excerpt"])
+        self.assertFalse(excerpt["causal_claim"])
+        stale = {**body, "request_id": uuid4().hex, "evidence_hash": "0" * 64}
+        self.assertEqual(
+            action("post-reviews/placement-hypotheses", stale, 409)["code"],
+            "PLACEMENT_EVIDENCE_CHANGED",
+        )
+        new_curve = {**corrected, "request_id": uuid4().hex, "observed_at": "2026-01-05T00:00:00Z"}
+        action("post-reviews/retention-mapping", new_curve)
+        from app.errors import DomainError
+
+        with self.assertRaises(DomainError) as caught:
+            feedback_context(LOCAL_ACTOR, self.pid, [ChosenVersion(**pin(result))])
+        self.assertEqual(caught.exception.code, "PLACEMENT_EVIDENCE_CHANGED")
         feedback = feedback_context(LOCAL_ACTOR, self.pid, [ChosenVersion(**pin(insight))])
         self.assertIn("largest_observed_drop", feedback[0]["data_excerpt"])
         invalid = {

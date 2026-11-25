@@ -1,3 +1,4 @@
+import { mountTikTokLogin } from "./tiktok-login.js";
 import { placementPerformance } from "./placement-performance.js";
 import { area, esc, field, formData, modal, select, uid } from "./ui.js";
 
@@ -259,7 +260,7 @@ export async function tiktokAccountConnection(ctx, id) {
     "/production/tiktok/accounts/" + encodeURIComponent(id) + "/connection";
   const dlg = modal(
     "TikTok 只读连接",
-    '<p role="status" data-info></p><p data-scopes></p><div class="dialog-actions"><button type="button" class="button secondary" data-action="suspend">暂停读取</button><button type="button" class="button primary" data-action="verify">核验账号与读取权限</button></div>',
+    '<p role="status" data-info></p><p data-scopes></p><div class="dialog-actions"><button type="button" class="button secondary" data-action="suspend">暂停读取</button><button type="button" class="button primary" data-action="verify">核验账号与读取权限</button></div><div data-login-panel></div>',
   );
   const modalId = dlg.dataset.modalId,
     active = () =>
@@ -330,5 +331,15 @@ export async function tiktokAccountConnection(ctx, id) {
         }
       }),
   );
-  await read();
+  await Promise.all([
+    read(),
+    mountTikTokLogin(
+      ctx,
+      dlg.querySelector("[data-login-panel]"),
+      id,
+      project_id,
+      active,
+      read,
+    ),
+  ]);
 }

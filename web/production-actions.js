@@ -1,3 +1,4 @@
+import { evidenceReplay } from "./evidence-replay.js";
 import { batchObservability } from "./batch-observability.js";
 import { sourceAdmission } from "./source-admission.js";
 import { managePublication } from "./publication-lifecycle.js";
@@ -14,6 +15,7 @@ import { cooldown, exploration, tiers } from "./asset-lifecycle.js";
 import { scorePolicyActions } from "./score-policies.js";
 import { openAssetSearch } from "./asset-search.js";
 import { openVoiceStudio } from "./voice-studio.js";
+import { openSpeech } from "./speech-review.js";
 import { openSoundtrack } from "./soundtrack.js";
 import {
   esc,
@@ -160,6 +162,7 @@ function trends(ctx) {
     select("数据源", "provider", [
       ["google_trends", "Google Trends"],
       ["youtube_most_popular", "YouTube 热门视频"],
+      ["peertube_trending", "PeerTube 热门视频"],
     ]) +
       field(
         "国家或地区代码",
@@ -168,6 +171,11 @@ function trends(ctx) {
         "text",
         'required minlength="2" maxlength="2" pattern="[A-Za-z]{2}"',
       ) +
+      select("PeerTube 观察站点", "instance", [
+        ["peertube.tv", "PeerTube.tv"],
+        ["framatube.org", "Framatube"],
+        ["tilvids.com", "TILvids"],
+      ]) +
       numeric("最多读取", "limit", 10, 'min="1" max="50" required') +
       '<div class="span2"><button type="button" class="button ghost" data-manual>手动记录来源</button></div>',
     "获取并保存",
@@ -175,7 +183,9 @@ function trends(ctx) {
       const result = await post(ctx, "trends/sync", {
         project_id,
         provider: v.provider,
-        region: v.region.toUpperCase(),
+        ...(v.provider === "peertube_trending"
+          ? { instance: v.instance }
+          : { region: v.region.toUpperCase() }),
         limit: Number(v.limit),
       });
       await ctx.reloadData();
@@ -185,6 +195,18 @@ function trends(ctx) {
       );
     },
   );
+  const provider = d.querySelector("[name=provider]"),
+    region = d.querySelector("[name=region]"),
+    instance = d.querySelector("[name=instance]");
+  function updateScope() {
+    const usesInstance = provider.value === "peertube_trending";
+    region.disabled = usesInstance;
+    region.closest("label").hidden = usesInstance;
+    instance.disabled = !usesInstance;
+    instance.closest("label").hidden = !usesInstance;
+  }
+  provider.onchange = updateScope;
+  updateScope();
   d.querySelector("[data-manual]").onclick = () => manualTrend(ctx);
 }
 function manualTrend(ctx) {
@@ -544,6 +566,7 @@ const actions = {
   F05: ["管理交接结果", managePublication],
   F07: ["调整或取消发布意图", managePublication],
   F09: ["登记发布后的观察", managePublication],
+  H05: ["离线回放与提示词对照", evidenceReplay],
   H08: ["实测运行环境", harnessRuntime],
   H09: ["登记与运行配方", harnessRuntime],
   C10: ["在检查点调整运行", chooseRecovery],
@@ -586,7 +609,8 @@ const actions = {
   U05: ["编排探索配额", exploration],
   U06: ["归档与复苏", tiers],
   U07: ["评价素材", score],
-  V04: ["人工标记词句时码", align],
+  V04: ["识别对白与逐句审核", (ctx) => openSpeech(ctx, () => align(ctx))],
+  L04: ["识别对白与逐句审核", (ctx) => openSpeech(ctx)],
   V05: ["编辑词句锚点", align],
   M08: ["查看时码来源", trace],
   X05: ["核对试验结果", evaluate],

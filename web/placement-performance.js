@@ -1,4 +1,4 @@
-import { esc, field, formData, modal, select, toast } from "./ui.js";
+import { area, esc, field, formData, modal, select, toast, uid } from "./ui.js";
 
 export function placementPerformance(ctx, onReturn, previous = {}) {
   const project_id = ctx.requireProject();
@@ -66,7 +66,7 @@ export function placementPerformance(ctx, onReturn, previous = {}) {
           return;
         const list = result.items
           .map(
-            (row) =>
+            (row, index) =>
               '<article class="record-row"><strong>' +
               esc(row.name) +
               "</strong><p>" +
@@ -88,7 +88,9 @@ export function placementPerformance(ctx, onReturn, previous = {}) {
                   (x) => "<p>" + esc(x.post) + " · " + esc(x.insight) + "</p>",
                 )
                 .join("") +
-              "</details></article>",
+              '</details><button type="button" class="button small secondary" data-learn="' +
+              index +
+              '">沉淀为选材假设</button></article>',
           )
           .join("");
         const d = modal(
@@ -117,6 +119,88 @@ export function placementPerformance(ctx, onReturn, previous = {}) {
           null,
           true,
         );
+        for (const b of d.querySelectorAll("[data-learn]")) {
+          b.onclick = () => {
+            const row = result.items[Number(b.dataset.learn)],
+              request_id = uid();
+            modal(
+              "沉淀选材假设",
+              "<p>" +
+                esc(row.name) +
+                " · " +
+                row.posts +
+                " 篇同口径帖子 · 区间留存 " +
+                (100 * row.mean_post_retention).toFixed(1) +
+                "%</p>" +
+                '<form data-form class="form-stack">' +
+                area(
+                  "推测这个位置表现好的或差的原因",
+                  "hypothesis",
+                  "",
+                  "required maxlength=3000",
+                ) +
+                area(
+                  "其他可能解释或反例",
+                  "counterevidence",
+                  "",
+                  "required maxlength=3000",
+                ) +
+                area(
+                  "下一版准备如何使用或替换这个素材",
+                  "next_edit",
+                  "",
+                  "required maxlength=3000",
+                ) +
+                area(
+                  "什么结果会让你停止沿用这个判断",
+                  "stop_rule",
+                  "",
+                  "required maxlength=3000",
+                ) +
+                '<button type="submit" class="button primary">固定证据并保存</button></form>',
+              async (edit) => {
+                const cohort = {
+                  account_id: filters.account_id,
+                  traffic: filters.traffic,
+                };
+                for (const k of [
+                  "start_seconds",
+                  "end_seconds",
+                  "cohort_after_hours",
+                  "cohort_hours",
+                ])
+                  cohort[k] = Number(filters[k]);
+                const r = await ctx.api(
+                  "/production/post-reviews/placement-hypotheses",
+                  {
+                    method: "POST",
+                    body: {
+                      project_id,
+                      request_id,
+                      cohort,
+                      source: {
+                        id: row.source_id,
+                        version: row.source_version,
+                      },
+                      role: row.role,
+                      evidence_hash: row.evidence_hash,
+                      ...formData(edit),
+                    },
+                  },
+                );
+                await ctx.reloadData();
+                const ready = modal(
+                  "选材假设已保存",
+                  "<p>" +
+                    esc(r.insight.data.name) +
+                    "。生成下一版时，可在 AI 制作台的迭代依据中选用这个版本。</p>" +
+                    '<button class="button secondary" data-return>返回帖子复盘</button>',
+                );
+                ready.querySelector("[data-return]").onclick = onReturn;
+              },
+            );
+          };
+        }
         d.querySelector("[data-back]").onclick = () =>
           placementPerformance(ctx, onReturn, filters);
         d.querySelector("[data-return]").onclick = onReturn;

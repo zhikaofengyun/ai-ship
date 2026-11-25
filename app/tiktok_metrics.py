@@ -32,7 +32,12 @@ class SyncMetrics(Body):
     request_id: str = Field(min_length=1, max_length=100)
 
 
-def binding(actor, project, account):
+def binding(actor, project, account, refresh_if_due=True):
+    from .tiktok_login import managed_binding
+
+    managed = managed_binding(actor, project, account, refresh_if_due)
+    if managed is not None:
+        return managed
     try:
         config = json.loads(os.getenv("AI_SHIP_TIKTOK_ACCOUNTS") or "[]")
         if not isinstance(config, list):
@@ -179,9 +184,10 @@ def change_connection(
     stamp = datetime.now(timezone.utc).isoformat()
     with store.transaction(), store.connection() as db:
         check_revision()
-        if not actor_still_authorized(actor) or (
+        if not actor_still_authorized(actor, {"owner", "reviewer"}) or (
             body.action == "verify"
-            and binding(actor, body.project_id, account_id) != (open_id, token)
+            and binding(actor, body.project_id, account_id, refresh_if_due=False)
+            != (open_id, token)
         ):
             raise DomainError("TIKTOK_AUTH_CHANGED", "核验期间授权已变化。", 409)
         state = "verified_read_only" if caps else "suspended"
@@ -257,7 +263,9 @@ def sync_metrics(body: SyncMetrics, request: Request, actor: Actor = Depends(cur
     def persist():
         if check_connection(store, actor, body.project_id, account["id"]) != connection_revision:
             raise DomainError("TIKTOK_AUTH_CHANGED", "平台读取期间账号连接已变化。", 409)
-        if not actor_still_authorized(actor) or binding(actor, body.project_id, account["id"]) != (
+        if not actor_still_authorized(actor) or binding(
+            actor, body.project_id, account["id"], refresh_if_due=False
+        ) != (
             open_id,
             token,
         ):

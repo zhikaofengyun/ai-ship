@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "normal media library entry",
+    "optional manifest with SHA-256",
+    "two stable physical paths -> one immutable asset and two provenance receipts",
+    "reopening restores persisted intake state"
+  ],
+  "page_errors": []
+}

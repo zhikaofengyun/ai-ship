@@ -63,6 +63,11 @@ CREATE TABLE IF NOT EXISTS events(
  event_type TEXT NOT NULL,payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),
  actor_id TEXT NOT NULL,trace_id TEXT NOT NULL,created_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS ix_events_scope ON events(tenant_id,project_id,seq);
+CREATE TABLE IF NOT EXISTS media_frame_vectors(
+ tenant TEXT NOT NULL, project TEXT NOT NULL, space TEXT NOT NULL, version_id TEXT NOT NULL,
+ pin TEXT NOT NULL, pts_us INTEGER NOT NULL CHECK(pts_us>=0), rgb_sha256 TEXT NOT NULL, embedding BLOB NOT NULL,
+ PRIMARY KEY(tenant,project,space,version_id,pts_us)
+);
 CREATE TABLE IF NOT EXISTS media_text_vectors(
  tenant TEXT NOT NULL,project TEXT NOT NULL,space TEXT NOT NULL,version_id TEXT NOT NULL,pin TEXT NOT NULL,
  embedding BLOB NOT NULL,PRIMARY KEY(tenant,project,space,version_id));

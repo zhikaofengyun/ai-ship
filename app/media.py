@@ -28,6 +28,7 @@ import time
 import uuid
 import zipfile
 from collections import deque
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from fractions import Fraction
 from functools import lru_cache
@@ -685,6 +686,15 @@ def resolve_media(
     return record, blob, path
 
 
+@dataclass(frozen=True)
+class PreparedImport:
+    """Probe and persist a private, immutable staging copy before a ledger transaction."""
+
+    checksum: str
+    probe: dict
+    blob: dict
+
+
 def import_saved_file(
     store: Any,
     actor: Any,
@@ -698,16 +708,18 @@ def import_saved_file(
     generated_by: dict | None = None,
     held_from: dict | None = None,
     source_media: dict | None = None,
+    directory_origin: dict | None = None,
+    prepared: PreparedImport | None = None,
 ) -> dict:
     require_project(store, actor, project_id)
     filename = safe_filename(filename)
     size = path.stat().st_size
     if not 0 < size <= MAX_BYTES:
         raise DomainError("UPLOAD_SIZE_LIMIT", "文件为空或超过 256 MiB 单文件限制", 413)
-    checksum = hash_file(path)
+    checksum = prepared.checksum if prepared else hash_file(path)
     kwargs = actor_kwargs(actor, project_id)
     try:
-        probe = probe_media(path)
+        probe = prepared.probe if prepared else probe_media(path)
     except DomainError as error:
         with store.transaction():
             batch = import_batch or store.create(
@@ -715,13 +727,19 @@ def import_saved_file(
                 {
                     "name": Path(filename).name,
                     "intake_mode": (
-                        "still_hold"
-                        if held_from
+                        "directory_manifest"
+                        if directory_origin
                         else (
-                            "source_connector"
-                            if source_media
+                            "still_hold"
+                            if held_from
                             else (
-                                "generated_candidate" if generated_by else "browser_file_selection"
+                                "source_connector"
+                                if source_media
+                                else (
+                                    "generated_candidate"
+                                    if generated_by
+                                    else "browser_file_selection"
+                                )
                             )
                         )
                     ),
@@ -769,40 +787,35 @@ def import_saved_file(
             422,
             {"import_entry_id": entry["id"]},
         )
-    prior = next(
-        (
-            r
-            for r in store.list(
-                actor.tenant_id, kind="Asset", project_id=project_id, q=checksum, limit=2000
-            )
-            if r["data"].get("content_hash") == checksum
-        ),
-        None,
-    )
-    blob_data = persist_blob(path, actor.tenant_id)
+    blob_data = prepared.blob if prepared else persist_blob(path, actor.tenant_id)
     mimetype = media_mime(probe)
     with store.transaction():
-        prior = next(
-            (
-                r
-                for r in store.list(
-                    actor.tenant_id, kind="Asset", project_id=project_id, q=checksum, limit=2000
-                )
-                if r["data"].get("content_hash") == checksum
-            ),
-            None,
-        )
+        with store.connection() as db:
+            prior_id = db.execute(
+                """SELECT r.id FROM records r JOIN revisions v ON v.tenant_id=r.tenant_id
+                AND v.record_id=r.id AND v.version=r.latest_version WHERE v.tenant_id=?
+                AND r.project_id=? AND r.kind='Asset' AND json_extract(v.data_json,'$.content_hash')=?
+                LIMIT 1""",
+                (actor.tenant_id, project_id, checksum),
+            ).fetchone()
+        prior = store.get(prior_id[0], actor.tenant_id) if prior_id else None
         batch = import_batch or store.create(
             "ImportBatch",
             {
                 "name": Path(filename).name,
                 "intake_mode": (
-                    "still_hold"
-                    if held_from
+                    "directory_manifest"
+                    if directory_origin
                     else (
-                        "source_connector"
-                        if source_media
-                        else ("generated_candidate" if generated_by else "browser_file_selection")
+                        "still_hold"
+                        if held_from
+                        else (
+                            "source_connector"
+                            if source_media
+                            else (
+                                "generated_candidate" if generated_by else "browser_file_selection"
+                            )
+                        )
                     )
                 ),
                 "status": "completed",
@@ -815,15 +828,20 @@ def import_saved_file(
             "Source",
             {
                 "kind": (
-                    "timed_still_derivative"
-                    if held_from
+                    "capture_directory"
+                    if directory_origin
                     else (
-                        "wikimedia_commons"
-                        if source_media
-                        else ("generated_candidate" if generated_by else "local_upload")
+                        "timed_still_derivative"
+                        if held_from
+                        else (
+                            "wikimedia_commons"
+                            if source_media
+                            else ("generated_candidate" if generated_by else "local_upload")
+                        )
                     )
                 ),
                 "relative_path": filename,
+                **({"directory_origin": directory_origin} if directory_origin else {}),
                 "original_url": source_media["description_url"] if source_media else None,
                 **(
                     {
@@ -851,21 +869,16 @@ def import_saved_file(
         )
         if prior:
             asset = prior
-            version = next(
-                (
-                    r
-                    for r in store.list(
-                        actor.tenant_id,
-                        kind="AssetVersion",
-                        project_id=project_id,
-                        q=prior["id"],
-                        limit=2000,
-                    )
-                    if r["data"].get("asset_id") == prior["id"]
-                    and r["data"].get("variant") == "original"
-                ),
-                None,
-            )
+            with store.connection() as db:
+                original_id = db.execute(
+                    """SELECT r.id FROM records r JOIN revisions v ON v.tenant_id=r.tenant_id
+                    AND v.record_id=r.id AND v.version=r.latest_version WHERE v.tenant_id=?
+                    AND r.project_id=? AND r.kind='AssetVersion'
+                    AND json_extract(v.data_json,'$.asset_id')=? AND json_extract(v.data_json,'$.variant')='original'
+                    LIMIT 1""",
+                    (actor.tenant_id, project_id, prior["id"]),
+                ).fetchone()
+            version = store.get(original_id[0], actor.tenant_id) if original_id else None
             if not version:
                 raise DomainError(
                     "INCOMPLETE_ASSET", "既有素材缺少原件版本，需要修复后才能复用", 409

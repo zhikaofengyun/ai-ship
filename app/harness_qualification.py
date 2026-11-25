@@ -1,6 +1,7 @@
 """Version a registered recipe after real, bounded runtime and failure-path checks."""
 
 import copy
+import hashlib
 from functools import lru_cache
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -29,6 +30,49 @@ from .selection import ChosenVersion, on_request
 from .store import get_store
 
 router = APIRouter(prefix="/harness", tags=["runtime qualification"])
+
+
+IMPLEMENTATION_ROOT = Path(__file__).parent
+# Shared execution and rights checks affect every registered recipe. Keep the
+# exact implementation digests alongside the public argument schemas.
+RUNTIME_MODULES = (
+    "harness_qualification.py",
+    "execution.py",
+    "workflow.py",
+    "graph_revision.py",
+    "auth.py",
+    "store.py",
+    "budget.py",
+    "media.py",
+    "media_admission.py",
+    "generation.py",
+    "timeline_exchange.py",
+    "narration.py",
+    "production.py",
+    "providers.py",
+)
+
+
+@lru_cache(maxsize=128)
+def implementation_digest(path, stat_key):
+    with path.open("rb") as source:
+        return hashlib.file_digest(source, "sha256").hexdigest()
+
+
+def implementation_hashes():
+    result = {}
+    for name in RUNTIME_MODULES:
+        path = IMPLEMENTATION_ROOT / name
+        try:
+            info = path.stat()
+            result[name] = implementation_digest(
+                path, (info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+            )
+        except OSError:
+            raise DomainError(
+                "RUNTIME_IMPLEMENTATION_UNAVAILABLE", "无法核实运行底座的本地实现。", 503
+            ) from None
+    return result
 
 
 @lru_cache(maxsize=16)
@@ -61,7 +105,13 @@ def runtime():
         }
         for r, v in sorted(HANDLERS.items())
     ]
-    return {"versions": versions, "routes": routes, "fingerprint": digest([versions, routes])}
+    implementation = implementation_hashes()
+    return {
+        "versions": versions,
+        "routes": routes,
+        "implementation": implementation,
+        "fingerprint": digest([versions, routes, implementation]),
+    }
 
 
 @router.get("/runtime")

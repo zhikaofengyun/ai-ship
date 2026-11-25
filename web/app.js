@@ -1,3 +1,4 @@
+import { directoryIntake } from "./directory-intake.js";
 import { managePublication } from "./publication-lifecycle.js";
 import { harnessRuntime } from "./harness-runtime.js";
 import { syncTikTok, tiktokAccountConnection } from "./post-reviews.js";
@@ -34,7 +35,10 @@ import {
 } from "./ui.js";
 import { mountBatches } from "./batch-workspace.js";
 import { mountProduction } from "./project-production.js";
-import { installSidebarResize } from "./workspace-layout.js";
+import {
+  installSidebarResize,
+  installInspectorLayout,
+} from "./workspace-layout.js";
 import { openRenderRecovery } from "./render-recovery.js";
 import { mountEditor } from "./editor.js";
 import { mountWorkflow } from "./workflow.js";
@@ -543,6 +547,14 @@ async function renderRoute() {
     };
     if (route[0] === "editor") {
       ctx.editorIntent = route[1];
+      ctx.editorSource =
+        route[1] === "source"
+          ? {
+              id: route[2],
+              version: Number(route[3]),
+              seconds: Number(route[4] || 0),
+            }
+          : null;
       ctx.editorTimelineId = route[1] === "project-timeline" ? route[2] : null;
       await mountEditor(main, ctx);
     } else if (route[0] === "production") {
@@ -986,9 +998,10 @@ async function modulePage(id, requestedFeature) {
   $("#main").innerHTML = `<div class="page module-page">
     <div class="module-path">${esc(group?.[0] || "")}</div>
     ${pageHead("", m.label, "", workspace ? `<a class="button secondary" href="#${workspace[0]}">${icon("external")}${esc(workspace[1])}</a>` : "")}
-    <div class="feature-layout">
-      <nav class="feature-sidebar" aria-label="模块功能">${features.map((x) => `<button type="button" class="feature-item ${x.id === f.id ? "active" : ""}" data-action="feature" data-id="${x.id}" aria-current="${x.id === f.id ? "page" : "false"}"><span>${esc(x.label)}</span>${icon("chevron")}</button>`).join("")}</nav>
-      <section class="feature-detail"><header class="feature-title"><h2>${esc(f.label)}</h2>${direct ? btn(direct[0], "feature-action", "arrow", "button secondary") : ""}</header>
+    <div class="module-layout-tools" role="group" aria-label="模块目录布局"><button type="button" class="button ghost small" data-pane-toggle aria-controls="module-feature-list">收起功能目录</button><button type="button" class="button ghost small" data-pane-move>移至右侧</button><button type="button" class="button ghost small" data-pane-reset>还原布局</button></div>
+    <div class="feature-layout adjustable-layout">
+      <nav class="feature-sidebar" id="module-feature-list" data-inspector aria-label="模块功能">${features.map((x) => `<button type="button" class="feature-item ${x.id === f.id ? "active" : ""}" data-action="feature" data-id="${x.id}" aria-current="${x.id === f.id ? "page" : "false"}"><span>${esc(x.label)}</span>${icon("chevron")}</button>`).join("")}</nav>
+      <section class="feature-detail"><header class="feature-title"><h2>${esc(f.label)}</h2><div class="heading-actions">${["A01", "A05", "A06"].includes(f.id) ? btn("采集目录", "capture-directory", "folder", "button secondary") : ""}${direct ? btn(direct[0], "feature-action", "arrow", "button secondary") : ""}</div></header>
         <form id="feature-form">
           <div class="feature-route-row"><label class="field"><span>处理方案</span><select id="feature-route">${f.routes.map((r) => `<option value="${r.id}" ${r.id === route.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select></label><output id="feature-route-detail" class="sr-only"></output></div>
           <div class="feature-controls">${renderControls(controls, cfg.parameters || {})}</div>
@@ -1013,6 +1026,21 @@ async function modulePage(id, requestedFeature) {
         ${outputs.length ? `<section class="feature-output"><div class="surface-title"><h3>项目相关记录</h3>${outputs.some((o) => !READ_ONLY_KINDS.has(o.entity)) ? btn("录入记录", "entity", "plus", "button ghost small") : ""}</div><div id="feature-records"></div></section>` : ""}
       </section>
     </div></div>`;
+  const actor = state.health?.actor;
+  state.cleanup.push(
+    installInspectorLayout(
+      $(".feature-layout"),
+      $(".module-layout-tools"),
+      JSON.stringify([
+        "ship-module-index-v1",
+        actor?.tenant_id || "local",
+        actor?.actor_id || "owner",
+        state.projectId || "none",
+      ]),
+      "功能目录",
+      { side: "left", width: 224, min: 152, max: 420 },
+    ),
+  );
   const form = $("#feature-form"),
     routeSelect = $("#feature-route");
   let selectedRoute = route.id,
@@ -1138,6 +1166,7 @@ async function modulePage(id, requestedFeature) {
       modulePage(m.id, button.dataset.id);
     },
     "feature-action": () => direct?.[1](),
+    "capture-directory": () => directoryIntake(ctx),
     "feature-record": (b) =>
       openRecord(state.records.find((r) => r.id === b.dataset.id)),
     entity: () =>
@@ -1280,7 +1309,7 @@ async function assets() {
     );
   });
   $("#main").innerHTML =
-    `<div class="page">${pageHead("MEDIA LIBRARY", "素材库", "原始文件保持不变。每次处理都会生成独立版本。", `${btn("文件夹", "folder-import", "folder", "button secondary")}${btn("导入素材", "import", "plus", "button primary")}`)}<input type="file" id="media-input" multiple accept="video/*,audio/*,image/*" hidden><input type="file" id="folder-input" multiple webkitdirectory hidden><div class="toolbar"><div class="search-field">${icon("search")}<input id="asset-search" value="${esc(state.assetQuery)}" placeholder="搜索素材名称" aria-label="搜索素材"></div><div class="segmented" role="group" aria-label="素材类型">${[
+    `<div class="page">${pageHead("MEDIA LIBRARY", "素材库", "原始文件保持不变。每次处理都会生成独立版本。", `${btn("采集目录", "capture-directory", "folder", "button secondary")}${btn("文件夹", "folder-import", "folder", "button secondary")}${btn("导入素材", "import", "plus", "button primary")}`)}<input type="file" id="media-input" multiple accept="video/*,audio/*,image/*" hidden><input type="file" id="folder-input" multiple webkitdirectory hidden><div class="toolbar"><div class="search-field">${icon("search")}<input id="asset-search" value="${esc(state.assetQuery)}" placeholder="搜索素材名称" aria-label="搜索素材"></div><div class="segmented" role="group" aria-label="素材类型">${[
       ["all", "全部"],
       ["video", "视频"],
       ["image", "图片"],
@@ -1334,6 +1363,7 @@ async function assets() {
   bind({
     import: () => choose(false),
     "folder-import": () => choose(true),
+    "capture-directory": () => directoryIntake(ctx),
     "asset-filter": (b) => {
       state.assetType = b.dataset.value;
       assets();

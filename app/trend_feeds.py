@@ -12,7 +12,7 @@ from xml.etree import ElementTree as ET
 
 import httpx
 from fastapi import APIRouter, Depends, Request
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from .api import ok
 from .auth import Actor, current_actor, require_write
@@ -29,15 +29,31 @@ MAX_FEED_BYTES = 1_500_000
 
 class FeedSync(Body):
     project_id: str
-    provider: Literal["google_trends", "youtube_most_popular"]
-    region: str = Field(pattern=r"^[A-Z]{2}$")
+    provider: Literal["google_trends", "youtube_most_popular", "peertube_trending"]
+    region: str | None = Field(default=None, pattern=r"^[A-Z]{2}$")
+    instance: Literal["peertube.tv", "framatube.org", "tilvids.com"] | None = None
     limit: int = Field(default=10, ge=1, le=50, strict=True)
+
+    @model_validator(mode="after")
+    def correct_scope(self):
+        if self.provider == "peertube_trending":
+            if self.region is not None or not self.instance:
+                raise ValueError("PeerTube 榜单按实例读取，须选择站点并留空地区。")
+        elif self.region is None or self.instance is not None:
+            raise ValueError("地区榜单须选择地区，不能指定实例。")
+        return self
 
 
 def fetch_feed(body):
     headers = {}
     if body.provider == "google_trends":
         url, params = GOOGLE_RSS, {"geo": body.region}
+    elif body.provider == "peertube_trending":
+        url, params = f"https://{body.instance}/api/v1/videos", {
+            "sort": "-trending",
+            "count": body.limit,
+            "nsfw": "false",
+        }
     else:
         key = os.getenv("AI_SHIP_YOUTUBE_DATA_KEY", "").strip()
         if not key:
@@ -168,15 +184,65 @@ def youtube_rows(raw, body):
         }
 
 
+def peertube_rows(raw, body):
+    doc = json.loads(raw)
+    items = doc.get("data") if isinstance(doc, dict) else None
+    if not isinstance(items, list):
+        raise ValueError("Missing PeerTube video collection")
+    for rank, item in enumerate(items[: body.limit], 1):
+        if not isinstance(item, dict) or item.get("nsfw") is not False:
+            yield None
+            continue
+        title, video = item.get("name"), item.get("uuid")
+        url = safe_link(item.get("url")) if isinstance(item.get("url"), str) else None
+        account = item.get("account") or {}
+        if (
+            not isinstance(title, str)
+            or not title.strip()
+            or not isinstance(video, str)
+            or not re.fullmatch(r"[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}", video)
+            or not url
+            or not isinstance(account, dict)
+            or urlsplit(url).hostname != account.get("host")
+            or not urlsplit(url).path.rstrip("/").endswith("/" + video)
+        ):
+            yield None
+            continue
+        try:
+            published = timestamp(item.get("publishedAt")).isoformat()
+        except (DomainError, TypeError, ValueError):
+            yield None
+            continue
+        yield {
+            "title": title.strip()[:300],
+            "url": url,
+            "published_at": published,
+            "chart_position": rank,
+            "observing_instance": body.instance,
+            "origin_host": urlsplit(url).hostname,
+            "origin_video_uuid": video.lower(),
+            "federated_video_identity": urlsplit(url).hostname + "/" + video.lower(),
+            "video_totals": {
+                k: item[k]
+                for k in ("views", "likes", "dislikes", "comments")
+                if type(item.get(k)) is int and 0 <= item[k] <= 10**15
+            },
+            "metric_scope": "instance_trending_rank_with_provider_reported_counts",
+        }
+
+
 @router.post("/sync")
 def sync(body: FeedSync, request: Request, actor: Actor = Depends(current_actor)):
     require_write(actor)
     record(actor, body.project_id, "Project")
     url, raw = fetch_feed(body)
     try:
-        rows = list(
-            rss_rows(raw, body) if body.provider == "google_trends" else youtube_rows(raw, body)
-        )
+        parser = {
+            "google_trends": rss_rows,
+            "youtube_most_popular": youtube_rows,
+            "peertube_trending": peertube_rows,
+        }[body.provider]
+        rows = list(parser(raw, body))
     except (ET.ParseError, ValueError, AttributeError, TypeError, RecursionError):
         raise DomainError("TREND_FEED_FORMAT", "来源响应格式有误，未写入观察。", 502) from None
     fetched = datetime.now(timezone.utc)
@@ -212,6 +278,7 @@ def sync(body: FeedSync, request: Request, actor: Actor = Depends(current_actor)
                 "title": row["title"],
                 "platform": body.provider,
                 "region": body.region,
+                **({"instance": body.instance} if body.instance else {}),
                 "observed_at": fetched.isoformat(),
                 "expires_at": (fetched + timedelta(hours=24)).isoformat(),
                 "raw_ref": source["id"],
@@ -250,6 +317,7 @@ def sync(body: FeedSync, request: Request, actor: Actor = Depends(current_actor)
         {
             "provider": body.provider,
             "region": body.region,
+            **({"instance": body.instance} if body.instance else {}),
             "fetched_at": fetched.isoformat(),
             "feed_sha256": fingerprint,
             "items": result,

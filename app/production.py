@@ -330,6 +330,13 @@ def import_products(body: ProductImport, request: Request, actor: Actor = Depend
     )
 
 
+class ReviewedSearchFrame(Body):
+    version: int = Field(ge=1)
+    space: str = Field(pattern=r"^clip-b32/[a-f0-9]{64}$")
+    source_seconds: float = Field(ge=0, le=9e9, allow_inf_nan=False)
+    sample_rgb_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
 class TagInput(Body):
     project_id: str
     asset_version_id: str
@@ -342,6 +349,7 @@ class TagInput(Body):
     confidence: float | None = Field(default=None, ge=0, le=1)
     evidence: str = Field(min_length=1, max_length=4000)
     locked: bool = True
+    reviewed_frame: ReviewedSearchFrame | None = None
 
 
 @router.post("/tags")
@@ -354,6 +362,22 @@ def add_tag(body: TagInput, request: Request, actor: Actor = Depends(current_act
     if duration is not None and body.end > float(duration) + 0.05:
         raise DomainError("OUTSIDE_MEDIA", "标签区间超出真实素材时长。")
     with get_store().transaction():
+        proof = None
+        if body.reviewed_frame:
+            from .visual_index import confirm_frame
+
+            asset_version = record(
+                actor, body.asset_version_id, "AssetVersion", project=body.project_id
+            )
+            proof = confirm_frame(
+                get_store(),
+                actor,
+                body.project_id,
+                asset_version,
+                body.reviewed_frame,
+                body.start,
+                body.end,
+            )
         shot = save(
             actor,
             "Shot",
@@ -386,6 +410,7 @@ def add_tag(body: TagInput, request: Request, actor: Actor = Depends(current_act
                 "schema_version": "atlas-6.0",
                 "reviewer_lock": body.locked,
                 "evidence_frame_refs": [],
+                **({"reviewed_source_frame": proof} if proof else {}),
                 "evidence": body.evidence,
                 "author": actor.actor_id,
                 "status": "human_assertion",

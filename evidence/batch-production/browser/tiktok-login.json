@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "normal account UI",
+    "real local HTTPS cookie through browser redirect",
+    "state-bound callback",
+    "encrypted grant -> refresh -> revoke",
+    "callback query and token material absent from Uvicorn access log"
+  ],
+  "network": "localhost token protocol fixture; authorization navigation intercepted before external network",
+  "page_errors": [],
+  "operations": [
+    "authorization_code",
+    "refresh_token",
+    "revoke"
+  ]
+}

@@ -1,0 +1,408 @@
+{
+  "models": {
+    "en": {
+      "sha256": "b42e54229873c6a3a59875cefb7fafa2d8a7d5aeabbaa82b7572fa897e0fb19b",
+      "language": "en-US"
+    },
+    "zh": {
+      "sha256": "a313b87cc3c904138a1830886dcc6b6cdcbbd21c7f95edb72b8d6b751fad03cc",
+      "language": "zh-CN"
+    }
+  },
+  "engine": {
+    "engine": "vosk",
+    "required_version": "0.3.45",
+    "installed": true,
+    "max_window_seconds": 600,
+    "models": [
+      {
+        "id": "en",
+        "language": "en-US",
+        "sha256": "b42e54229873c6a3a59875cefb7fafa2d8a7d5aeabbaa82b7572fa897e0fb19b",
+        "available": true
+      },
+      {
+        "id": "zh",
+        "language": "zh-CN",
+        "sha256": "a313b87cc3c904138a1830886dcc6b6cdcbbd21c7f95edb72b8d6b751fad03cc",
+        "available": true
+      },
+      {
+        "id": "wrong-pin",
+        "language": "en-US",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "available": true
+      }
+    ]
+  },
+  "english": {
+    "clock": "source_presentation_seconds",
+    "source_sha256": "59dfb9a4acb36fe2a2affc14bacbee2920ff435cb13cc314a08c13f66ba7860e",
+    "analysis_wav_sha256": "56eae2db7756a24cfff37b7adb2ecfa6052462fa8590a054d7fbba3b1667f5ba",
+    "status": "awaiting_review",
+    "source_window": [
+      0,
+      11.0
+    ],
+    "cues": [
+      {
+        "end": 2.31,
+        "start": 0.3,
+        "text": "and so my fellow americans",
+        "words": [
+          {
+            "confidence": 1.0,
+            "end": 0.6,
+            "start": 0.3,
+            "word": "and"
+          },
+          {
+            "confidence": 1.0,
+            "end": 0.99,
+            "start": 0.6,
+            "word": "so"
+          },
+          {
+            "confidence": 1.0,
+            "end": 1.26,
+            "start": 0.99,
+            "word": "my"
+          },
+          {
+            "confidence": 1.0,
+            "end": 1.65,
+            "start": 1.26,
+            "word": "fellow"
+          },
+          {
+            "confidence": 1.0,
+            "end": 2.31,
+            "start": 1.65,
+            "word": "americans"
+          }
+        ]
+      },
+      {
+        "end": 4.44,
+        "start": 3.27,
+        "text": "as not",
+        "words": [
+          {
+            "confidence": 0.594302,
+            "end": 3.75,
+            "start": 3.27,
+            "word": "as"
+          },
+          {
+            "confidence": 1.0,
+            "end": 4.44,
+            "start": 3.93,
+            "word": "not"
+          }
+        ]
+      },
+      {
+        "end": 7.65,
+        "start": 5.28,
+        "text": "what your country can do for you",
+        "words": [
+          {
+            "confidence": 1.0,
+            "end": 5.61,
+            "start": 5.28,
+            "word": "what"
+          },
+          {
+            "confidence": 1.0,
+            "end": 5.88,
+            "start": 5.61,
+            "word": "your"
+          },
+          {
+            "confidence": 1.0,
+            "end": 6.45,
+            "start": 5.88,
+            "word": "country"
+          },
+          {
+            "confidence": 1.0,
+            "end": 6.66,
+            "start": 6.45,
+            "word": "can"
+          },
+          {
+            "confidence": 1.0,
+            "end": 6.9,
+            "start": 6.66,
+            "word": "do"
+          },
+          {
+            "confidence": 1.0,
+            "end": 7.08,
+            "start": 6.9,
+            "word": "for"
+          },
+          {
+            "confidence": 1.0,
+            "end": 7.65,
+            "start": 7.08,
+            "word": "you"
+          }
+        ]
+      },
+      {
+        "end": 10.56,
+        "start": 8.19,
+        "text": "ask what you can do for your country",
+        "words": [
+          {
+            "confidence": 0.707946,
+            "end": 8.633828,
+            "start": 8.19,
+            "word": "ask"
+          },
+          {
+            "confidence": 1.0,
+            "end": 8.82,
+            "start": 8.633828,
+            "word": "what"
+          },
+          {
+            "confidence": 1.0,
+            "end": 9.18,
+            "start": 8.82,
+            "word": "you"
+          },
+          {
+            "confidence": 1.0,
+            "end": 9.39,
+            "start": 9.18,
+            "word": "can"
+          },
+          {
+            "confidence": 1.0,
+            "end": 9.66,
+            "start": 9.39,
+            "word": "do"
+          },
+          {
+            "confidence": 1.0,
+            "end": 9.81,
+            "start": 9.66,
+            "word": "for"
+          },
+          {
+            "confidence": 1.0,
+            "end": 10.02,
+            "start": 9.81,
+            "word": "your"
+          },
+          {
+            "confidence": 1.0,
+            "end": 10.56,
+            "start": 10.02,
+            "word": "country"
+          }
+        ]
+      }
+    ],
+    "engine_version": "0.3.45",
+    "audio_stream": 0
+  },
+  "mandarin": {
+    "clock": "source_presentation_seconds",
+    "source_sha256": "2f9fc9c912bb71c85fb286cb88b599c81efb8f727c727a5ea8f6d1c89c55ac13",
+    "analysis_wav_sha256": "4634939cd6f383ef01ac5ba29bd9f151e80988215f7eeee66d24c07ff716eb4a",
+    "status": "awaiting_review",
+    "source_window": [
+      0,
+      4.281
+    ],
+    "cues": [
+      {
+        "end": 3.75,
+        "start": 0.45,
+        "text": "广州市房地产中介协会分析",
+        "words": [
+          {
+            "confidence": 0.875421,
+            "end": 1.38,
+            "start": 0.45,
+            "word": "广州市"
+          },
+          {
+            "confidence": 1.0,
+            "end": 2.22,
+            "start": 1.41,
+            "word": "房地产"
+          },
+          {
+            "confidence": 1.0,
+            "end": 2.73,
+            "start": 2.25,
+            "word": "中介"
+          },
+          {
+            "confidence": 0.964855,
+            "end": 3.18,
+            "start": 2.73,
+            "word": "协会"
+          },
+          {
+            "confidence": 1.0,
+            "end": 3.75,
+            "start": 3.21,
+            "word": "分析"
+          }
+        ]
+      }
+    ],
+    "engine_version": "0.3.45",
+    "audio_stream": 0
+  },
+  "delayed_mandarin": {
+    "clock": "source_presentation_seconds",
+    "source_sha256": "97a166619c16005ebe345d8e68a681a8b66531f78ac9da17ab465c05d7bc415e",
+    "analysis_wav_sha256": "a9c02405c81e9c742e7a590824dd7caf366d93b90504c9766e1e547ee3cc67ac",
+    "status": "awaiting_review",
+    "source_window": [
+      0,
+      7.0
+    ],
+    "cues": [
+      {
+        "end": 5.25,
+        "start": 1.95,
+        "text": "广州市房地产中介协会分析",
+        "words": [
+          {
+            "confidence": 0.845221,
+            "end": 2.88,
+            "start": 1.95,
+            "word": "广州市"
+          },
+          {
+            "confidence": 1.0,
+            "end": 3.72,
+            "start": 2.91,
+            "word": "房地产"
+          },
+          {
+            "confidence": 1.0,
+            "end": 4.23,
+            "start": 3.75,
+            "word": "中介"
+          },
+          {
+            "confidence": 0.969393,
+            "end": 4.68,
+            "start": 4.23,
+            "word": "协会"
+          },
+          {
+            "confidence": 1.0,
+            "end": 5.25,
+            "start": 4.71,
+            "word": "分析"
+          }
+        ]
+      }
+    ],
+    "engine_version": "0.3.45",
+    "audio_stream": 1
+  },
+  "digital_silence": {
+    "clock": "source_presentation_seconds",
+    "source_sha256": "6b454e58dda23568eb196d6b02ae2c360112fa817da431e1c633979ecd166bb3",
+    "analysis_wav_sha256": "6b454e58dda23568eb196d6b02ae2c360112fa817da431e1c633979ecd166bb3",
+    "status": "no_speech_detected",
+    "source_window": [
+      0,
+      2.0
+    ],
+    "cues": [],
+    "engine_version": "0.3.45",
+    "audio_stream": 0
+  },
+  "no_audio_track": {
+    "status": 422,
+    "code": "NO_AUDIO"
+  },
+  "nonzero_input_window": {
+    "bounds": [
+      1.5,
+      5.7
+    ],
+    "cues": [
+      {
+        "end": 5.25,
+        "start": 1.95,
+        "text": "广州市房地产中介协会分析",
+        "words": [
+          {
+            "confidence": 0.879361,
+            "end": 2.88,
+            "start": 1.95,
+            "word": "广州市"
+          },
+          {
+            "confidence": 1.0,
+            "end": 3.72,
+            "start": 2.91,
+            "word": "房地产"
+          },
+          {
+            "confidence": 1.0,
+            "end": 4.23,
+            "start": 3.75,
+            "word": "中介"
+          },
+          {
+            "confidence": 0.967185,
+            "end": 4.68,
+            "start": 4.23,
+            "word": "协会"
+          },
+          {
+            "confidence": 1.0,
+            "end": 5.25,
+            "start": 4.71,
+            "word": "分析"
+          }
+        ]
+      }
+    ]
+  },
+  "model_pin_mismatch": {
+    "status": 409,
+    "code": "ASR_INFERENCE_FAILED"
+  },
+  "candidate_export_blocked": 422,
+  "review_to_editor": {
+    "engine": "158.0.8127.0",
+    "reviewed_text": "广州市房地产中介协会分析。",
+    "caption_interchange": {
+      "format": "srt",
+      "filename": "speech-approval_6049372ee30743bca5e4ef744197e16a.srt",
+      "captions": [
+        {
+          "start": 1.95,
+          "end": 5.25,
+          "text": "广州市房地产中介协会分析。",
+          "timing_precision": "cue",
+          "source_format": "srt",
+          "source_filename": "speech-approval_6049372ee30743bca5e4ef744197e16a.srt",
+          "language": "zh"
+        }
+      ]
+    },
+    "saved_timeline_caption": {
+      "end": 5.25,
+      "source_filename": "speech-approval_6049372ee30743bca5e4ef744197e16a.srt",
+      "source_format": "srt",
+      "start": 1.95,
+      "text": "广州市房地产中介协会分析。",
+      "timing_precision": "cue"
+    }
+  }
+}

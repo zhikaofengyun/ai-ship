@@ -1,0 +1,73 @@
+{
+  "passed": true,
+  "space": "clip-b32/98c718df886ac03f7aeb914c9c6e2a9850f141cb071cadd6f65cc7a812c4715d",
+  "frames": 6,
+  "fixtures": {
+    "astronaut.png": {
+      "source": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/astronaut.png",
+      "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5"
+    },
+    "coffee.png": {
+      "source": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/coffee.png",
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+    },
+    "flower.mp4": {
+      "source": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      "sha256": "0cd83d944a6ca7822b4a8306cecc60a36e859b041f6702c6a1ad9ead78924451"
+    }
+  },
+  "queries": [
+    {
+      "text": "an astronaut wearing a space suit",
+      "file": "001.mp4",
+      "source_seconds": 0.0,
+      "sample_rgb_sha256": "f0ae879e56e22813fb627c3db8b341687ba688b8500cde3ef4f0a9d537d16e56",
+      "cosine": 0.267106,
+      "literal_matches": []
+    },
+    {
+      "text": "a cup of coffee",
+      "file": "001.mp4",
+      "source_seconds": 3.4,
+      "sample_rgb_sha256": "14c4e98c8af914d81e744b001d497caa1579f513cf7489bb108e835613906424",
+      "cosine": 0.286806,
+      "literal_matches": []
+    },
+    {
+      "text": "a bee visiting a flower",
+      "file": "002.mp4",
+      "source_seconds": 2.535867,
+      "sample_rgb_sha256": "6c941f949e3cefa7edf8bab00ffcf5bc18320ea8cfbc7f0f15a8e1c6d6e6a471",
+      "cosine": 0.229304,
+      "literal_matches": []
+    }
+  ],
+  "checks": {
+    "repeated_build_skips_indexed_sources": true,
+    "different_project_excluded": true,
+    "revoked_processing_grant_excluded": true,
+    "model_change_isolated": true,
+    "mismatched_frame_proof_rejected": true,
+    "literal_fallback_available": true
+  },
+  "browsers": [
+    {
+      "engine": "chromium",
+      "version": "158.0.8127.0",
+      "reviewed_tag_source_pts_us": 3400000,
+      "observed_seconds": 3.4,
+      "page_errors": [],
+      "editor_source_seconds": 3.4
+    },
+    {
+      "engine": "webkit",
+      "version": "26.5",
+      "reviewed_tag_source_pts_us": 3400000,
+      "observed_seconds": 3.4,
+      "page_errors": [],
+      "editor_source_seconds": 3.4
+    }
+  ],
+  "runtime": "CPU ONNX, real local weights, FFmpeg-decoded source frames",
+  "model": "Xenova/clip-vit-base-patch32@6b7c523703ae26e39be4b03774966f8571c7f523"
+}

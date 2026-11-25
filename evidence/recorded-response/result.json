@@ -1,0 +1,17 @@
+{
+  "browser": "158.0.8127.0",
+  "fixture": "HTTP loopback synthetic model acknowledgements",
+  "provider_calls_during_setup": 2,
+  "provider_calls_during_replay": 0,
+  "different_prompt_messages": true,
+  "injected_system_message_verified": true,
+  "literal_contains_result": [
+    false,
+    true
+  ],
+  "json_key_result": [
+    true,
+    true
+  ],
+  "page_errors": []
+}

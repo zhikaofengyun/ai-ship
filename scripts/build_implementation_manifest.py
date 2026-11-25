@@ -108,7 +108,7 @@ groups = [
         "V01 V03 V04 V05 V08",
         ["app/production.py", "app/commands.py"],
         "tests/test_production.py",
-        "人工脚本/导入音轨/手动时间锚和版本引用；自动ASR未接入；英文口播可用已核验的本地 Flite 声音合成",
+        "人工脚本/导入音轨/手动时间锚和版本引用；可选本地中英文 ASR 见 L04/V04；英文口播可用已核验的本地 Flite 声音合成",
     ),
     ("B05 B06", ["app/media.py"], "tests/test_media.py", "音轨混合与响度处理、全片实际解码检查"),
     (
@@ -1160,6 +1160,135 @@ TEST_GROUPS += [
 ]
 
 
+CURRENT_CODE_GROUPS += [
+    ("A01 A05 A06", ["app/directory_import.py", "app/media.py", "web/directory-intake.js"]),
+    ("H05 H08 D08", ["app/evidence_replay.py", "app/providers.py", "web/evidence-replay.js"]),
+    ("M09 X01", ["app/edit_feedback.py"]),
+    ("O03 C06", ["scripts/run.py", "app/batches.py"]),
+    ("W03 W07 W08", ["web/workspace-layout.js", "web/asset-search.js", "web/editor.js"]),
+]
+ENDPOINT_GROUPS += [
+    (
+        "A01 A05 A06",
+        [
+            "GET /api/v1/production/directory-imports/roots",
+            "POST /api/v1/production/directory-imports/observe",
+            "POST /api/v1/production/directory-imports/advance",
+            "POST /api/v1/production/directory-imports/items",
+        ],
+    ),
+    (
+        "H05 H08 D08",
+        ["GET /api/v1/harness/replay-evidence", "GET /api/v1/harness/replay-evidence/{record_id}"],
+    ),
+    ("M09 X01", ["POST /api/v1/production/post-reviews/placement-hypotheses"]),
+]
+TEST_GROUPS += [
+    (
+        "A01 A05 A06",
+        "tests/test_directory_import.py",
+        "DirectoryIntakeTests.test_pending_during_write_same_name_history_and_duplicate_bytes_after_restart",
+    ),
+    (
+        "A01 A05 A06",
+        "tests/test_directory_import.py",
+        "DirectoryIntakeTests.test_manifest_digest_link_swap_scope_and_per_item_failure",
+    ),
+    (
+        "H05 H08 D08",
+        "tests/test_evidence_replay.py",
+        "EvidenceReplayTests.test_incomplete_revoked_and_external_publish_receipts_cannot_reissue",
+    ),
+    (
+        "O03 C06",
+        "tests/test_dedicated_worker.py",
+        "DedicatedWorkerTests.test_worker_drain_restart_and_unique_completed_outputs",
+    ),
+    ("W03 W07 W08", "scripts/browser_module_layout.py", "run"),
+]
+
+
+CURRENT_CODE_GROUPS += [("J01 J02 J07", ["app/tiktok_login.py", "web/tiktok-login.js"])]
+ENDPOINT_GROUPS += [
+    (
+        "J01 J02",
+        [
+            "POST /api/v1/production/tiktok/login/accounts/{account}/start",
+            "GET /api/v1/production/tiktok/login/callback",
+            "POST /api/v1/production/tiktok/login/accounts/{account}/refresh",
+            "POST /api/v1/production/tiktok/login/accounts/{account}/revoke",
+        ],
+    )
+]
+TEST_GROUPS += [
+    ("J01 J02 J07", "scripts/browser_tiktok_login.py", "run"),
+    (
+        "T01",
+        "tests/test_trend_feeds.py",
+        "TrendFeedTests.test_instance_charts_preserve_federated_origin_and_cannot_claim_a_region",
+    ),
+]
+
+
+CURRENT_CODE_GROUPS += [
+    ("L04 V04", ["app/speech.py", "app/speech_worker.py", "web/speech-review.js"]),
+]
+ENDPOINT_GROUPS += [
+    (
+        "L04 V04",
+        [
+            "GET /api/v1/production/speech/models",
+            "POST /api/v1/production/speech/recognize",
+            "POST /api/v1/production/speech/review",
+            "GET /api/v1/production/speech/reviews/{approval_id}/captions",
+        ],
+    ),
+]
+TEST_GROUPS += [
+    ("L04 V04", "scripts/verify_local_speech.py", "run"),
+    (
+        "L04 V04",
+        "tests/test_local_speech.py",
+        "LocalSpeechTests.test_review_permissions_and_source_bound_indices",
+    ),
+]
+
+
+CURRENT_CODE_GROUPS += [
+    (
+        "S02 L03",
+        [
+            "app/frame_vectors.py",
+            "app/visual_index.py",
+            "app/asset_index.py",
+            "web/asset-search.js",
+        ],
+    ),
+]
+ENDPOINT_GROUPS += [
+    (
+        "S02 L03",
+        [
+            "POST /api/v1/production/asset-index/frames/build",
+            "POST /api/v1/production/asset-index/query",
+        ],
+    ),
+]
+TEST_GROUPS += [
+    ("S02 L03", "scripts/verify_visual_search.py", "verify"),
+    (
+        "S02",
+        "tests/test_visual_index.py",
+        "VisualIndexTests.test_missing_or_invalid_weights_preserve_literal_search_and_explicit_build_status",
+    ),
+    (
+        "H08 O07",
+        "tests/test_harness_qualification.py",
+        "QualificationTests.test_handler_body_change_with_unchanged_schema_invalidates_qualification",
+    ),
+]
+
+
 def read_audit_rows():
     rows = {}
     for line in (ROOT / "docs/source-coverage-review.md").read_text().splitlines():
@@ -1487,7 +1616,7 @@ def render_markdown(report):
         "",
         "结构化证据：contracts/implementation.json。test_definitions 是可复核测试定义，verification_runs 保持为空，不伪造任何本轮运行结果。实际执行报告应另行提供命令、环境、开始/结束时间、结果及未覆盖范围。",
         "",
-        "本地三角色 Qwen2.5 1.5B、Qwen2.5 0.5B 与 SmolLM2 360M 具有分别核验的真实调用，错引观测的两张接受票被拦截。独立的单导演、SD1.5 静帧及 AnimateDiff-Lightning + SD1.5 动态视频已通过真实权重推理。付费供应商、平台账号、自动 ASR、多语种 TTS、图像/视频的商品语义验收、大规模跨模态检索、商业编辑器往返及生产容量仍缺独立验收。",
+        "本地三角色 Qwen2.5 1.5B、Qwen2.5 0.5B 与 SmolLM2 360M 具有分别核验的真实调用，错引观测的两张接受票被拦截。独立的单导演、SD1.5 静帧及 AnimateDiff-Lightning + SD1.5 动态视频已通过真实权重推理。付费供应商、平台账号、复杂声场 ASR、多语种 TTS、图像/视频的商品语义验收、大规模跨模态检索、商业编辑器往返及生产容量仍缺独立验收。",
     ]
     return "\n".join(lines) + "\n"
 

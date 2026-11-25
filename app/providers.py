@@ -465,6 +465,11 @@ def chat(body: ChatInput, actor: Actor, client_factory=None, *, response_schema=
                 "request_semantic_hash_version": 2,
                 "provider_identity_snapshot": provider_identity,
                 "request_payload_hash": digest(payload),
+                "wire_snapshot": {
+                    "version": 1,
+                    "options": {k: v for k, v in payload.items() if k != "messages"},
+                    "prefix": payload["messages"][: len(payload["messages"]) - len(messages)],
+                },
                 "request_snapshot": {
                     "messages": messages,
                     "max_tokens": body.max_tokens,
@@ -475,6 +480,7 @@ def chat(body: ChatInput, actor: Actor, client_factory=None, *, response_schema=
             },
             [*references, ref(cost)],
         )
+    response_digest, system_fingerprint = None, None
     if body.json_output:
         if not pd.get("structured_output") and not config.get("json_output", False):
             with store.transaction():
@@ -540,6 +546,9 @@ def chat(body: ChatInput, actor: Actor, client_factory=None, *, response_schema=
             error_code = f"PROVIDER_HTTP_{response.status_code}"
         else:
             raw = response.json()
+            response_digest = digest(raw)
+            if isinstance(raw, dict) and isinstance(raw.get("system_fingerprint"), str):
+                system_fingerprint = raw["system_fingerprint"]
             if (
                 not isinstance(raw, dict)
                 or not isinstance(raw.get("choices"), list)
@@ -597,6 +606,9 @@ def chat(body: ChatInput, actor: Actor, client_factory=None, *, response_schema=
             {
                 "outcome": outcome,
                 "provider_request_id": response_id,
+                "provider_response_sha256": response_digest,
+                "normalized_response_hash": digest(result) if result else None,
+                "provider_system_fingerprint": system_fingerprint,
                 "usage": usage,
                 "actual_provider_model": result.get("model") if result else None,
                 "response": result,

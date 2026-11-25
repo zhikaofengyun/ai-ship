@@ -1,3 +1,4 @@
+import { evidenceReplay } from "./evidence-replay.js";
 import { $, esc, field, formData, modal, select, uid } from "./ui.js";
 
 export async function harnessRuntime(ctx) {
@@ -30,6 +31,7 @@ export async function harnessRuntime(ctx) {
   const d = modal(
     "运行环境与配方",
     runtimeDetails +
+      '<button type="button" class="button secondary" data-replay>离线回放与提示词对照</button>' +
       `<form data-form class="form-stack">${select("待核验的工作流", "workflow", [["", "选择已保存流程"], ...workflows.map((r) => [r.id, (r.data.name || r.id) + " · v" + r.version])], "", "required")}
     ${field("配方名称", "name", "", "text", 'maxlength="150" required')}<button type="submit" class="button primary">实测并登记配方</button></form>`,
     async (f) => {
@@ -56,6 +58,8 @@ export async function harnessRuntime(ctx) {
       if (r.passed && r.skill) bindDispatch(d, r.skill);
     },
   );
+  $("[data-replay]", d).onclick = () =>
+    evidenceReplay(ctx).catch((err) => ctx.toast(err.message, "error"));
   const registered = (registeredSkills.items || registeredSkills).filter(
     (r) => r.kind === "SkillVersion" && r.data.workflow_pin,
   );

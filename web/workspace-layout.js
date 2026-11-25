@@ -238,25 +238,34 @@ export function installProductionResize(work) {
 
 // Supplementary inspectors share one stored layout per workspace. A compact
 // window stacks the detail below the canvas and keeps the same disclosure.
-export function installInspectorLayout(grid, toolbar, key, label) {
+export function installInspectorLayout(
+  grid,
+  toolbar,
+  key,
+  label,
+  defaults = {},
+) {
   const pane = grid.querySelector("[data-inspector]");
   const prefs = loadView(key);
   const toggle = toolbar.querySelector("[data-pane-toggle]");
   const move = toolbar.querySelector("[data-pane-move]");
+  const reset = toolbar.querySelector("[data-pane-reset]");
+  const min = defaults.min ?? 250;
   const limits = () => {
     const available = grid.clientWidth;
-    const max = Math.max(250, Math.min(640, available - 304));
+    const max = Math.max(min, Math.min(defaults.max ?? 640, available - 304));
     return {
-      min: 250,
+      min,
       max,
-      width: clamp(Number(prefs.width) || 320, 250, max),
+      width: clamp(Number(prefs.width) || (defaults.width ?? 320), min, max),
     };
   };
   let measured = () => {};
   function update() {
     const wide = grid.clientWidth >= 610;
     grid.dataset.split = String(wide);
-    grid.dataset.side = prefs.side === "left" ? "left" : "right";
+    grid.dataset.side =
+      (prefs.side || defaults.side) === "left" ? "left" : "right";
     pane.hidden = !!prefs.hidden;
     toggle.setAttribute("aria-expanded", String(!pane.hidden));
     toggle.textContent = (pane.hidden ? "展开" : "收起") + label;
@@ -276,7 +285,7 @@ export function installInspectorLayout(grid, toolbar, key, label) {
         value: width,
         min,
         max,
-        sign: prefs.side === "left" ? 1 : -1,
+        sign: grid.dataset.side === "left" ? 1 : -1,
         set(n, commit) {
           prefs.width = n;
           update();
@@ -300,8 +309,30 @@ export function installInspectorLayout(grid, toolbar, key, label) {
     storeView(key, prefs);
     update();
   };
-  const observer = new ResizeObserver(update);
+  if (reset)
+    reset.onclick = () => {
+      delete prefs.side;
+      delete prefs.width;
+      delete prefs.hidden;
+      storeView(key, prefs);
+      update();
+    };
+  // Changing columns can rewrap the contents and resize the grid's height.
+  // Only a width change can alter the divider limits or compact presentation.
+  let frame = 0,
+    lastWidth = grid.clientWidth;
+  const observer = new ResizeObserver(() => {
+    if (!frame && lastWidth !== grid.clientWidth)
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        lastWidth = grid.clientWidth;
+        update();
+      });
+  });
   observer.observe(grid);
   update();
-  return () => observer.disconnect();
+  return () => {
+    observer.disconnect();
+    cancelAnimationFrame(frame);
+  };
 }

@@ -31,3 +31,6 @@ typing-inspection==0.4.3
 uvicorn==0.52.1
 opentimelineio==0.18.1
 socksio==1.0.0
+cryptography==50.0.0
+cffi==2.1.1
+pycparser==3.12

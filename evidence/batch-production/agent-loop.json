@@ -1,0 +1,457 @@
+{
+  "passed": true,
+  "models": {
+    "director": {
+      "model": "qwen2.5-1.5b",
+      "weights": "director.gguf",
+      "sha256": "183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4",
+      "bytes": 986048512,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    },
+    "reviewer": {
+      "model": "qwen2.5-0.5b",
+      "weights": "reviewer.gguf",
+      "sha256": "c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515",
+      "bytes": 397807936,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    },
+    "judge": {
+      "model": "smollm2-360m",
+      "weights": "judge.gguf",
+      "sha256": "2fa3f013dcdd7b99f9b237717fa0b12d75bbb89984cc1274be1471a465bac9c2",
+      "bytes": 270590880,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    }
+  },
+  "decisions": [
+    {
+      "role": "director",
+      "round": 1,
+      "prompt_hash": "8303fb340a9f9874602da20ced87e6debe6d4dafde7f9643d1d1a4d81672ab51",
+      "context_hash": "c2f1c5f04186bddd488b51661ba0a158aed65e3b00c4a4fa1e62a6c068c8df4b",
+      "call": {
+        "id": "toolcall_bff22a4e6e72482eaf478e88795d9412",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "ac2bc6cf308cdb02b8c4f3b85bcd460bffdd787c50b885afd442a51ec12f4301"
+      },
+      "provider_request_id": "chatcmpl-U44rjiyCWKV46WTAj2YMRvafyhTdV2mK",
+      "requested_model": "qwen2.5-1.5b",
+      "reported_model": "qwen2.5-1.5b",
+      "request_hash": "ff6a801fc68191763f8efc0ff6c8ecbf1d8b1ba418e9a4e5d78f931190629e03",
+      "measured_tokens": {
+        "completion_tokens": 55,
+        "prompt_tokens": 504,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 559
+      },
+      "decision": {
+        "choice": "A",
+        "reason": "The source with visible words is 'FRESH LIME', which is the goal. The cut sequence prioritizes the source with visible words, and the duration is 2.0 seconds, which matches the goal."
+      },
+      "outcome": "succeeded",
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "reviewer",
+      "round": 1,
+      "prompt_hash": "a3c5407ed92b558f9e91d9e8170d391782ec45354355dc3966e78147153a6c58",
+      "context_hash": "26f329dbce33135331c78b93eafd1453602d5b02cb5455371eeccfbb16a1e6bd",
+      "call": {
+        "id": "toolcall_309d5aa8985644df81265b21fd457826",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "8173a60c05b66a3980f39e887fdec2063fc29a0d9f45eac1a6dfdb65513c4a3c"
+      },
+      "provider_request_id": "chatcmpl-iw8gnQSDCshjePXuiQjpdNfaSwnpprJn",
+      "requested_model": "qwen2.5-0.5b",
+      "reported_model": "qwen2.5-0.5b",
+      "request_hash": "a2a555bb93a1c5de90b897ed01948a54331deb49fc96153f080e0cc5041f4436",
+      "measured_tokens": {
+        "completion_tokens": 101,
+        "prompt_tokens": 1469,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 1570
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "SAMPLE",
+        "reason": "The evidence ID 'D1' is directly related to the source 'SAMPLE.mp4' and the observed value 'SAMPLE'. This evidence is crucial for the user's goal of creating a short shot list for FRESH LIME. It ensures that the user can easily identify and extract the relevant information from the video."
+      },
+      "outcome": "succeeded",
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "judge",
+      "round": 1,
+      "prompt_hash": "ee5505780a96344ad6915795addaf41460f051a2ab0e3741209cb0ed5bcdfaa0",
+      "context_hash": "f0ad38ec361ed7feb997d7d6954b8e61c56ce409bbc96f2e6e32e7364d4970ea",
+      "call": {
+        "id": "toolcall_9fc76453bb3b41ff81d1d71535f46213",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "c7d3c39241416a9588e2bae139cfc03b264649894bc89ef2716278fa2b5339ed"
+      },
+      "provider_request_id": "chatcmpl-rFRgs96pHpwlc5acLPovLNwCwbgnAZbq",
+      "requested_model": "smollm2-360m",
+      "reported_model": "smollm2-360m",
+      "request_hash": "11391633df992d3d74e228d63abb28d07f01454b6974df6bcb0c068dfbfcb6eb",
+      "measured_tokens": {
+        "completion_tokens": 115,
+        "prompt_tokens": 1912,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 2027
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "SAMPLE",
+        "reason": "The evidence ID 'D1' is directly related to the source 'SAMPLE.mp4' and the observed value 'SAMPLE'. This evidence is crucial for the user's goal of creating a short shot list for FRESH LIME. It ensures that the user can easily identify and extract the relevant information from the video. This evidence is also important for the user to understand F"
+      },
+      "outcome": "succeeded",
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "director",
+      "round": 2,
+      "prompt_hash": "c039a6e6c57c2d843f3648a49340649b8538693f3f1678fd9b9e305170df0fe2",
+      "context_hash": "f0ae3b6fdd591087f1e26cc1fe2ee78a2d3b954e2d112924ba9921c75612498c",
+      "call": {
+        "id": "toolcall_6b92fb02fdf44ea782ee1d120ebdefc3",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "8684359d8c04dea75a0debb8889ab4e8755364f3f171c528670aeaa44674fcd3"
+      },
+      "provider_request_id": "chatcmpl-P3L3bQ1EJQ4fV6YCNxjOhip5G8D0bt1O",
+      "requested_model": "qwen2.5-1.5b",
+      "reported_model": "qwen2.5-1.5b",
+      "request_hash": "d7ed3dcdd7880e3f39ff98a5a4eb4e5cc212a377fca738bebe038cdb7b2eaf02",
+      "measured_tokens": {
+        "completion_tokens": 70,
+        "prompt_tokens": 978,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 1048
+      },
+      "decision": {
+        "choice": "A",
+        "reason": "The 'SAMPLE.mp4' source contains the word 'SAMPLE', which is relevant to the user's goal of creating a short shot list for FRESH LIME. The cuts in this choice prioritize the source with visible words, making it the best grounded rough cut for the user's goal."
+      },
+      "outcome": "succeeded",
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "reviewer",
+      "round": 2,
+      "prompt_hash": "a3c5407ed92b558f9e91d9e8170d391782ec45354355dc3966e78147153a6c58",
+      "context_hash": "26f329dbce33135331c78b93eafd1453602d5b02cb5455371eeccfbb16a1e6bd",
+      "call": {
+        "id": "toolcall_d4a13e0fd87a4b9b83edf2eeed91d9ef",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "9744a57f81feb0f9e333dde1aac82d1c52f2d8bdd125faef28fd694b30f41c60"
+      },
+      "provider_request_id": "chatcmpl-njW7oVW68vskeHV1OQ1X83UhdTGPUSMM",
+      "requested_model": "qwen2.5-0.5b",
+      "reported_model": "qwen2.5-0.5b",
+      "request_hash": "a2a555bb93a1c5de90b897ed01948a54331deb49fc96153f080e0cc5041f4436",
+      "measured_tokens": {
+        "completion_tokens": 101,
+        "prompt_tokens": 1469,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 1570
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "SAMPLE",
+        "reason": "The evidence ID 'D1' is directly related to the source 'SAMPLE.mp4' and the observed value 'SAMPLE'. This evidence is crucial for the user's goal of creating a short shot list for FRESH LIME. It ensures that the user can easily identify and extract the relevant information from the video."
+      },
+      "outcome": "succeeded",
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "judge",
+      "round": 2,
+      "prompt_hash": "ee5505780a96344ad6915795addaf41460f051a2ab0e3741209cb0ed5bcdfaa0",
+      "context_hash": "6c29f79b20470b582a0defc11562e97a75ddaf9621afb8e782114e000c108221",
+      "call": {
+        "id": "toolcall_62f1ea060a4c48509188be69aaa2e062",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "c46b4408fde631c7a6c91143dcd0e19ef0624dc656602da9afc49d080ee43840"
+      },
+      "provider_request_id": "chatcmpl-iY7M49DFP08rgSdLFemYn2ejjuK4KMFd",
+      "requested_model": "smollm2-360m",
+      "reported_model": "smollm2-360m",
+      "request_hash": "038fbacd8d21d8941a6fafd9adef27f5dbdeca385d7860fbae39adfef54ba4e7",
+      "measured_tokens": {
+        "completion_tokens": 97,
+        "prompt_tokens": 1910,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 2007
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "SAMPLE",
+        "reason": "The evidence ID 'D1' is directly related to the source 'SAMPLE.mp4' and the observed value 'SAMPLE'. This evidence is crucial for the user's goal of creating a short shot list for FRESH LIME. It ensures that the user can easily identify and extract the relevant information from the video."
+      },
+      "outcome": "succeeded",
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    }
+  ],
+  "checks": [
+    "three distinct pinned model files, authenticated localhost model endpoints",
+    "authenticated Atlas viewer denied production write; project owner request reached all three real GGUF models",
+    "source OCR plus scoped evidence, measured token usage, provider identities; no external billing",
+    "repeated request preserves the same run and the original calls from every completed round",
+    "independent verdict or measured evidence gate blocked adoption of the original proposal",
+    "authenticated test reviewer adopted the eligible proposal; owner rendered, downloaded video/audio fully decoded"
+  ],
+  "engine": "version: 1.0.0-dev (build 12671, commit ab789a246)\nbuilt with GNU 11.4.0 for Linux x86_64",
+  "server_sha256": "e172daae7f3c14ed9bbcde1753cfcc9bf3d9e058eab478d1ec666138ed97e287",
+  "stage": "blocked",
+  "issue": {
+    "code": "TEAM_EVIDENCE_REQUIRED",
+    "message": "模型复核与原片观测未匹配，方案保留供局部修改。"
+  },
+  "elapsed_seconds": 62.531,
+  "project_id": "project_e7f4f067f3774f12b8ad732e0d847195",
+  "run_id": "edit_e082fb9e98d8e2ece7f76587ccc8d13d9d79",
+  "goal": "Create a short shot list for FRESH LIME. Prioritize the source with those visible words. No new product claims.",
+  "inputs": [
+    {
+      "id": "asset_c7768b8c9d774e7695d53bbf88b62a7d",
+      "filename": "SAMPLE.mp4",
+      "version": 1,
+      "content_hash": "e1b1ab24e69b610bf4bb9fa107c066f5162c026732323ba0ae9f956b4bda3fc1"
+    },
+    {
+      "id": "asset_d2b2038824a34ea3b72c2e565893b445",
+      "filename": "FRESH LIME.mp4",
+      "version": 1,
+      "content_hash": "9ab47e1efdc57050fdd596b588cb6b3563085bce7d942e0ec601cbbfe4e88559"
+    }
+  ],
+  "review_rounds": [
+    {
+      "round": 1,
+      "decision": "revise",
+      "blocker": {
+        "code": "TEAM_EVIDENCE_REQUIRED",
+        "message": "模型复核与原片观测未匹配，方案保留供局部修改。"
+      },
+      "plan": {
+        "id": "plan_851a979aa7a71a99f8475b1968760161",
+        "kind": "Plan",
+        "version": 1
+      }
+    },
+    {
+      "round": 2,
+      "decision": "revise",
+      "blocker": {
+        "code": "TEAM_EVIDENCE_REQUIRED",
+        "message": "模型复核与原片观测未匹配，方案保留供局部修改。"
+      },
+      "plan": {
+        "id": "plan_c3ccbcd4b819f2b5dde0c12898ac9185",
+        "kind": "Plan",
+        "version": 1
+      }
+    }
+  ],
+  "review_findings": [
+    {
+      "call_ref": {
+        "context_hash": "26f329dbce33135331c78b93eafd1453602d5b02cb5455371eeccfbb16a1e6bd",
+        "id": "toolcall_d4a13e0fd87a4b9b83edf2eeed91d9ef",
+        "kind": "ToolCall",
+        "prompt_hash": "a3c5407ed92b558f9e91d9e8170d391782ec45354355dc3966e78147153a6c58",
+        "reported_model": "qwen2.5-0.5b",
+        "role": "reviewer",
+        "round": 2,
+        "version": 2
+      },
+      "decision": "accept",
+      "evidence_id": "D1",
+      "evidence_problem": "引用的观测值与已解码原片不符。",
+      "observed_value": "SAMPLE",
+      "reason": "The evidence ID 'D1' is directly related to the source 'SAMPLE.mp4' and the observed value 'SAMPLE'. This evidence is crucial for the user's goal of creating a short shot list for FRESH LIME. It ensures that the user can easily identify and extract the relevant information from the video.",
+      "role": "reviewer",
+      "verified_observation": null
+    },
+    {
+      "call_ref": {
+        "context_hash": "6c29f79b20470b582a0defc11562e97a75ddaf9621afb8e782114e000c108221",
+        "id": "toolcall_62f1ea060a4c48509188be69aaa2e062",
+        "kind": "ToolCall",
+        "prompt_hash": "ee5505780a96344ad6915795addaf41460f051a2ab0e3741209cb0ed5bcdfaa0",
+        "reported_model": "smollm2-360m",
+        "role": "judge",
+        "round": 2,
+        "version": 2
+      },
+      "decision": "accept",
+      "evidence_id": "D1",
+      "evidence_problem": "复核原样重复已有模型理由，未提供独立判断。",
+      "observed_value": "SAMPLE",
+      "reason": "The evidence ID 'D1' is directly related to the source 'SAMPLE.mp4' and the observed value 'SAMPLE'. This evidence is crucial for the user's goal of creating a short shot list for FRESH LIME. It ensures that the user can easily identify and extract the relevant information from the video.",
+      "role": "judge",
+      "verified_observation": null
+    }
+  ],
+  "manual_recovery": {
+    "original_blocked": "edit_e082fb9e98d8e2ece7f76587ccc8d13d9d79",
+    "new_proposal": "edit_725c5018dc26e11b92f0324896e9dd9c06ec",
+    "changed_shot": 0,
+    "at": 0.8,
+    "observed_ocr": [
+      {
+        "box_px": [
+          101,
+          92,
+          235,
+          57
+        ],
+        "confidence": 0.967,
+        "text": "FRESH"
+      },
+      {
+        "box_px": [
+          375,
+          92,
+          166,
+          56
+        ],
+        "confidence": 0.968,
+        "text": "LIME"
+      }
+    ]
+  },
+  "proposal": {
+    "title": "Create a short shot list for FRESH LIME. Prioritize the source with those visible words. No new prod",
+    "approach": "The 'SAMPLE.mp4' source contains the word 'SAMPLE', which is relevant to the user's goal of creating a short shot list for FRESH LIME. The cuts in this choice prioritize the source with visible words, making it the best grounded rough cut for the user's goal.",
+    "shots": [
+      {
+        "asset_id": "asset_d2b2038824a34ea3b72c2e565893b445",
+        "asset_version": 1,
+        "name": "FRESH LIME.mp4",
+        "reason": "Authenticated test editor selected a measured source showing FRESH LIME for the opening.",
+        "source_in": 0.2,
+        "source_out": 0.8,
+        "timeline_start": 0.0
+      },
+      {
+        "asset_id": "asset_c7768b8c9d774e7695d53bbf88b62a7d",
+        "asset_version": 1,
+        "name": "SAMPLE.mp4",
+        "reason": "实测 0.20 秒画面，亮度 0.89，对比度 0.40，构图聚类 1。",
+        "source_in": 0.0,
+        "source_out": 1.0,
+        "timeline_start": 0.6
+      }
+    ],
+    "missing": [
+      "当前可用编排比目标短 0.40 秒。"
+    ],
+    "reviews": null,
+    "model_selection": null
+  },
+  "frame_qc": {
+    "checks": {
+      "audio_presence": true,
+      "bytes_present": true,
+      "dimensions": true,
+      "duration_positive": true,
+      "duration_within_tolerance": true,
+      "full_decode": true
+    },
+    "content_review_required": true,
+    "not_checked": [
+      "商品事实与数量",
+      "来源和使用许可",
+      "字幕语义和可读性",
+      "审美与场景连续性",
+      "人工指定音画语义锚点"
+    ],
+    "probe": {
+      "audio_codec": "aac",
+      "duration": 1.6,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "fps": "25/1",
+      "has_audio": true,
+      "has_video": true,
+      "height": 180,
+      "is_still": false,
+      "probe_version": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+      "source_time_base": "1/12800",
+      "streams": [
+        {
+          "avg_frame_rate": "25/1",
+          "codec_name": "h264",
+          "codec_type": "video",
+          "duration": "1.600000",
+          "height": 180,
+          "index": 0,
+          "nb_frames": "40",
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "25/1",
+          "start_time": "0.000000",
+          "time_base": "1/12800",
+          "width": 320
+        },
+        {
+          "avg_frame_rate": "0/0",
+          "channel_layout": "stereo",
+          "channels": 2,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "duration": "1.600000",
+          "index": 1,
+          "nb_frames": "76",
+          "r_frame_rate": "0/0",
+          "sample_rate": "48000",
+          "start_time": "0.000000",
+          "time_base": "1/48000"
+        }
+      ],
+      "video_codec": "h264",
+      "width": 320
+    },
+    "publish_ready": false,
+    "status": "technical_passed"
+  },
+  "movie_sha256": "17d46e8260a36045b2b69b24bab7af0559ac7b433a07a9b08b942cd449638596",
+  "timeline": {
+    "id": "timeline_0b19a1520c3d44529720a9a49f4c46b3",
+    "kind": "Timeline",
+    "version": 1,
+    "hash": "c41d24c4546f4a3dc7d265816783f9d185ad07d399e8bf54577132e913dae24d"
+  }
+}

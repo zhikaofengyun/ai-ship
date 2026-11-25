@@ -8,7 +8,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Request
 from pydantic import Field
 
-from . import text_vectors
+from . import frame_vectors, text_vectors, visual_index
 from .api import Body, ok
 from .auth import Actor, current_actor, require_write
 from .errors import DomainError
@@ -37,8 +37,9 @@ class Switch(Body):
 class Query(Body):
     project_id: str
     text: str = Field(default="", max_length=300)
-    channel: Literal["indexed", "source", "semantic"] = "indexed"
+    channel: Literal["indexed", "source", "semantic", "visual"] = "indexed"
     semantic_threshold: float = Field(default=0.30, ge=-1, le=1)
+    visual_threshold: float = Field(default=0.20, ge=-1, le=1)
     media_type: Literal["any", "video", "audio", "image"] = "any"
     min_seconds: float = Field(default=0, ge=0)
     limit: int = Field(default=30, ge=1, le=200)
@@ -324,6 +325,23 @@ def embed(body: Embed, request: Request, actor: Actor = Depends(current_actor)):
     return ok({"processed": saved, "remaining": len(pending) - saved, "space": space}, request)
 
 
+class FrameBuild(Body):
+    project_id: str
+    limit: int = Field(default=4, ge=1, le=12)
+    after: str = Field(default="", max_length=256)
+
+
+@router.post("/frames/build")
+def build_frames(body: FrameBuild, request: Request, actor: Actor = Depends(current_actor)):
+    require_write(actor)
+    store = get_store()
+    require_project(store, actor, body.project_id)
+    return ok(
+        visual_index.build(store, actor, body.project_id, source_rows, body.limit, body.after),
+        request,
+    )
+
+
 @router.post("/query")
 def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
     store, project = get_store(), body.project_id
@@ -332,7 +350,16 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
     model = None
     query_vector = None
     semantic_error = None
-    if body.channel == "semantic" and terms:
+    visual = body.channel == "visual"
+    threshold = body.visual_threshold if visual else body.semantic_threshold
+    if visual and terms:
+        try:
+            model = frame_vectors.local_model()
+            if model:
+                query_vector = frame_vectors.encode_query(model, body.text)
+        except DomainError as exc:
+            semantic_error = exc.message
+    elif body.channel == "semantic" and terms:
         try:
             model = text_vectors.local_model()
             if model:
@@ -363,7 +390,13 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                     )
                 )
         scores = {}
-        if query_vector is not None:
+        frame_hits = {}
+        if visual and query_vector is not None:
+            frame_hits = visual_index.matches(
+                store, c, actor, project, rows, model[0], query_vector
+            )
+            scores = {vid: hit["score"] for vid, hit in frame_hits.items()}
+        elif query_vector is not None:
             import numpy as np
 
             for vid, pin, blob in c.execute(
@@ -381,7 +414,7 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
             if (payload["seconds"] or 0) < body.min_seconds:
                 continue
             found = [t for t in terms if t in payload["terms"]]
-            if terms and not found and (key not in scores or scores[key] < body.semantic_threshold):
+            if terms and not found and (key not in scores or scores[key] < threshold):
                 continue
             try:
                 check_current_media_rights(store, actor, version, purpose="process")
@@ -393,6 +426,17 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                     **{k: v for k, v in payload.items() if k != "terms"},
                     "matched": found,
                     **({"semantic_score": round(scores[key], 6)} if key in scores else {}),
+                    **(
+                        {
+                            "frame_match": {
+                                "source_seconds": frame_hits[key]["source_seconds"],
+                                "sample_rgb_sha256": frame_hits[key]["sample_rgb_sha256"],
+                                "space": model[0],
+                            }
+                        }
+                        if key in frame_hits and scores[key] >= threshold
+                        else {}
+                    ),
                     "source": "index" if is_current else "source",
                     "coverage": len(found) / len(terms) if terms else 1,
                     "rank": round(float(ranked.get(key, 0)), 9) if is_current else 0,
@@ -407,7 +451,20 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                 r["version_id"],
             )
         )
-        if scores:
+        if visual and scores:
+            # Pixels and query text share one CLIP space. Retain literal-only
+            # matches after time-coded hits, including names below threshold.
+            hits.sort(
+                key=lambda r: (
+                    r["storage_tier"] == "low_priority",
+                    "frame_match" not in r,
+                    -r["semantic_score"] if "frame_match" in r else 0,
+                    -r["coverage"],
+                    r["rank"],
+                    r["version_id"],
+                )
+            )
+        elif scores:
             literal = {
                 r["version_id"]: i for i, r in enumerate((r for r in hits if r["matched"]), 1)
             }
@@ -418,8 +475,7 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                         (
                             r
                             for r in hits
-                            if "semantic_score" in r
-                            and r["semantic_score"] >= body.semantic_threshold
+                            if "semantic_score" in r and r["semantic_score"] >= threshold
                         ),
                         key=lambda r: (-r["semantic_score"], r["version_id"]),
                     ),
@@ -438,6 +494,12 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                     r["version_id"],
                 )
             )
+        result_pins = [(r["version_id"], rows[r["version_id"]][0], r["source"]) for r in hits]
+        if visual:
+            result_pins = [
+                (pin, r.get("frame_match"), r.get("semantic_score"))
+                for pin, r in zip(result_pins, hits, strict=True)
+            ]
         view = digest(
             [
                 current,
@@ -445,15 +507,21 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                 body.media_type,
                 body.channel,
                 body.min_seconds,
-                [model[0], body.semantic_threshold] if scores else None,
-                [(h["version_id"], rows[h["version_id"]][0], h["source"]) for h in hits],
+                [model[0], threshold] if scores else None,
+                result_pins,
             ]
         )
         if body.expected_view and body.expected_view != view:
             raise DomainError("RESULT_SET_CHANGED", "素材、权限或索引已变化，请重新检索。", 409)
         end = body.offset + body.limit
         fallback = None
-        if body.channel == "semantic" and not scores:
+        if visual and not terms:
+            fallback = "输入画面描述可按实际采样帧查找。"
+        elif visual and not scores:
+            fallback = (
+                semantic_error + " " if semantic_error else ""
+            ) + "尚无可用的当前画面匹配，已按素材名和有效标注检索。"
+        elif body.channel == "semantic" and not scores:
             fallback = semantic_error or (
                 "本项目没有与当前模型匹配的向量，已按素材名和有效标注检索。"
                 if model

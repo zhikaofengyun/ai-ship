@@ -1,0 +1,52 @@
+{
+  "chromium": {
+    "passed": true,
+    "engine": "chromium",
+    "browser": "158.0.8127.0",
+    "checks": [
+      "Pointer drag and keyboard resize, reset, side and collapse survive reload and feature/module changes",
+      "Projects have separate layout preferences",
+      "Narrow and wide layouts, no page overflow, explicit reset",
+      "Search split and source preview persist independently and stack on a phone",
+      "Editor displays the pinned search version without writing a Timeline, Workflow or other business revision"
+    ],
+    "page_errors": []
+  },
+  "webkit": {
+    "passed": true,
+    "engine": "webkit",
+    "browser": "26.5",
+    "checks": [
+      "Pointer drag and keyboard resize, reset, side and collapse survive reload and feature/module changes",
+      "Projects have separate layout preferences",
+      "Narrow and wide layouts, no page overflow, explicit reset",
+      "Search split and source preview persist independently and stack on a phone",
+      "Editor displays the pinned search version without writing a Timeline, Workflow or other business revision"
+    ],
+    "page_errors": []
+  },
+  "navigation": {
+    "modules": 23,
+    "features": 178,
+    "routes": 534,
+    "checks": 30,
+    "screenshots": 22,
+    "page_errors": 0,
+    "unexpected_failed_requests": 0
+  },
+  "asset_index_checks": [
+    "source-search",
+    "shadow-cutover",
+    "semantic-fallback",
+    "direct-mix-entry",
+    "audio-upload",
+    "rights",
+    "cue",
+    "measured-mix",
+    "timeline-adoption",
+    "encoded-sound-meter",
+    "time-range-review",
+    "archive-csv",
+    "post-level-comparison"
+  ]
+}

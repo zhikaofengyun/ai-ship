@@ -35,6 +35,8 @@ def fingerprint():
             "requirements.txt",
             "requirements-dev.txt",
             "requirements-semantic.txt",
+            "requirements-asr.txt",
+            "requirements-tiktok-login.txt",
             "constraints.txt",
             "pyproject.toml",
             "package.json",
@@ -194,6 +196,9 @@ def main():
     ]
     for name, script in [
         ("batch-workbench", "browser_batch_workbench.py"),
+        ("capture-directory", "browser_directory_intake.py"),
+        ("login-kit-browser", "browser_tiktok_login.py"),
+        ("recorded-evidence-replay", "browser_evidence_replay.py"),
         ("scoring-policy-release", "browser_score_policies.py"),
         ("comment-feedback", "browser_comment_feedback.py"),
     ]:
@@ -201,6 +206,20 @@ def main():
             (name, [sys.executable, "scripts/" + script, "--output", str(output / name)], 300)
         )
     if args.webkit:
+        commands.append(
+            (
+                "webkit-batch-workbench",
+                [
+                    sys.executable,
+                    "scripts/browser_batch_workbench.py",
+                    "--engine",
+                    "webkit",
+                    "--output",
+                    str(output / "batch-workbench-webkit"),
+                ],
+                300,
+            )
+        )
         commands.append(
             (
                 "webkit-creative-and-source-manifest",
@@ -257,6 +276,7 @@ def main():
                 )
             )
         for suffix, script in [
+            ("module-and-source-layout", "browser_module_layout.py"),
             ("source-index-and-soundtrack", "browser_sound_index.py"),
             ("account-quota", "browser_account_quota.py"),
             ("render-recovery", "browser_render_recovery.py"),

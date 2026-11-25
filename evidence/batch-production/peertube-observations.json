@@ -1,0 +1,179 @@
+[
+  {
+    "instance": "framatube.org",
+    "fetched_at": "2026-11-25T15:07:45.226221+00:00",
+    "feed_sha256": "01c914c8aed36a01c86cb136de3842cabe28ae61408004be852e9ac977973587",
+    "skipped": 0,
+    "items": [
+      {
+        "title": "Grease Pencil + Performance | Blender Today LIVE #293",
+        "url": "https://video.blender.org/videos/watch/ae644b29-9e31-47f8-af40-f5d52d1f787f",
+        "published_at": "2026-11-14T08:54:22.912000+00:00",
+        "chart_position": 1,
+        "observing_instance": "framatube.org",
+        "origin_host": "video.blender.org",
+        "origin_video_uuid": "ae644b29-9e31-47f8-af40-f5d52d1f787f",
+        "federated_video_identity": "video.blender.org/ae644b29-9e31-47f8-af40-f5d52d1f787f",
+        "video_totals": {
+          "views": 86,
+          "likes": 6,
+          "dislikes": 0,
+          "comments": 0
+        },
+        "metric_scope": "instance_trending_rank_with_provider_reported_counts"
+      },
+      {
+        "title": "Libérer INTERNET - Lancement de nos campagnes de dons avec Framasoft",
+        "url": "https://video.lqdn.fr/videos/watch/b12349fb-e8f3-4578-8b2f-7311d6f44ccf",
+        "published_at": "2026-11-20T16:55:58.951000+00:00",
+        "chart_position": 2,
+        "observing_instance": "framatube.org",
+        "origin_host": "video.lqdn.fr",
+        "origin_video_uuid": "b12349fb-e8f3-4578-8b2f-7311d6f44ccf",
+        "federated_video_identity": "video.lqdn.fr/b12349fb-e8f3-4578-8b2f-7311d6f44ccf",
+        "video_totals": {
+          "views": 386,
+          "likes": 8,
+          "dislikes": 0,
+          "comments": 1
+        },
+        "metric_scope": "instance_trending_rank_with_provider_reported_counts"
+      },
+      {
+        "title": "OVERGROWN - Blender Feature Film (Teaser)",
+        "url": "https://video.blender.org/videos/watch/7ad3cbee-fe5f-41c2-93ea-b108986939f4",
+        "published_at": "2026-09-14T14:43:33.813000+00:00",
+        "chart_position": 3,
+        "observing_instance": "framatube.org",
+        "origin_host": "video.blender.org",
+        "origin_video_uuid": "7ad3cbee-fe5f-41c2-93ea-b108986939f4",
+        "federated_video_identity": "video.blender.org/7ad3cbee-fe5f-41c2-93ea-b108986939f4",
+        "video_totals": {
+          "views": 3522,
+          "likes": 44,
+          "dislikes": 1,
+          "comments": 1
+        },
+        "metric_scope": "instance_trending_rank_with_provider_reported_counts"
+      }
+    ]
+  },
+  {
+    "instance": "peertube.tv",
+    "fetched_at": "2026-11-25T15:07:50.809956+00:00",
+    "feed_sha256": "ca732aec98709dcdc88d829743a62d5dab132cab717e55dee4c3a69fd53c8053",
+    "skipped": 0,
+    "items": [
+      {
+        "title": "Linux Native Game Showcase 2026-11-07 - 2026-11-13",
+        "url": "https://spectra.video/videos/watch/2e3242c0-7c00-4e27-a8bf-4b6dea7eb6a6",
+        "published_at": "2026-11-14T17:22:18.503000+00:00",
+        "chart_position": 1,
+        "observing_instance": "peertube.tv",
+        "origin_host": "spectra.video",
+        "origin_video_uuid": "2e3242c0-7c00-4e27-a8bf-4b6dea7eb6a6",
+        "federated_video_identity": "spectra.video/2e3242c0-7c00-4e27-a8bf-4b6dea7eb6a6",
+        "video_totals": {
+          "views": 51,
+          "likes": 0,
+          "dislikes": 0,
+          "comments": 0
+        },
+        "metric_scope": "instance_trending_rank_with_provider_reported_counts"
+      },
+      {
+        "title": "Linux Native Game Showcase 2026-10-24 - 2026-10-30",
+        "url": "https://spectra.video/videos/watch/28937cb0-f09e-4834-bf5b-0201caa451b0",
+        "published_at": "2026-10-31T15:29:43.326000+00:00",
+        "chart_position": 2,
+        "observing_instance": "peertube.tv",
+        "origin_host": "spectra.video",
+        "origin_video_uuid": "28937cb0-f09e-4834-bf5b-0201caa451b0",
+        "federated_video_identity": "spectra.video/28937cb0-f09e-4834-bf5b-0201caa451b0",
+        "video_totals": {
+          "views": 159,
+          "likes": 0,
+          "dislikes": 0,
+          "comments": 0
+        },
+        "metric_scope": "instance_trending_rank_with_provider_reported_counts"
+      },
+      {
+        "title": "Linux Native Game Showcase 2026-11-14 - 2026-11-20",
+        "url": "https://spectra.video/videos/watch/4ddc3e93-563d-4f12-bd10-7837c6c5bc6f",
+        "published_at": "2026-11-21T15:21:14.538000+00:00",
+        "chart_position": 3,
+        "observing_instance": "peertube.tv",
+        "origin_host": "spectra.video",
+        "origin_video_uuid": "4ddc3e93-563d-4f12-bd10-7837c6c5bc6f",
+        "federated_video_identity": "spectra.video/4ddc3e93-563d-4f12-bd10-7837c6c5bc6f",
+        "video_totals": {
+          "views": 15,
+          "likes": 0,
+          "dislikes": 0,
+          "comments": 0
+        },
+        "metric_scope": "instance_trending_rank_with_provider_reported_counts"
+      }
+    ]
+  },
+  {
+    "instance": "tilvids.com",
+    "fetched_at": "2026-11-25T15:07:58.297524+00:00",
+    "feed_sha256": "9354867edb468a659a47c35e31fc54b74707e815cfae133b9f1ed0afeed94c76",
+    "skipped": 0,
+    "items": [
+      {
+        "title": "The enh*tifcation of Android continues & other Linux Weekly News",
+        "url": "https://tilvids.com/videos/watch/ff10fce2-8885-424c-ba9a-83bb7f9b02b1",
+        "published_at": "2026-11-20T19:21:26.645000+00:00",
+        "chart_position": 1,
+        "observing_instance": "tilvids.com",
+        "origin_host": "tilvids.com",
+        "origin_video_uuid": "ff10fce2-8885-424c-ba9a-83bb7f9b02b1",
+        "federated_video_identity": "tilvids.com/ff10fce2-8885-424c-ba9a-83bb7f9b02b1",
+        "video_totals": {
+          "views": 633,
+          "likes": 66,
+          "dislikes": 0,
+          "comments": 4
+        },
+        "metric_scope": "instance_trending_rank_with_provider_reported_counts"
+      },
+      {
+        "title": "9 insane Linux and FOSS takes that I still (or said myself)",
+        "url": "https://tilvids.com/videos/watch/0e27c2f6-db8c-4ba7-b28e-ab00bf442521",
+        "published_at": "2026-11-18T15:43:36.555000+00:00",
+        "chart_position": 2,
+        "observing_instance": "tilvids.com",
+        "origin_host": "tilvids.com",
+        "origin_video_uuid": "0e27c2f6-db8c-4ba7-b28e-ab00bf442521",
+        "federated_video_identity": "tilvids.com/0e27c2f6-db8c-4ba7-b28e-ab00bf442521",
+        "video_totals": {
+          "views": 367,
+          "likes": 34,
+          "dislikes": 0,
+          "comments": 3
+        },
+        "metric_scope": "instance_trending_rank_with_provider_reported_counts"
+      },
+      {
+        "title": "Proton goes A.I. crazy, Ubuntu goes all SNAP, Vibe-coded Linux compatible kernel - Linux Weekly News",
+        "url": "https://tilvids.com/videos/watch/75458950-1377-42fb-be1c-34a2c5b9f98c",
+        "published_at": "2026-10-30T14:18:10.230000+00:00",
+        "chart_position": 3,
+        "observing_instance": "tilvids.com",
+        "origin_host": "tilvids.com",
+        "origin_video_uuid": "75458950-1377-42fb-be1c-34a2c5b9f98c",
+        "federated_video_identity": "tilvids.com/75458950-1377-42fb-be1c-34a2c5b9f98c",
+        "video_totals": {
+          "views": 1560,
+          "likes": 78,
+          "dislikes": 1,
+          "comments": 28
+        },
+        "metric_scope": "instance_trending_rank_with_provider_reported_counts"
+      }
+    ]
+  }
+]

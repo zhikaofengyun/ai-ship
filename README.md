@@ -10,13 +10,15 @@
 
 ![AI 制作台审阅实拍。左侧为模型的镜头方案和可操作的采用入口，右侧为当前镜头、播放控制和来源证据](verification/production-review.svg)
 
-[27.5 秒实操录屏](evidence/ai-production/demonstration/production-session.mp4) · [纠正镜头顺序后的成片](evidence/ai-production/demonstration/director-export.mp4) · [手机审阅](evidence/ai-production/demonstration/director-mobile.png) · [真实图片及视频推理样本](evidence/ai-production/live-generation/README.md) · [三模型错引证据及接管](evidence/ai-production/ensemble/README.md)。
+[历史实操录屏与成片还原](verification/README.md) · [批量制作手机实拍](evidence/batch-production/browser/mobile.png) · [已有真实权重生成的动态原件](evidence/atlas-production-2026-11-24/reference-motion.webm) · [生成素材剪成的 MP4](evidence/atlas-production-2026-11-24/generated-cut.mp4) · [三模型实际运行记录](evidence/atlas-production-2026-11-24/local-team.json)。
 
 ## 批量制作与表现回流
 
+[从拍摄素材到下一版剪辑](docs/bulk-video-release.md)列出操作入口、实测容量和复核依据。
+
 在项目制作台选择批量制作。可混排原片时间段、参考图生成、纯生成、人工时间线模板，并为每条变体绑定版本化工作流。可分页查看、暂停、恢复或取消批次。交付后可把帖子留存映射到制作时的源区间，供后续导演和选材参考。
 
-[批次、工作进程与恢复](docs/batch-production.md) · [采集、检索与工程依据](docs/production-integrations.md) · [本次实测证据](evidence/batch-production) · [本轮逐门槛核对](docs/batch-gate-evidence.md)
+[批次、工作进程与恢复](docs/batch-production.md) · [采集、检索与工程依据](docs/production-integrations.md) · [本次实测证据](evidence/batch-production) · [真实实拍经本地模型选剪的 9 秒成片与署名](evidence/batch-production/real-footage) · [本轮逐门槛核对](docs/batch-gate-evidence.md)
 
 ## 原文与核对入口
 
@@ -66,8 +68,8 @@ python scripts/run.py
 | 领域 | 已落地的可运行部分 | 仍缺少的业务部分 |
 | --- | --- | --- |
 | 数据与控制面 | 64 类合同、不可变版本、CAS、幂等、事务事件、引用索引、SSE、租约/fencing | 分布式多主机、完整生产观测与容量验收 |
-| 素材 | Commons 实联导入、跨语言文本/标签向量索引、分块续传、授权状态更新、可回退的 SQLite 全文索引、分段画面和声音比对、素材族修订、分层冷藏与恢复、使用压力与探索选材、ComfyUI 图像和视频任务 | 更多来源连接器、视觉/音频向量检索、自动语义识别、云对象多副本删除核销 |
-| 声音与时间 | 英文商品价格读法复核、本地 Flite 配音、采样级人工打点、口播与实帧证据绑定、受约束剪点、分轨混音、成片响度测量及试听回执 | 自动 ASR、跨语种发音、自动强拍识别、内容语义自动核验 |
+| 素材 | Commons 实联导入、跨语言文本/标签向量索引、[视频采样帧检索与源时码人工标注](docs/visual-frame-search.md)、分块续传、授权状态更新、可回退的 SQLite 全文索引、分段画面和声音比对、素材族修订、分层冷藏与恢复、使用压力与探索选材、ComfyUI 图像和视频任务 | 更多来源连接器、音频向量及多模态统一排序、连续动作自动识别、生产召回率评估、云对象多副本删除核销 |
+| 声音与时间 | [可选中英文离线逐词转录及字幕审核](docs/local-speech.md)、英文商品价格读法复核、本地 Flite 配音、采样级人工打点、口播与实帧证据绑定、受约束剪点、分轨混音、成片响度测量及试听回执 | 重叠语音/口音精度、跨语种发音、自动强拍识别、内容语义自动核验 |
 | 剪辑与交付 | 目标驱动的分镜变体、候选差异与历史比对、当前来源重验、实际播放器与时间线、字幕、位置及透明度关键帧、构图后矩形遮罩、锁版、编码、整片解码、交接包与有限 OTIO 往返 | 完整六层参数继承、非线性速度、自动跟踪、分段缓存和商业剪辑软件实机往返 |
 | 工作流与 Agent | 本地 DAG、检查点与恢复、脚本到真实配音、实帧候选、单导演和三模型评议、错引拦截、预算预留、经人工审批的素材评分策略上线与回退 | 完整动态改图、生产多模态团队和全部工具的业务验收 |
 | 发布与表现 | 精确人工审阅、排程、在途及迟到回执核销、人工导入或授权 TikTok 指标读取、片段留存映射、授权评论摘录与分类、按帖子核对可比指标 | 生产账号联调、自动上传与撤回、更多平台指标适配、片段级因果效果 |
@@ -75,7 +77,7 @@ python scripts/run.py
 
 [分区与功能操作核对表](docs/feature-workflows.md)及[机器可读核对表](contracts/feature-workflows.json)逐项列出操作步骤、路线、输入输出以及当前实际范围。
 
-逐项独立分类是 **176 项真实局部路径、0 项通用基础/配置、2 项仅有未实联适配器、0 项仅合同配置；整项原文业务验收通过 0 项**。这些数字不能换算为“开发完成率”。69 个场景目前为 54 个局部覆盖、15 个未覆盖，均未达到原文全场景验收。后续开发应逐项关闭审计表中的具体差距；[余项与验收次序](docs/acceptance-plan.md)按原文功能 ID 列出各批次及关闭条件。
+逐项独立分类是 **176 项真实局部路径、0 项通用基础/配置、2 项仅有未实联适配器、0 项仅合同配置；整项原文业务验收通过 0 项**。这些数字不能换算为“开发完成率”。69 个场景目前为 56 个局部覆盖、13 个未覆盖，均未达到原文全场景验收。后续开发应逐项关闭审计表中的具体差距；[余项与验收次序](docs/acceptance-plan.md)按原文功能 ID 列出各批次及关闭条件。
 
 ## 架构与接口
 

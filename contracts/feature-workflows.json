@@ -1209,7 +1209,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "实联 Google Trends RSS 并保留观察来源、市场和发生时间；另支持带密钥的 YouTube 热门榜读取，按窗口去重。",
+            "operable_scope": "实联 Google Trends RSS 并保留观察来源、市场和发生时间；实联三个 PeerTube 实例的视频榜单并保留联合网络中的原始视频身份；另支持带密钥的 YouTube 热门榜读取，按窗口去重。",
             "limits": "单源观察的独立性、跨站热度同口径校准及实时撤回仍待核实。",
             "direct_endpoints": [
               "POST /api/v1/production/trends",
@@ -1229,6 +1229,11 @@
               {
                 "file": "tests/test_trend_feeds.py",
                 "symbol": "TrendFeedTests.test_rss_with_pinned_evidence_and_duplicate_sync",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_trend_feeds.py",
+                "symbol": "TrendFeedTests.test_instance_charts_preserve_federated_origin_and_cannot_claim_a_region",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -2251,22 +2256,38 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "真实浏览器文件上传、SHA-256 原件去重、分块续传及单文件失败条目。",
-            "limits": "后台文件稳定性监视、完整文件夹父批次、连接器续传和所有来源用途选择尚缺。",
+            "operable_scope": "真实上传、分块续传和已配置目录的增量导入。检查打开的文件描述符、稳定窗口与可选摘要，逐项留错误与来源。",
+            "limits": "需部署者配置允许根；网络盘写入语义、所有远端连接与后台监听尚待验。",
             "direct_endpoints": [
+              "GET /api/v1/production/directory-imports/roots",
               "POST /api/v1/media/import",
               "POST /api/v1/media/uploads",
               "POST /api/v1/media/uploads/{entry_id}/complete",
+              "POST /api/v1/production/directory-imports/advance",
+              "POST /api/v1/production/directory-imports/items",
+              "POST /api/v1/production/directory-imports/observe",
               "PUT /api/v1/media/uploads/{entry_id}"
             ],
             "commands": [],
             "code": [
-              "app/media.py"
+              "app/directory_import.py",
+              "app/media.py",
+              "web/directory-intake.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_media.py",
                 "symbol": "MediaIntegrationTests.test_chunk_upload_resume_duplicate_chunk_and_full_hash",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_directory_import.py",
+                "symbol": "DirectoryIntakeTests.test_pending_during_write_same_name_history_and_duplicate_bytes_after_restart",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_directory_import.py",
+                "symbol": "DirectoryIntakeTests.test_manifest_digest_link_swap_scope_and_per_item_failure",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -2951,22 +2972,38 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "真实浏览器文件上传、SHA-256 原件去重、分块续传及单文件失败条目。",
-            "limits": "后台文件稳定性监视、完整文件夹父批次、连接器续传和所有来源用途选择尚缺。",
+            "operable_scope": "目录清单分页、稳定观察、可恢复游标和逐项核销；同名新字节保留新身份，同字节不同路径保留各自来源。",
+            "limits": "尚缺跨节点队列、云存储监视及所有外部采集协议。",
             "direct_endpoints": [
+              "GET /api/v1/production/directory-imports/roots",
               "POST /api/v1/media/import",
               "POST /api/v1/media/uploads",
               "POST /api/v1/media/uploads/{entry_id}/complete",
+              "POST /api/v1/production/directory-imports/advance",
+              "POST /api/v1/production/directory-imports/items",
+              "POST /api/v1/production/directory-imports/observe",
               "PUT /api/v1/media/uploads/{entry_id}"
             ],
             "commands": [],
             "code": [
-              "app/media.py"
+              "app/directory_import.py",
+              "app/media.py",
+              "web/directory-intake.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_media.py",
                 "symbol": "MediaIntegrationTests.test_chunk_upload_resume_duplicate_chunk_and_full_hash",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_directory_import.py",
+                "symbol": "DirectoryIntakeTests.test_pending_during_write_same_name_history_and_duplicate_bytes_after_restart",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_directory_import.py",
+                "symbol": "DirectoryIntakeTests.test_manifest_digest_link_swap_scope_and_per_item_failure",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -3097,18 +3134,25 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "按项目来源清单区分未找到、原出处删除、内容改版、授权到期和撤权；逐项保存回执，冲突或迟到信号保留，识别仍引用旧版的排程并在发布前复核。",
+            "operable_scope": "按项目来源清单区分未找到、原出处删除、内容改版、授权到期和撤权；逐项保存回执，冲突或迟到信号保留，识别仍引用旧版的排程并在发布前复核。本地目录的两次稳定观察与游标可跨进程继续。",
             "limits": "远端 Webhook、定期条件查询以及下载中的连接器中止和自动对账尚待联调。",
             "direct_endpoints": [
-              "POST /api/v1/production/acquisition/changes"
+              "GET /api/v1/production/directory-imports/roots",
+              "POST /api/v1/production/acquisition/changes",
+              "POST /api/v1/production/directory-imports/advance",
+              "POST /api/v1/production/directory-imports/items",
+              "POST /api/v1/production/directory-imports/observe"
             ],
             "commands": [],
             "code": [
               "app/catalog.py",
+              "app/directory_import.py",
+              "app/media.py",
               "app/production.py",
               "app/schemas.py",
               "app/source_changes.py",
               "web/controls.js",
+              "web/directory-intake.js",
               "web/source-changes.js"
             ],
             "test_definitions": [
@@ -3125,6 +3169,16 @@
               {
                 "file": "scripts/browser_creative.py",
                 "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_directory_import.py",
+                "symbol": "DirectoryIntakeTests.test_pending_during_write_same_name_history_and_duplicate_bytes_after_restart",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_directory_import.py",
+                "symbol": "DirectoryIntakeTests.test_manifest_digest_link_swap_scope_and_per_item_failure",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -6254,19 +6308,30 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "人工片段标签、置信度可空、说明证据、版本引用与人工锁字段。",
-            "limits": "多帧视觉识别、遮挡跟踪、数量口径、连续性、坐标迁移和标签体系升级未完成。",
+            "operable_scope": "人工分段标签保留说明、版本引用、可空置信度与人工锁。从 CLIP 检索命中可预览实际源帧，再由操作员填写场景或动作、区间及依据。实测两种浏览器保存同一 3,400,000 微秒源帧，服务端拒绝错误画面指纹。[帧与标注实测](../evidence/batch-production/visual-search/result.json)",
+            "limits": "相隔采样帧尚未进行联合时序分析。动作方向、遮挡前后身份、数量与跨镜连续性缺少自动判定及标注集验收，坐标迁移和标签体系升级仍待完成。",
             "direct_endpoints": [
+              "POST /api/v1/production/asset-index/frames/build",
+              "POST /api/v1/production/asset-index/query",
               "POST /api/v1/production/tags"
             ],
             "commands": [],
             "code": [
-              "app/production.py"
+              "app/asset_index.py",
+              "app/frame_vectors.py",
+              "app/production.py",
+              "app/visual_index.py",
+              "web/asset-search.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_production.py",
                 "symbol": "RealMediaCrossDomainTests.test_real_probe_bounds_tags_search_and_audio_anchors",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/verify_visual_search.py",
+                "symbol": "verify",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -6406,22 +6471,39 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "可用时运行真实 Tesseract LSTM 单帧 OCR，保留时间、文字、置信、坐标、语言模型版本和缺失状态。",
-            "limits": "仍缺完整视频逐段 OCR、跨语言 ASR/说话人、声事件及词级对齐。",
+            "operable_scope": "单帧 Tesseract OCR 记录坐标和模型。已实测本地中英文 Vosk，保留源时钟、词级置信度、模型和音源指纹，逐句审核后导出字幕。",
+            "limits": "逐段 OCR、说话人区分、声事件、嘈杂或混合语言精度待验。",
             "direct_endpoints": [
-              "POST /api/v1/production/auto-edits"
+              "GET /api/v1/production/speech/models",
+              "GET /api/v1/production/speech/reviews/{approval_id}/captions",
+              "POST /api/v1/production/auto-edits",
+              "POST /api/v1/production/speech/recognize",
+              "POST /api/v1/production/speech/review"
             ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
+              "app/speech.py",
+              "app/speech_worker.py",
               "app/visual_candidates.py",
-              "web/controls.js"
+              "web/controls.js",
+              "web/speech-review.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_auto_edits.py",
                 "symbol": "AutoEditTests.test_overlapping_requests_reserve_once_and_cannot_forge_ocr_or_double_apply",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/verify_local_speech.py",
+                "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_local_speech.py",
+                "symbol": "LocalSpeechTests.test_review_permissions_and_source_bound_indices",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -6955,7 +7037,7 @@
             "status": "local_business_subset",
             "label": "真实局部路径",
             "operable_scope": "实际音轨提取为 48 kHz PCM，来源/版本/对象 hash 可查。",
-            "limits": "多流选择、完整原始采样 PTS 审计、ASR 与语义标签没有完成。",
+            "limits": "多流选择、完整原始采样 PTS 审计及语义标签待验。",
             "direct_endpoints": [
               "POST /api/v1/media/import",
               "POST /api/v1/media/{asset_id}/extract-audio"
@@ -7341,20 +7423,23 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "可选本地多语句向量对名称和已验证片段标签编码，与文字索引融合并逐条重检授权；实测中文查询命中英文素材。",
-            "limits": "尚无视觉或音频的跨模态嵌入、生产召回率标注集和大规模近邻索引。",
+            "operable_scope": "可选多语言文本向量与关键词融合，实测中文描述能召回英文素材。另可用本地 CLIP 比较文字与视频采样帧，返回最佳命中的素材版本、源时码与画面指纹。建索引和检索均重验加工授权，名称及标签始终可查。[文本实测](../evidence/batch-production/semantic-retrieval.json) · [画面实测](../evidence/batch-production/visual-search/result.json)",
+            "limits": "音频向量、文字/视觉/音频与结构信号的统一排序、大规模近邻索引及生产召回率验收仍待完成。视觉专项覆盖两份视频、六帧、三条英文查询。",
             "direct_endpoints": [
               "GET /api/v1/production/search",
               "POST /api/v1/production/asset-index/embed",
+              "POST /api/v1/production/asset-index/frames/build",
               "POST /api/v1/production/asset-index/query"
             ],
             "commands": [],
             "code": [
               "app/asset_index.py",
+              "app/frame_vectors.py",
               "app/index_schema.py",
               "app/media.py",
               "app/production.py",
               "app/text_vectors.py",
+              "app/visual_index.py",
               "scripts/verify_semantic_search.py",
               "web/asset-search.js"
             ],
@@ -7372,6 +7457,16 @@
               {
                 "file": "tests/test_asset_index.py",
                 "symbol": "AssetIndexTests.test_missing_semantic_runtime_keeps_existing_literal_workflow",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/verify_visual_search.py",
+                "symbol": "verify",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_visual_index.py",
+                "symbol": "VisualIndexTests.test_missing_or_invalid_weights_preserve_literal_search_and_explicit_build_status",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -9953,20 +10048,37 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "手工词句锚点、untimed 保留为空、冻结脚本/音频引用及人工证据。",
-            "limits": "没有自动 ASR/forced alignment/语义实体消歧；人工声明不等于自动核验。",
+            "operable_scope": "手工词句锚点；可选 Vosk 0.3.45 从本地原音提取中英文逐词时码，留存模型/音源指纹和校对依据，审核字幕可导入时间轴。",
+            "limits": "给定脚本的强制对齐、实体消歧、口音及重叠对白识别质量待验。",
             "direct_endpoints": [
+              "GET /api/v1/production/speech/models",
+              "GET /api/v1/production/speech/reviews/{approval_id}/captions",
+              "POST /api/v1/production/speech/recognize",
+              "POST /api/v1/production/speech/review",
               "POST /api/v1/production/voice/align"
             ],
             "commands": [],
             "code": [
               "app/commands.py",
-              "app/production.py"
+              "app/production.py",
+              "app/speech.py",
+              "app/speech_worker.py",
+              "web/speech-review.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_production.py",
                 "symbol": "RealMediaCrossDomainTests.test_real_probe_bounds_tags_search_and_audio_anchors",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/verify_local_speech.py",
+                "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_local_speech.py",
+                "symbol": "LocalSpeechTests.test_review_permissions_and_source_bound_indices",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -10138,7 +10250,7 @@
             "status": "local_business_subset",
             "label": "真实局部路径",
             "operable_scope": "手工词句锚点、untimed 保留为空、冻结脚本/音频引用及人工证据。",
-            "limits": "没有自动 ASR/forced alignment/语义实体消歧；人工声明不等于自动核验。",
+            "limits": "强制对齐、语义实体消歧及 ASR 到实体的自动绑定待验。",
             "direct_endpoints": [
               "POST /api/v1/production/voice/align"
             ],
@@ -10478,7 +10590,7 @@
             "status": "local_business_subset",
             "label": "真实局部路径",
             "operable_scope": "在有证据的语音空隙、镜头可延伸范围及人工锁内，用采样时钟按节奏标记、手动位置或语义间隙选择切点。",
-            "limits": "未实现自动词级识别和跨音频风格的主观节奏验收。",
+            "limits": "自动识别的词级证据到节奏选切的闭环、跨音频风格的主观节奏验收待验。",
             "direct_endpoints": [
               "POST /api/v1/production/voice-studio/rhythm"
             ],
@@ -17211,23 +17323,34 @@
           "delivered": {
             "status": "external_adapter_unverified",
             "label": "适配器未实联",
-            "operable_scope": "实现 TikTok 服务端账号绑定及官方用户身份核对。凭据和 open_id 与租户、项目、账号逐级匹配。",
-            "limits": "尚无成套 OAuth 同意与刷新流程，未用真实授权账号完成实联。",
+            "operable_scope": "可从账号页发起 TikTok Login Kit 授权，接收 HTTPS 同源回调并一次性消费 state；账号与 open_id 必须精确匹配，令牌在服务端加密。保留已有管理员绑定方式。",
+            "limits": "HTTPS 浏览器与本地协议服务已验证。真实平台应用、用户同意及账号授权尚待联调。",
             "direct_endpoints": [
               "GET /api/v1/production/tiktok/accounts/{account_id}/connection",
-              "POST /api/v1/production/tiktok/accounts/{account_id}/connection"
+              "GET /api/v1/production/tiktok/login/callback",
+              "POST /api/v1/production/tiktok/accounts/{account_id}/connection",
+              "POST /api/v1/production/tiktok/login/accounts/{account}/refresh",
+              "POST /api/v1/production/tiktok/login/accounts/{account}/revoke",
+              "POST /api/v1/production/tiktok/login/accounts/{account}/start"
             ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
+              "app/tiktok_login.py",
               "app/tiktok_metrics.py",
-              "web/controls.js"
+              "web/controls.js",
+              "web/tiktok-login.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_tiktok_metrics.py",
                 "symbol": "TikTokMetricsTests.test_identity_capability_probe_and_suspend",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/browser_tiktok_login.py",
+                "symbol": "run",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -17388,23 +17511,34 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "支持明确暂停连接，按版本防止并发覆写，暂停后阻止账号指标同步。",
-            "limits": "平台令牌轮换、主动撤权通知和真实失效生命周期仍待授权联调。",
+            "operable_scope": "支持版本化暂停、刷新令牌轮换、主动解绑及结果未知时停驻；令牌和回调参数从常规日志隔离。",
+            "limits": "真实平台令牌轮换、撤回时延及在途第三方状态尚待授权联调。",
             "direct_endpoints": [
               "GET /api/v1/production/tiktok/accounts/{account_id}/connection",
-              "POST /api/v1/production/tiktok/accounts/{account_id}/connection"
+              "GET /api/v1/production/tiktok/login/callback",
+              "POST /api/v1/production/tiktok/accounts/{account_id}/connection",
+              "POST /api/v1/production/tiktok/login/accounts/{account}/refresh",
+              "POST /api/v1/production/tiktok/login/accounts/{account}/revoke",
+              "POST /api/v1/production/tiktok/login/accounts/{account}/start"
             ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/schemas.py",
+              "app/tiktok_login.py",
               "app/tiktok_metrics.py",
-              "web/controls.js"
+              "web/controls.js",
+              "web/tiktok-login.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_tiktok_metrics.py",
                 "symbol": "TikTokMetricsTests.test_identity_capability_probe_and_suspend",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/browser_tiktok_login.py",
+                "symbol": "run",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -18197,13 +18331,20 @@
             "code": [
               "app/catalog.py",
               "app/schemas.py",
+              "app/tiktok_login.py",
               "app/tiktok_metrics.py",
-              "web/controls.js"
+              "web/controls.js",
+              "web/tiktok-login.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_tiktok_metrics.py",
                 "symbol": "TikTokMetricsTests.test_identity_capability_probe_and_suspend",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/browser_tiktok_login.py",
+                "symbol": "run",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -21672,12 +21813,13 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "从已登记帖子回到实际导出及 TimeMap，把留存观察按时间区间映射至片段与原素材；同成片位置可按原片版本和角色比较使用次数、帖子数、条件留存及同区间多素材帖子数，保留反证。",
+            "operable_scope": "从已登记帖子回到实际导出及 TimeMap，把留存观察按时间区间映射至片段与原素材；同成片位置可按原片版本和角色比较使用次数、帖子数、条件留存及同区间多素材帖子数，保留反证。可固定完整样本集、反例、下一版改法与停止条件作为导演依据，数据漂移时重新核对。",
             "limits": "需要发布端提供可信曲线及实际成片对应，观察结果尚不能排除题材、投放或发布时间的影响。",
             "direct_endpoints": [
               "GET /api/v1/production/post-reviews/placement-performance",
               "POST /api/v1/production/post-reviews/archive",
               "POST /api/v1/production/post-reviews/compare",
+              "POST /api/v1/production/post-reviews/placement-hypotheses",
               "POST /api/v1/production/post-reviews/retention-mapping"
             ],
             "commands": [],
@@ -21874,6 +22016,7 @@
               "GET /api/v1/production/analytics",
               "GET /api/v1/production/post-reviews/placement-performance",
               "POST /api/v1/production/metrics/import",
+              "POST /api/v1/production/post-reviews/placement-hypotheses",
               "POST /api/v1/production/post-reviews/retention-mapping"
             ],
             "commands": [],
@@ -24397,12 +24540,14 @@
             ],
             "code": [
               "app/auto_edits.py",
+              "app/batches.py",
               "app/budget.py",
               "app/commands.py",
               "app/execution.py",
               "app/media.py",
               "app/providers.py",
               "app/store.py",
+              "scripts/run.py",
               "web/project-production.js"
             ],
             "test_definitions": [
@@ -24414,6 +24559,11 @@
               {
                 "file": "scripts/browser_ai_production.py",
                 "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_dedicated_worker.py",
+                "symbol": "DedicatedWorkerTests.test_worker_drain_restart_and_unique_completed_outputs",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               },
               {
@@ -26391,9 +26541,12 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "本地资源上限、参数白名单、协议限制、无 shell 调用。",
+            "operable_scope": "本地资源上限、参数白名单、协议限制、无 shell 调用。只读响应回放不会调动发布或计费工具。",
             "limits": "不是强容器/VM 隔离和多租户恶意负载沙箱。",
-            "direct_endpoints": [],
+            "direct_endpoints": [
+              "GET /api/v1/harness/replay-evidence",
+              "GET /api/v1/harness/replay-evidence/{record_id}"
+            ],
             "commands": [
               "AcquireLease",
               "ReleaseLease",
@@ -26406,15 +26559,22 @@
               "app/budget.py",
               "app/commands.py",
               "app/edit_feedback.py",
+              "app/evidence_replay.py",
               "app/execution.py",
               "app/media.py",
               "app/providers.py",
-              "app/store.py"
+              "app/store.py",
+              "web/evidence-replay.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_auto_edits.py",
                 "symbol": "AutoEditTests.test_durable_second_director_turn_consumes_failure_and_keeps_original",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_evidence_replay.py",
+                "symbol": "EvidenceReplayTests.test_incomplete_revoked_and_external_publish_receipts_cannot_reissue",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               },
               {
@@ -27000,9 +27160,11 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "冻结运行时版本、配方、故障演练和已注册节点合同；底座或生成配置漂移会阻止旧资格直接派发。",
+            "operable_scope": "冻结运行时版本、配方、故障演练和已注册节点合同；底座或生成配置漂移会阻止旧资格直接派发。可按真实请求摘要比较两次调用并对文本或 JSON 做离线断言。",
             "limits": "跨机器与硬件的等价确认和生产迁移仍待验证。",
             "direct_endpoints": [
+              "GET /api/v1/harness/replay-evidence",
+              "GET /api/v1/harness/replay-evidence/{record_id}",
               "GET /api/v1/harness/runtime",
               "POST /api/v1/harness/dispatch",
               "POST /api/v1/harness/qualify"
@@ -27011,14 +27173,27 @@
             "code": [
               "app/api.py",
               "app/catalog.py",
+              "app/evidence_replay.py",
               "app/harness_qualification.py",
+              "app/providers.py",
               "app/schemas.py",
+              "web/evidence-replay.js",
               "web/harness-runtime.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_harness_qualification.py",
                 "symbol": "QualificationTests.test_qualified_workflow_dispatch_and_runtime_drift",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_evidence_replay.py",
+                "symbol": "EvidenceReplayTests.test_incomplete_revoked_and_external_publish_receipts_cannot_reissue",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_harness_qualification.py",
+                "symbol": "QualificationTests.test_handler_body_change_with_unchanged_schema_invalidates_qualification",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -29056,17 +29231,22 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "实际 BlobLocation、内容 hash、当前字节验证及有缺口的 ReplayManifest。",
+            "operable_scope": "实际 BlobLocation、内容 hash、当前字节验证及有缺口的 ReplayManifest。能回放有来源的模型与工具响应及失败信息。",
             "limits": "未完成多副本缓存落点、冷迁移和可证明逐位一致的全运行环境重演。",
             "direct_endpoints": [
+              "GET /api/v1/harness/replay-evidence",
+              "GET /api/v1/harness/replay-evidence/{record_id}",
               "GET /api/v1/production/trace/{record_id}",
               "POST /api/v1/production/time-map/trace"
             ],
             "commands": [],
             "code": [
+              "app/evidence_replay.py",
               "app/media.py",
               "app/production.py",
-              "app/store.py"
+              "app/providers.py",
+              "app/store.py",
+              "web/evidence-replay.js"
             ],
             "test_definitions": [
               {
@@ -29077,6 +29257,11 @@
               {
                 "file": "tests/test_production.py",
                 "symbol": "RealMediaCrossDomainTests.test_actual_render_timemap_and_replay_resolve_immutable_bytes",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_evidence_replay.py",
+                "symbol": "EvidenceReplayTests.test_incomplete_revoked_and_external_publish_receipts_cannot_reissue",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -30547,7 +30732,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "批量工作按项目批次轮转，控制并发工作进程与生成窗口，登记每次生成请求，凭租约认领和恢复。",
+            "operable_scope": "批量工作按项目批次轮转，控制并发工作进程与生成窗口，登记每次生成请求，凭租约认领和恢复。普通 HTTP 服务与本机独立批次进程可分开运行，进程退出后其他领取者继续。",
             "limits": "缺多主机调度、跨租户分层 SLA 与高分辨率成片的持续负载测量。",
             "direct_endpoints": [
               "GET /api/v1/production/batches/{bid}",
@@ -30570,12 +30755,18 @@
               "app/media.py",
               "app/providers.py",
               "app/store.py",
+              "scripts/run.py",
               "web/batch-workspace.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_batches.py",
                 "symbol": "BatchTests.test_batch_dispatches_frozen_dag_input_and_records_child_run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_dedicated_worker.py",
+                "symbol": "DedicatedWorkerTests.test_worker_drain_restart_and_unique_completed_outputs",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               },
               {
@@ -31240,6 +31431,11 @@
                 "file": "tests/test_harness_qualification.py",
                 "symbol": "QualificationTests.test_qualified_workflow_dispatch_and_runtime_drift",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_harness_qualification.py",
+                "symbol": "QualificationTests.test_handler_body_change_with_unchanged_schema_invalidates_qualification",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "full_business_acceptance": false
@@ -31733,7 +31929,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "源区间、分镜提案、实际批准版本和对应时间线联动；指定时间线可人工接管，支持来源回看、工程交换与原位导出。",
+            "operable_scope": "源区间、分镜提案、实际批准版本和对应时间线联动；指定时间线可人工接管，支持来源回看、工程交换与原位导出。检索结果能把原片版本和时段交给源监视器。",
             "limits": "所有图谱层级、外部软件和跨业务回溯的端到端验收未完成。",
             "direct_endpoints": [
               "GET /api/v1/production/auto-edits/{run_id}",
@@ -31746,6 +31942,7 @@
             "code": [
               "app/auto_edits.py",
               "web/app.js",
+              "web/asset-search.js",
               "web/editor-layout.js",
               "web/editor-viewer.js",
               "web/editor.js",
@@ -31767,6 +31964,11 @@
               },
               {
                 "file": "scripts/browser_ai_production.py",
+                "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/browser_module_layout.py",
                 "symbol": "run",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
@@ -32449,7 +32651,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "导航侧栏、制作/证据区和编辑器多面板可拖动或用键盘调节；六种停靠顺序、手机监视器高度与全屏回退均有双引擎操作校验。",
+            "operable_scope": "导航侧栏、制作/证据区和编辑器多面板可拖动或用键盘调节；六种停靠顺序、手机监视器高度与全屏回退均有双引擎操作校验。23 个模块的目录可拖宽、键盘调节、换边、收起及复位。",
             "limits": "实体手机/Mac Safari、读屏和系统缩放、离线等价业务列表、任意独立系统窗口尚未验收。",
             "direct_endpoints": [],
             "commands": [
@@ -32458,6 +32660,7 @@
             ],
             "code": [
               "web/app.js",
+              "web/asset-search.js",
               "web/editor-layout.js",
               "web/editor-viewer.js",
               "web/editor.js",
@@ -32468,6 +32671,11 @@
             "test_definitions": [
               {
                 "file": "scripts/browser_workspace_layout.py",
+                "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/browser_module_layout.py",
                 "symbol": "run",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
@@ -32610,7 +32818,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "用户主动调整的导航宽度、制作栏宽度、剪辑面板尺寸/顺序和时间线上下位置可在当前浏览器恢复。",
+            "operable_scope": "用户主动调整的导航宽度、制作栏宽度、剪辑面板尺寸/顺序和时间线上下位置可在当前浏览器恢复。模块目录布局按租户、用户、项目在本设备保存，经过重新打开和项目隔离测试。",
             "limits": "仅显式本地显示偏好；未实现学习权限候选、全部作用域继承、跨设备同步或自主策略。",
             "direct_endpoints": [],
             "commands": [
@@ -32619,6 +32827,7 @@
             ],
             "code": [
               "web/app.js",
+              "web/asset-search.js",
               "web/editor-layout.js",
               "web/editor-viewer.js",
               "web/editor.js",
@@ -32629,6 +32838,11 @@
             "test_definitions": [
               {
                 "file": "scripts/browser_workspace_layout.py",
+                "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/browser_module_layout.py",
                 "symbol": "run",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }

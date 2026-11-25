@@ -1,0 +1,166 @@
+{
+  "passed": true,
+  "engine": "version: 1.0.0-dev (build 12671, commit ab789a246)\nbuilt with GNU 11.4.0 for Linux x86_64",
+  "model_file": "qwen.gguf",
+  "model_sha256": "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db",
+  "checks": [
+    "workbench launcher starts authenticated GGUF; registered model is available to a new project",
+    "llama.cpp GGUF CPU inference through production API / validated source IDs and real intervals",
+    "same request recovers the same proposal without repeating the model call",
+    "version approval / frozen render / decoded H.264 + AAC / persisted technical QC"
+  ],
+  "stage": "review",
+  "issue": null,
+  "model_calls": [
+    {
+      "provider_request_id": "chatcmpl-r977wVdGqEyMuvhFCNXmhUCXzPpDoTfg",
+      "usage": {
+        "completion_tokens": 16,
+        "prompt_tokens": 498,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 514
+      }
+    }
+  ],
+  "cost_records": [
+    {
+      "actual": null,
+      "currency": "USD",
+      "status": "usage_recorded"
+    }
+  ],
+  "plan": {
+    "approach": "反序收束",
+    "duration_seconds": 3.2,
+    "feedback_evidence": [],
+    "format": {
+      "fps": 25,
+      "height": 180,
+      "width": 320
+    },
+    "missing": [],
+    "model_selection": {
+      "candidate_count": 2,
+      "choice": "C",
+      "reason": "反序收束"
+    },
+    "name": "Make a short FRESH LIME product cut. Prioritize the source with the words FRESH LIME. Use only measu",
+    "planning_mode": "model",
+    "project_preferences": [],
+    "review_rounds": [
+      {
+        "blocker": null,
+        "call_refs": [
+          {
+            "context_hash": "e0af0f86c71aa60318c88cedefb3b9708e6cabebdabd0ede5004b3c6b4d483b4",
+            "id": "toolcall_5fd729e4db344d049fac25480af4aa14",
+            "kind": "ToolCall",
+            "prompt_hash": "8303fb340a9f9874602da20ced87e6debe6d4dafde7f9643d1d1a4d81672ab51",
+            "reported_model": "atlas-local-director",
+            "role": "director",
+            "round": 1,
+            "version": 2
+          }
+        ],
+        "decision": "review",
+        "plan_ref": {
+          "id": "plan_7faa197252b7f492cf1c79c8aa4f99c5",
+          "kind": "Plan",
+          "version": 1
+        },
+        "round": 1
+      }
+    ],
+    "reviews": [],
+    "shots": [
+      {
+        "asset_id": "asset_63bdca2fc64a44169a10f78e6f7f53e8",
+        "asset_version": 1,
+        "name": "SAMPLE.mp4",
+        "reason": "候选结构采用该段真实原片区间。",
+        "source_in": 0.0,
+        "source_out": 1.6,
+        "timeline_start": 0.0
+      },
+      {
+        "asset_id": "asset_bfa87178f4be44a18090256e76229ca7",
+        "asset_version": 1,
+        "name": "FRESH LIME.mp4",
+        "reason": "候选结构采用该段真实原片区间。",
+        "source_in": 0.0,
+        "source_out": 1.6,
+        "timeline_start": 1.6
+      }
+    ],
+    "status": "proposed",
+    "title": "Make a short FRESH LIME product cut. Prioritize the source with the words FRESH LIME. Use only measu"
+  },
+  "movie_bytes": 10817,
+  "artifact_sha256": "71535f8e19131d94e8164d7d3a015c664baa8a9ffe3a58575000ceab83873051",
+  "qc": {
+    "checks": {
+      "audio_presence": true,
+      "bytes_present": true,
+      "dimensions": true,
+      "duration_positive": true,
+      "duration_within_tolerance": true,
+      "full_decode": true
+    },
+    "content_review_required": true,
+    "not_checked": [
+      "商品事实与数量",
+      "来源和使用许可",
+      "字幕语义和可读性",
+      "审美与场景连续性",
+      "人工指定音画语义锚点"
+    ],
+    "probe": {
+      "audio_codec": "aac",
+      "duration": 3.2,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "fps": "25/1",
+      "has_audio": true,
+      "has_video": true,
+      "height": 180,
+      "is_still": false,
+      "probe_version": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+      "source_time_base": "1/12800",
+      "streams": [
+        {
+          "avg_frame_rate": "25/1",
+          "codec_name": "h264",
+          "codec_type": "video",
+          "duration": "3.200000",
+          "height": 180,
+          "index": 0,
+          "nb_frames": "80",
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "25/1",
+          "start_time": "0.000000",
+          "time_base": "1/12800",
+          "width": 320
+        },
+        {
+          "avg_frame_rate": "0/0",
+          "channel_layout": "stereo",
+          "channels": 2,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "duration": "3.200000",
+          "index": 1,
+          "nb_frames": "151",
+          "r_frame_rate": "0/0",
+          "sample_rate": "48000",
+          "start_time": "0.000000",
+          "time_base": "1/48000"
+        }
+      ],
+      "video_codec": "h264",
+      "width": 320
+    },
+    "publish_ready": false,
+    "status": "technical_passed"
+  }
+}

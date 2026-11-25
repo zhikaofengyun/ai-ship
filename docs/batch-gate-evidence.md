@@ -15,5 +15,10 @@
 | F07/Q01、Q03、Q04、Q06；F05/F03 | 本地取消、远端实际帖子、迟到成功和人工撤下各自记账。旧帖及其历史指标仍可核对 | [撤回与晚回执测试](../tests/test_publication_lifecycle.py) |
 | M09/Q02、Q06、Q08；M09/F04 | 先核实平台帖子和下载成片，再用实渲时间图映射。逐位置比较按账号、流量、观察窗和原片版本分组。没有曲线端点时显示缺项，不能据此断言单镜头提升销量 | [真实文件浏览器回归](../evidence/batch-production/browser/placement-performance.json) · [查询界面](../evidence/batch-production/browser/placement-performance.png) |
 | X03/Q02、Q03、Q05 | 固定训练集与独立留出集，保存失败样本；发布和回退有各自审批。评测不会直接替换正在使用的策略 | [评分策略测试](../tests/test_score_policies.py) |
+| A01/Q01、Q03、Q04、Q05 | 清单逐项入库。同路径新字节与同字节不同来源分别留有可验证记录 | [拍摄目录测试](../tests/test_directory_import.py) · [操作报告](../evidence/batch-production/browser/directory-import.json) |
+| L03/Q01、S02/Q01–Q04 | 英文描述能定位抽样画面。预览、剪辑器和人工标签使用同一源时码。撤权、模型换版、指纹冲突均实际检查 | [双浏览器和真实权重](../evidence/batch-production/visual-search/result.json) |
+| L04/Q01–Q03、V04/Q01、Q03 | 原音和逐词时间可核。一段录音在视频中延后 1.5 秒，词句时间同步后移。人工修字后下载并重新打开字幕 | [中英文原音到时间线](../evidence/local-speech/report.json) |
+| H05/Q03、Q05 | 回放与比较只读已记载的响应。回放带发布回执的事件不会再次发布，已撤回或缺失的证据有单独状态 | [浏览器回放与副作用检查](../evidence/recorded-response/result.json) |
+| M09/Q01、Q03、Q04 | 可比样本冻结后记录原因假设、反证、下版改法和停止规则。原始证据变更时拒绝把旧假设交给导演 | [从留存数据到下一版选剪](../tests/test_auto_edits.py) |
 
 [本轮实现审计](source-coverage-review.md) · [69 项场景逐项审计](scenario-coverage.md) · [旧版逐门槛证据快照](quality-gate-evidence.md)

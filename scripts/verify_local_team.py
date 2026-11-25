@@ -76,6 +76,7 @@ def call(client, path, body):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--review-rounds", type=int, choices=range(1, 5), default=1)
     parser.add_argument("--server", type=Path, default=os.getenv("AI_SHIP_LLAMA_SERVER"))
     for role in ROLES:
         parser.add_argument(
@@ -262,6 +263,7 @@ def main():
             body = {
                 "project_id": project["id"],
                 "mode": "team",
+                "max_review_rounds": a.review_rounds,
                 "goal": "Create a short shot list for FRESH LIME. Prioritize the source with those visible words. No new product claims.",
                 "asset_ids": [r["id"] for r in assets],
                 "idempotency_key": uuid.uuid4().hex,
@@ -306,6 +308,9 @@ def main():
                 report["decisions"].append(
                     {
                         "role": role,
+                        "round": pin["round"],
+                        "prompt_hash": pin["prompt_hash"],
+                        "context_hash": pin["context_hash"],
                         "call": ref_summary(raw),
                         "provider_request_id": info["provider_request_id"],
                         "requested_model": info["requested_provider_model"],
@@ -318,7 +323,36 @@ def main():
                         "calculated_charge": cost["data"].get("calculated_charge"),
                     }
                 )
-            assert [a["role"] for a in report["decisions"]] == list(ROLES), report
+            history = d["session"]["data"]["review_rounds"]
+            assert 1 <= len(history) <= a.review_rounds
+            assert [turn["role"] for turn in report["decisions"]] == list(ROLES) * len(
+                history
+            ), report
+            if report["stage"] == "blocked":
+                assert len(history) == a.review_rounds
+            report["review_rounds"] = [
+                {
+                    "round": turn["round"],
+                    "decision": turn["decision"],
+                    "blocker": turn["blocker"],
+                    "plan": turn["plan_ref"],
+                }
+                for turn in history
+            ]
+            assert len({x["plan"]["id"] for x in report["review_rounds"]}) == len(history)
+            for number in range(2, len(history) + 1):
+                previous = next(
+                    x
+                    for x in report["decisions"]
+                    if x["role"] == "director" and x["round"] == number - 1
+                )
+                current = next(
+                    x
+                    for x in report["decisions"]
+                    if x["role"] == "director" and x["round"] == number
+                )
+                assert current["context_hash"] != previous["context_hash"]
+
             for turn in report["decisions"]:
                 assert (
                     turn["outcome"] == "succeeded"
@@ -334,13 +368,13 @@ def main():
             n = writer.get(
                 "records", params={"project_id": project["id"], "kind": "ToolCall"}
             ).json()["data"]
-            assert len(n) == 3
+            assert len(n) == len(ROLES) * len(history)
             report["checks"].extend(
                 [
                     "three distinct pinned model files, authenticated localhost model endpoints",
                     "authenticated Atlas viewer denied production write; project owner request reached all three real GGUF models",
                     "source OCR plus scoped evidence, measured token usage, provider identities; no external billing",
-                    "repeated run request has the same run and exactly three recorded model calls",
+                    "repeated request preserves the same run and the original calls from every completed round",
                 ]
             )
             if report["stage"] == "blocked":

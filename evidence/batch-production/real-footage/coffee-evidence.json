@@ -1,0 +1,59 @@
+{
+  "source": {
+    "page_id": 188828736,
+    "title": "File:Traditional Ethiopian Coffee Roasting Ceremony.webm",
+    "mime": "video/webm",
+    "size_bytes": 6112712,
+    "sha1": "0a8930d4fe50dcc98bc792819540b0c4f9e2e850",
+    "description_url": "https://commons.wikimedia.org/wiki/File:Traditional_Ethiopian_Coffee_Roasting_Ceremony.webm",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "author": "Keria T",
+    "credit": "Own work",
+    "attribution_required": "true",
+    "file_timestamp": "2026-04-11T19:00:43Z"
+  },
+  "source_sha256": "d2e7783750d688838e83e79a24b865e2e7789d2357353ce9b749467d52a9af2d",
+  "model_sha256": "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db",
+  "llama_cpp_build": "b12671",
+  "director_stage": "reviewed then approved and rendered in isolated project",
+  "source_intervals": [
+    {
+      "in": 0.0,
+      "out": 9.0
+    }
+  ],
+  "render_artifact_sha256": "35fbce49fce05af9d757011f34cd18361edac846173a49ff26bac68fa121a5a1",
+  "attributed_download_sha256": "afacd0313fdcd967f135c6220a326c47c84038cf987b59af9b655a50aec21b48",
+  "tool_calls": [
+    {
+      "usage": {
+        "completion_tokens": 32,
+        "prompt_tokens": 347,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 379
+      },
+      "provider_request_id": "chatcmpl-R6FULhwpQiOhvPlbc6NWhCS2f710ckmX"
+    }
+  ],
+  "streams": [
+    {
+      "codec_name": "h264",
+      "codec_type": "video",
+      "width": 432,
+      "height": 768,
+      "duration": "9.000000",
+      "nb_read_frames": "225"
+    },
+    {
+      "codec_name": "aac",
+      "codec_type": "audio",
+      "duration": "9.000000",
+      "nb_read_frames": "422"
+    }
+  ],
+  "fully_decoded": true,
+  "attribution_remux": "No stream re-encoding. Title, creator, license, source and changes recorded as MP4 metadata."
+}

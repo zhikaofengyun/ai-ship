@@ -3,8 +3,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg fonts-no
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 10001 ship
 WORKDIR /app
-COPY requirements.txt constraints.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt constraints.txt requirements-tiktok-login.txt ./
+ARG ENABLE_TIKTOK_LOGIN=false
+RUN pip install --no-cache-dir -r requirements.txt \
+    && if [ "$ENABLE_TIKTOK_LOGIN" = true ]; then pip install --no-cache-dir -r requirements-tiktok-login.txt; fi
 COPY app ./app
 COPY web ./web
 COPY contracts ./contracts

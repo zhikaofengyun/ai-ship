@@ -187,9 +187,9 @@ def require_approval(actor: Actor):
         raise DomainError("FORBIDDEN", "当前身份没有确认或审阅权限。", 403)
 
 
-def actor_still_authorized(actor: Actor):
+def actor_still_authorized(actor: Actor, allowed_roles=frozenset({"owner", "editor", "worker"})):
     """Check a long-running worker at safe boundaries without persisting keys."""
-    if actor.role not in {"owner", "editor", "worker"}:
+    if actor.role not in allowed_roles:
         return False
     if os.getenv("AI_SHIP_MODE", "local") == "local":
         return True

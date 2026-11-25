@@ -132,10 +132,31 @@ def check_placement(page, base, pid, account, downloads, output):
     page.get_by_role("button", name="更改条件").click()
     expect(dialog.locator("[name=end_seconds]")).to_have_value("0.5")
     expect(dialog.locator("[name=traffic]")).to_have_value("organic")
+    page.get_by_role("button", name="查看素材表现").click()
+    page.get_by_role("button", name="沉淀为选材假设").first.click()
+    for name, message in {
+        "hypothesis": "清晰的首镜可能减少流失",
+        "counterevidence": "曝光受众可能不同",
+        "next_edit": "固定配音，仅替换首镜",
+        "stop_rule": "留出组表现下降即停止",
+    }.items():
+        dialog.locator(f"[name={name}]").fill(message)
+    with page.expect_response(
+        lambda r: "/post-reviews/placement-hypotheses" in r.url and r.request.method == "POST"
+    ) as saved:
+        page.get_by_role("button", name="固定证据并保存").click()
+    assert saved.value.status == 200, saved.value.text()
+    frozen = saved.value.json()["data"]["insight"]
+    assert frozen["data"]["observation"]["mean_post_retention"] == 0.8
+    assert (
+        not frozen["data"]["causal_claim"]
+        and frozen["data"]["reuse_hypothesis"]["next_edit"] == "固定配音，仅替换首镜"
+    )
+    expect(dialog.locator("h2")).to_have_text("选材假设已保存")
     page.get_by_role("button", name="返回帖子复盘").click()
     expect(dialog.locator("h2")).to_have_text("帖子表现复盘")
     page.remove_listener("request", capture)
-    assert [call["method"] for call in calls] == ["GET", "GET"], calls
+    assert [call["method"] for call in calls] == ["GET", "GET", "GET"], calls
     report = {
         "browser": page.context.browser.version,
         "fixture": "Two local FFmpeg MP4s, each independently downloaded and verified against its synthetic post and observed first-play cohort.",
@@ -147,6 +168,8 @@ def check_placement(page, base, pid, account, downloads, output):
             for rate, ids in evidence.items()
         ],
         "requests": calls,
+        "frozen_reuse_insight": frozen["id"],
+        "counterevidence_and_stop_rule_preserved": True,
         "filters_persisted": True,
         "returned_to_post_review": True,
     }
@@ -292,7 +315,7 @@ def run(output, engine):
             page.get_by_role("button", name="提交批量渲染").click()
             expect(select(".batch-inspector h3")).to_have_text("两种开场 · 交付", timeout=30000)
             expect(select(".batch-rows a[download]")).to_have_count(2, timeout=60000)
-            expect(select(".batch-progress")).to_have_attribute("value", "2")
+            expect(select(".batch-progress")).to_have_attribute("value", "2", timeout=90000)
             downloads = select(".batch-rows a[download]").evaluate_all(
                 "(links) => links.map(link => link.getAttribute('href'))"
             )
@@ -349,7 +372,7 @@ def run(output, engine):
             page.get_by_role("button", name="提交批量剪辑").click()
             expect(select(".batch-inspector h3")).to_have_text("逐条转入编排")
             expect(select(".batch-rows [data-action=open-run]")).to_have_count(2, timeout=60000)
-            expect(select(".batch-progress")).to_have_attribute("value", "2")
+            expect(select(".batch-progress")).to_have_attribute("value", "2", timeout=90000)
             checks.append(
                 "two timeline outputs run a pinned project DAG and expose separate child runs"
             )

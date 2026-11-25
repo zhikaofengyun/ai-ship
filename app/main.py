@@ -108,7 +108,11 @@ async def trace_headers(request: Request, call_next):
     response = await call_next(request)
     response.headers["X-Trace-Id"] = request.state.trace_id
     response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["Referrer-Policy"] = "same-origin"
+    response.headers["Referrer-Policy"] = (
+        "no-referrer"
+        if request.url.path == "/api/v1/production/tiktok/login/callback"
+        else "same-origin"
+    )
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     response.headers["Content-Security-Policy"] = (
@@ -197,6 +201,7 @@ async def unexpected_error(request: Request, exc: Exception):
 app.include_router(core_router, prefix="/api/v1")
 for module_name in (
     "media",
+    "directory_import",
     "render_recovery",
     "captions",
     "selection",
@@ -205,6 +210,7 @@ for module_name in (
     "creative",
     "trend_feeds",
     "tiktok_metrics",
+    "tiktok_login",
     "source_changes",
     "source_media",
     "rhythm",
@@ -221,10 +227,12 @@ for module_name in (
     "generation",
     "execution",
     "harness_qualification",
+    "evidence_replay",
     "context_pack",
     "timeline_exchange",
     "asset_index",
     "voice_studio",
+    "speech",
     "narration",
     "script_readings",
     "variants",

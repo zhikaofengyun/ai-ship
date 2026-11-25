@@ -191,6 +191,26 @@ export async function mountEditor(container, ctx) {
       .flatMap((c) => [c.asset_version_id, c.asset_id])
       .filter(Boolean),
   );
+  let linkedSource,
+    initialSourceSeconds = 0;
+  if (ctx.editorSource) {
+    const { id, version } = ctx.editorSource;
+    if (!id || !Number.isSafeInteger(version) || version < 1)
+      throw new Error("素材版本无效。");
+    const source = await ctx.api("/records/" + encodeURIComponent(id));
+    if (!currentPage()) return;
+    if (
+      source?.project_id !== pid ||
+      source.kind !== "AssetVersion" ||
+      source.version !== version
+    )
+      throw new Error("此素材版本已变更，请重新检索。");
+    linkedSource = source;
+    initialSourceSeconds = Number.isFinite(ctx.editorSource.seconds)
+      ? Math.max(0, ctx.editorSource.seconds)
+      : 0;
+    e.sourceId = id;
+  }
   const currentIds = new Map(ctx.state.records.map((r) => [r.id, r]));
   const missing = [];
   for (const id of sourceIds) {
@@ -226,7 +246,9 @@ export async function mountEditor(container, ctx) {
   const assets = () => mediaLibrary(allRecords());
   const findAsset = (id) => allRecords().find((r) => r.id === id);
   const clipAsset = (c) => selectedMedia(c, allRecords());
-  const currentSource = () => e.sourceId && findAsset(e.sourceId);
+  const currentSource = () =>
+    e.sourceId &&
+    (linkedSource?.id === e.sourceId ? linkedSource : findAsset(e.sourceId));
   const lastExport = () =>
     ctx
       .records("Artifact")
@@ -870,6 +892,18 @@ export async function mountEditor(container, ctx) {
       const media = stage.querySelector("video"),
         scrub = $("[data-source-scrub]", container),
         button = $("[data-source-play]", container);
+      if (media && source.id === linkedSource?.id && initialSourceSeconds > 0) {
+        const at = initialSourceSeconds;
+        media.addEventListener(
+          "loadedmetadata",
+          () => {
+            if (!media.isConnected || !Number.isFinite(media.duration)) return;
+            media.currentTime = Math.min(at, media.duration);
+            initialSourceSeconds = 0;
+          },
+          { once: true },
+        );
+      }
       if (media && button && scrub) {
         const update = () => {
           if (Number.isFinite(media.duration)) scrub.max = media.duration;

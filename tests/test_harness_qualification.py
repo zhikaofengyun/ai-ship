@@ -76,3 +76,37 @@ class QualificationTests(ProductionBase):
             409,
         )
         self.assertIn("H.264", codec_trial())
+
+    def test_handler_body_change_with_unchanged_schema_invalidates_qualification(self):
+        from app import harness_qualification as harness
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+
+        flow = self.flow()
+        with TemporaryDirectory() as checkout:
+            source = Path(checkout)
+            for name in harness.RUNTIME_MODULES:
+                (source / name).write_bytes((harness.IMPLEMENTATION_ROOT / name).read_bytes())
+            with patch.object(harness, "IMPLEMENTATION_ROOT", source):
+                before = harness.runtime()
+                verified = self.qualify(flow)
+                self.assertTrue(verified["passed"])
+                media = source / "media.py"
+                media.write_bytes(media.read_bytes() + b"\n# isolated deployment fixture\n")
+                current = harness.runtime()
+                self.assertEqual(before["routes"], current["routes"])
+                self.assertNotEqual(
+                    before["implementation"]["media.py"], current["implementation"]["media.py"]
+                )
+                self.assertEqual(
+                    self.post(
+                        "/harness/dispatch",
+                        {
+                            "project_id": self.pid,
+                            "skill": {"id": verified["skill"]["id"], "version": 1},
+                            "request_id": "code-changed",
+                        },
+                        409,
+                    )["error"]["code"],
+                    "HARNESS_RUNTIME_CHANGED",
+                )

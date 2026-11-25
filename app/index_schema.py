@@ -1,6 +1,11 @@
 """SQLite schema for versioned text projections."""
 
 SEARCH_SCHEMA = """
+CREATE INDEX IF NOT EXISTS ix_media_byte_hash ON revisions(tenant_id,json_extract(data_json,'$.content_hash'))
+    WHERE json_extract(data_json,'$.content_hash') IS NOT NULL;
+CREATE INDEX IF NOT EXISTS ix_original_media_asset ON revisions(tenant_id,json_extract(data_json,'$.asset_id'))
+    WHERE json_extract(data_json,'$.variant')='original';
+
 CREATE INDEX IF NOT EXISTS ix_model_idempotency ON revisions(
     tenant_id,json_extract(data_json,'$.idempotency_scope'))
     WHERE json_extract(data_json,'$.idempotency_scope') IS NOT NULL;
