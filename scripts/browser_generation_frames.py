@@ -277,7 +277,7 @@ def run(output, engine):
         expect(page.locator("[data-generation-job]").first).to_contain_text("文件已到库")
         form.get_by_label("生成模型").select_option("browser-protocol")
         expect(form.get_by_label("源视频时码（秒）")).to_have_count(0)
-        page.get_by_role("link", name="批量制作").click()
+        page.locator('.nav-item[href="#production/batches"]').click()
         page.locator("[data-action=switch-kind]").click()
         form = page.locator(".batch-form")
         form.locator("[name=name]").fill("实拍时码参考 · 批次")

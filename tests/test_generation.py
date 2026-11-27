@@ -102,6 +102,9 @@ class GenerationTests(ProductionBase):
                 if self.path == "/prompt":
                     t.submits += 1
                     t.job = req
+                    if getattr(t, "reject_status", None):
+                        self.send_error(t.reject_status)
+                        return
                     if t.lost:
                         self.connection.shutdown(socket.SHUT_RDWR)
                         self.connection.close()
@@ -172,7 +175,10 @@ class GenerationTests(ProductionBase):
             "workflow": {
                 "1": {"class_type": "Text", "inputs": {"text": ""}},
                 "2": {"class_type": "Sampler", "inputs": {"seed": 0}},
-                "3": {"class_type": "Video", "inputs": {}},
+                "3": {
+                    "class_type": "Video",
+                    "inputs": {"conditioning": ["1", 0], "sample": ["2", 0]},
+                },
             },
             "text_input": ["1", "text"],
             "seed_input": ["2", "seed"],
@@ -196,6 +202,19 @@ class GenerationTests(ProductionBase):
         reply = self.client.post(self.base + suffix, json=data)
         self.assertEqual(reply.status_code, status, reply.text)
         return reply.json().get("data") or reply.json()["error"]
+
+    def test_registered_prompt_and_seed_must_both_feed_the_output(self):
+        for input_name in ("conditioning", "sample"):
+            cfg = json.loads(json.dumps(self.cfg))
+            del cfg["workflow"]["3"]["inputs"][input_name]
+            with (
+                self.subTest(input_name=input_name),
+                patch.dict(os.environ, AI_SHIP_COMFY_PROFILES=json.dumps({"demo": cfg})),
+            ):
+                self.assertEqual(
+                    self.post(data=self.body, status=503)["code"], "GENERATOR_CONFIG_INVALID"
+                )
+        self.assertEqual(self.submits, 0)
 
     def test_queue_download_probe_generated_origin_and_deduplicated_adoption(self):
         profiles = self.client.get(self.base + "/profiles").json()["data"]["profiles"]
@@ -829,7 +848,7 @@ class GenerationTests(ProductionBase):
             self.post(data={**body, "reference_asset_id": movie["id"]}, status=422)["code"],
             "REFERENCE_IMAGE_REQUIRED",
         )
-        self.cfg["workflow"]["3"]["inputs"] = {}
+        del self.cfg["workflow"]["3"]["inputs"]["frames"]
         os.environ["AI_SHIP_COMFY_PROFILES"] = json.dumps({"demo": self.cfg})
         self.assertEqual(self.post(data=body, status=503)["code"], "GENERATOR_CONFIG_INVALID")
         self.cfg.pop("image_input")

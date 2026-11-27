@@ -232,7 +232,7 @@ def reference_decisions(store, actor, project, item, clips):
         ids = {
             row[0]
             for row in db.execute(
-                "SELECT generation_id FROM production_generation_slots WHERE batch=? AND ordinal=?",
+                "SELECT generation_id FROM production_generation_slots WHERE batch=? AND ordinal=? AND status!='source_fallback'",
                 (item["batch"], item["ordinal"]),
             )
         }

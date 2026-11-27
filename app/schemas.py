@@ -9,6 +9,7 @@ import copy
 import json
 import math
 import re
+from datetime import datetime
 from pathlib import Path
 from jsonschema import Draft202012Validator, FormatChecker
 from .catalog import ENTITIES, FEATURES, ROOT
@@ -293,6 +294,19 @@ def validate_record(kind, data):
                 {"path": ".".join(map(str, e.path)), "message": e.message} for e in errors[:30]
             ],
         )
+    # jsonschema's date-time checker is optional. Enforce timezone-aware rights
+    # expiries even on installations with only the core runtime dependencies.
+    if kind in {"Source", "Grant"} and data.get("expires_at") is not None:
+        try:
+            expiry = datetime.fromisoformat(data["expires_at"].replace("Z", "+00:00"))
+            if expiry.utcoffset() is None:
+                raise ValueError()
+        except (TypeError, ValueError, AttributeError):
+            raise DomainError(
+                "SCHEMA_VALIDATION",
+                "授权截止时间必须包含时区。",
+                details=[{"path": "expires_at", "message": "timezone-aware date-time required"}],
+            ) from None
     if (
         kind == "Metric"
         and "value_or_null" in data

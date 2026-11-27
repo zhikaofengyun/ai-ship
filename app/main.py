@@ -24,8 +24,9 @@ logger = logging.getLogger("ai_ship")
 @asynccontextmanager
 async def lifespan(app):
     from .batches import batch_workers
+    from .material_worker import material_worker
 
-    with batch_workers():
+    with batch_workers(), material_worker():
         yield
 
 
@@ -211,6 +212,7 @@ for module_name in (
     "trend_feeds",
     "tiktok_metrics",
     "tiktok_login",
+    "tiktok_inbox",
     "source_changes",
     "source_media",
     "rhythm",
@@ -223,6 +225,7 @@ for module_name in (
     "comment_feedback",
     "post_reviews",
     "auto_edits",
+    "batch_publications",
     "batches",
     "generation",
     "execution",

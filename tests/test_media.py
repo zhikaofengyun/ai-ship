@@ -214,6 +214,27 @@ class MediaIntegrationTests(unittest.TestCase):
         for x, y in [(5, 26), (68, 26), (30, 8), (30, 70)]:
             self.assertLess(max(rgb(x, y)), 15)
         self.assertEqual(result["manifest"]["data"]["clip_uses"][0]["mask"], mask)
+        ellipse = render({**clip, "mask": {**mask, "shape": "ellipse"}})
+        path = media.resolve_media(self.store, self.actor, ellipse["artifact"]["id"])[2]
+        pixels = subprocess.check_output(
+            [
+                *ff,
+                "-i",
+                str(path),
+                "-frames:v",
+                "1",
+                "-pix_fmt",
+                "rgb24",
+                "-f",
+                "rawvideo",
+                "-threads",
+                "1",
+                "-",
+            ]
+        )
+        self.assertGreater(rgb(30, 26)[2], 225)
+        self.assertLess(max(rgb(13, 24)), 20)  # inside the rectangle but outside the ellipse
+        self.assertEqual(ellipse["manifest"]["data"]["clip_uses"][0]["mask"]["shape"], "ellipse")
         for invalid in (
             {"space": "source", "rect": mask["rect"]},
             {"space": "post_fit_clip", "rect": [0.8, 0, 0.2, 1]},
@@ -508,9 +529,28 @@ class MediaIntegrationTests(unittest.TestCase):
         source = self.store.get(asset["data"]["source_id"], "local")
         self.assertEqual(source["data"]["rights_status"], "unverified")
         self.assertFalse(source["data"]["source_note_is_evidence"])
+        naive = {**source["data"], "expires_at": "2999-01-01T00:00:00"}
+        with self.assertRaises(DomainError) as invalid:
+            self.store.update(
+                source["id"], naive, tenant_id="local", expected_revision=source["version"]
+            )
+        self.assertEqual(invalid.exception.code, "SCHEMA_VALIDATION")
+
+        # Old ledgers could predate input validation. Read a historical invalid value
+        # without weakening today's write contract or changing the immutable fixture.
+        real_get = self.store.get
+
+        def historical(record_id, *args, **kwargs):
+            item = real_get(record_id, *args, **kwargs)
+            return {**item, "data": naive} if record_id == source["id"] else item
+
+        with patch.object(self.store, "get", side_effect=historical):
+            with self.assertRaises(DomainError) as error:
+                media.resolve_media(self.store, self.actor, asset["id"], purpose="process")
+            self.assertEqual(error.exception.code, "MEDIA_RIGHTS_INVALID")
+            media.resolve_media(self.store, self.actor, asset["id"], purpose="inspect")
         cases = [
             ({"expires_at": "2000-01-01T10:00:00+08:00"}, "MEDIA_RIGHTS_EXPIRED"),
-            ({"expires_at": "2999-01-01T00:00:00"}, "MEDIA_RIGHTS_INVALID"),
             (
                 {"expires_at": None, "validity": {"valid_until": "2000-01-01T00:00:00Z"}},
                 "MEDIA_RIGHTS_EXPIRED",

@@ -1,3 +1,4 @@
+import { preparePublications } from "./batch-publications.js";
 import { openGenerationReview } from "./generation-review.js";
 import { showAcceptance } from "./batch-contracts.js";
 import { batchObservability } from "./batch-observability.js";
@@ -5,6 +6,7 @@ import { $, esc, select, btn } from "./ui.js";
 
 const route = "/production/batches";
 const statusNames = {
+  source_fallback: "已改用原片",
   queued: "排队中",
   running: "执行中",
   waiting: "等待生成",
@@ -44,7 +46,7 @@ function itemMarkup(item) {
     <span class="batch-item-actions">
     ${item.timeline_id ? `<a href="#editor/project-timeline/${encodeURIComponent(item.timeline_id)}">时间线</a>` : ""}
     ${item.workflow_run_id ? small("工作流记录", "open-run", 'data-run="' + esc(item.workflow_run_id) + '"') : ""}
-    ${item.artifact_id ? `<a href="/api/v1/media/artifacts/${encodeURIComponent(item.artifact_id)}/file" download>下载成片</a>` : ""}</span>
+    ${item.artifact_id ? `<a href="/api/v1/media/artifacts/${encodeURIComponent(item.artifact_id)}/file?download=true" download>下载成片</a>` : ""}</span>
     ${item.acceptance?.length ? `<div class="batch-controls">${item.acceptance.map(audit).join("")}</div>` : ""}
     ${item.generation_jobs?.length ? `<details><summary>生成镜头 · ${item.generation_jobs.length}</summary>${item.generation_jobs.map((j) => `<p>镜头 ${esc(j.slot)} · ${esc(label(j.status))} ${j.visual_review_available ? small("对照审片", "review-generated-shot", 'data-job="' + esc(j.generation_id) + '"') : ""}</p>`).join("")}</details>` : ""}
     ${item.error ? `<p class="batch-item-error">${esc(item.error.message || item.error.code)}</p>` : ""}</li>`;
@@ -181,7 +183,7 @@ export function mountBatchQueue(host, ctx, pid) {
             `<div><dt>${esc(label(k))}</dt><dd>${v.toLocaleString()}</dd></div>`,
         )
         .join("")}</dl>
-      <div class="batch-controls">${controls}</div>`;
+      <div class="batch-controls">${controls}${canWrite && batch.output === "render" && counts.succeeded ? action("准备批量发布", "prepare-publications", "send") : ""}</div>`;
     if (html !== rendered.summary) {
       const actionName =
         summary.contains(document.activeElement) &&
@@ -358,6 +360,14 @@ export function mountBatchQueue(host, ctx, pid) {
     }
     if (op === "review-generated-shot") {
       await openGenerationReview(ctx, pid, b.dataset.job);
+      return;
+    }
+    if (op === "prepare-publications" && snapshot) {
+      try {
+        await preparePublications(ctx, snapshot);
+      } catch (err) {
+        if (!stopped) notice.textContent = err.message;
+      }
       return;
     }
     if (op === "observe-queue") {

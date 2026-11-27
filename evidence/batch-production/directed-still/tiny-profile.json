@@ -1,0 +1,49 @@
+{
+  "base_url": "http://127.0.0.1:8188",
+  "model": "Hugging Face tiny SD test checkpoint + seeded tiny AnimateDiff test adapter",
+  "text_input": [
+    "2",
+    "text"
+  ],
+  "seed_input": [
+    "2",
+    "seed"
+  ],
+  "image_input": [
+    "1",
+    "image"
+  ],
+  "output_node": "3",
+  "workflow": {
+    "1": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "reference.png"
+      }
+    },
+    "2": {
+      "class_type": "QATinyDiffusion",
+      "inputs": {
+        "image": [
+          "1",
+          0
+        ],
+        "text": "QA",
+        "seed": 0
+      }
+    },
+    "3": {
+      "class_type": "SaveWEBM",
+      "inputs": {
+        "images": [
+          "2",
+          0
+        ],
+        "filename_prefix": "qa-tiny",
+        "codec": "vp9",
+        "fps": 8.0,
+        "crf": 10.0
+      }
+    }
+  }
+}

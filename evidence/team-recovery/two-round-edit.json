@@ -1,0 +1,563 @@
+{
+  "passed": true,
+  "models": {
+    "director": {
+      "model": "qwen2.5-1.5b",
+      "weights": "director.gguf",
+      "sha256": "183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4",
+      "bytes": 986048512,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    },
+    "reviewer": {
+      "model": "qwen2.5-0.5b",
+      "weights": "reviewer.gguf",
+      "sha256": "c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515",
+      "bytes": 397807936,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    },
+    "judge": {
+      "model": "smollm2-360m",
+      "weights": "judge.gguf",
+      "sha256": "2fa3f013dcdd7b99f9b237717fa0b12d75bbb89984cc1274be1471a465bac9c2",
+      "bytes": 270590880,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    }
+  },
+  "decisions": [
+    {
+      "role": "director",
+      "round": 1,
+      "prompt_hash": "8303fb340a9f9874602da20ced87e6debe6d4dafde7f9643d1d1a4d81672ab51",
+      "context_hash": "aa34eda7765726ad3c3bd388718b4adfa6b29c7a1a773a50293448e4945ad135",
+      "context_receipt": {
+        "context_limit": 8192,
+        "full_context_hash": "aa34eda7765726ad3c3bd388718b4adfa6b29c7a1a773a50293448e4945ad135",
+        "full_input_upper_bound": 1755,
+        "omissions": [],
+        "policy": "grounded-edit-context-v1",
+        "reserved_output": 300,
+        "sent_context_hash": "aa34eda7765726ad3c3bd388718b4adfa6b29c7a1a773a50293448e4945ad135",
+        "sent_input_upper_bound": 1755
+      },
+      "call": {
+        "id": "toolcall_dd07047de4614da2b82a80a88adea869",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "a261bba26b28ffefbf9b3ef47a85e6abef9301219051f085e5ed2b4bc556793e"
+      },
+      "provider_request_id": "chatcmpl-bbPTwrdcISbPZrBswRdZt5TwUzY5BJhp",
+      "requested_model": "qwen2.5-1.5b",
+      "reported_model": "qwen2.5-1.5b",
+      "request_hash": "7357d5ae7f0646307d1989d78cf620a11456ada3221a1beb8f744ec89a4a58ea",
+      "measured_tokens": {
+        "completion_tokens": 60,
+        "prompt_tokens": 509,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 569
+      },
+      "decision": {
+        "choice": "A",
+        "reason": "The source with visible words is 'SAMPLE', which is the closest match to 'FRESH LIME'. The style '画面观测优先' prioritizes the source with visible words, making this choice the best match for the user's goal."
+      },
+      "outcome": "succeeded",
+      "error_code": null,
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "reviewer",
+      "round": 1,
+      "prompt_hash": "03df33fd6f74bdf7d2352b90630c1c08c50c0c8d9a5d92b5a49fa4f2db0db230",
+      "context_hash": "8d1f2a0815a2e552220bdd833693c3a446dfc55f5ce64478dd09f2e0b2a698d1",
+      "context_receipt": {
+        "context_limit": 8192,
+        "full_context_hash": "8d1f2a0815a2e552220bdd833693c3a446dfc55f5ce64478dd09f2e0b2a698d1",
+        "full_input_upper_bound": 4417,
+        "omissions": [],
+        "policy": "grounded-edit-context-v1",
+        "reserved_output": 300,
+        "sent_context_hash": "8d1f2a0815a2e552220bdd833693c3a446dfc55f5ce64478dd09f2e0b2a698d1",
+        "sent_input_upper_bound": 4417
+      },
+      "call": {
+        "id": "toolcall_7aa31dd91d7341d099a7f02a9b8a734b",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "34275c169e759328b44802f6cfdc9ab2481c203a737fdecd858f417f83a6f78a"
+      },
+      "provider_request_id": "chatcmpl-M2aT6TzXc2zjkbDtNgRxeWdnVXHAYPas",
+      "requested_model": "qwen2.5-0.5b",
+      "reported_model": "qwen2.5-0.5b",
+      "request_hash": "d2c305ee27d770e80845598f9e902866cde6c629172b4c9b9b97c3457115c4cc",
+      "measured_tokens": {
+        "completion_tokens": 95,
+        "prompt_tokens": 1662,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 1757
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "1.6",
+        "reason": "The measured evidence shows that the source with the visible words 'FRESH' and 'LIME' has a duration of 1.6 seconds, which is the shortest duration among the two sources. This evidence supports the goal of prioritizing the source with those visible words."
+      },
+      "outcome": "succeeded",
+      "error_code": null,
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "judge",
+      "round": 1,
+      "prompt_hash": "83b3c4e92ad01d8d63de59ad0107503615e1c612ed5e9586bd99ed9696e227c4",
+      "context_hash": "df65edb939761502d74a700922cd8df8a56ddd7b6ae27663bbfb5083973257da",
+      "context_receipt": {
+        "context_limit": 8192,
+        "full_context_hash": "df65edb939761502d74a700922cd8df8a56ddd7b6ae27663bbfb5083973257da",
+        "full_input_upper_bound": 5621,
+        "omissions": [],
+        "policy": "grounded-edit-context-v1",
+        "reserved_output": 300,
+        "sent_context_hash": "df65edb939761502d74a700922cd8df8a56ddd7b6ae27663bbfb5083973257da",
+        "sent_input_upper_bound": 5621
+      },
+      "call": {
+        "id": "toolcall_b0a58a702dad4f359cac79b8b7892bbf",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "b1c03b28dbfe1f3fc257c190c611dc06aa403217900b5e971c2948b5ab575252"
+      },
+      "provider_request_id": "chatcmpl-j5yZalusEmPkmNcSzE6g5ZTyqI0VeOeV",
+      "requested_model": "smollm2-360m",
+      "reported_model": "smollm2-360m",
+      "request_hash": "6c7e3635027a316db8a1ac9b2ad696413e55148b8103b92cd655e565c27f76c1",
+      "measured_tokens": {
+        "completion_tokens": 92,
+        "prompt_tokens": 2342,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 2434
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "1.6",
+        "reason": "The measured evidence shows that the source with the visible words 'FRESH' and 'LIME' has a duration of 1.6 seconds, which is the shortest duration among the two sources. This evidence supports the goal of prioritizing the source with those visible words."
+      },
+      "outcome": "succeeded",
+      "error_code": null,
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "director",
+      "round": 2,
+      "prompt_hash": "c039a6e6c57c2d843f3648a49340649b8538693f3f1678fd9b9e305170df0fe2",
+      "context_hash": "424ecfc5be932372ea89a0c1b353a7c6b2e1437b8d95f28b8204f4556a297f81",
+      "context_receipt": {
+        "context_limit": 8192,
+        "full_context_hash": "424ecfc5be932372ea89a0c1b353a7c6b2e1437b8d95f28b8204f4556a297f81",
+        "full_input_upper_bound": 3172,
+        "omissions": [],
+        "policy": "grounded-edit-context-v1",
+        "reserved_output": 300,
+        "sent_context_hash": "424ecfc5be932372ea89a0c1b353a7c6b2e1437b8d95f28b8204f4556a297f81",
+        "sent_input_upper_bound": 3172
+      },
+      "call": {
+        "id": "toolcall_acb5df6c1f78482f84c64fbe3bb08b82",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "48a1bba96e8eac31663c43a694d1e883c66df1038b54ac5d023e065b734c0b5a"
+      },
+      "provider_request_id": "chatcmpl-u0VcH9FN1l0ZO75yRnJ5JoC9a5BNTGF0",
+      "requested_model": "qwen2.5-1.5b",
+      "reported_model": "qwen2.5-1.5b",
+      "request_hash": "89f7bc0e10039a34ab7926093ceb4952041c972617f2bc06e7bf1747820013f6",
+      "measured_tokens": {
+        "completion_tokens": 62,
+        "prompt_tokens": 946,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 1008
+      },
+      "decision": {
+        "choice": "A",
+        "reason": "The source with the visible words 'FRESH' and 'LIME' has a duration of 1.6 seconds, which is the shortest duration among the two sources. This evidence supports the goal of prioritizing the source with those visible words."
+      },
+      "outcome": "succeeded",
+      "error_code": null,
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "reviewer",
+      "round": 2,
+      "prompt_hash": "03df33fd6f74bdf7d2352b90630c1c08c50c0c8d9a5d92b5a49fa4f2db0db230",
+      "context_hash": "8d1f2a0815a2e552220bdd833693c3a446dfc55f5ce64478dd09f2e0b2a698d1",
+      "context_receipt": {
+        "context_limit": 8192,
+        "full_context_hash": "8d1f2a0815a2e552220bdd833693c3a446dfc55f5ce64478dd09f2e0b2a698d1",
+        "full_input_upper_bound": 4417,
+        "omissions": [],
+        "policy": "grounded-edit-context-v1",
+        "reserved_output": 300,
+        "sent_context_hash": "8d1f2a0815a2e552220bdd833693c3a446dfc55f5ce64478dd09f2e0b2a698d1",
+        "sent_input_upper_bound": 4417
+      },
+      "call": {
+        "id": "toolcall_4cef2dc467da409fa74b4f7ac8d7a81e",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "7bae0a96d910922b45434967014448f34e7d0806fcdd504ea438d60ab43a562f"
+      },
+      "provider_request_id": "chatcmpl-87C3aaB2FKhfmGsQGvWiA8fQDbst6UD9",
+      "requested_model": "qwen2.5-0.5b",
+      "reported_model": "qwen2.5-0.5b",
+      "request_hash": "d2c305ee27d770e80845598f9e902866cde6c629172b4c9b9b97c3457115c4cc",
+      "measured_tokens": {
+        "completion_tokens": 95,
+        "prompt_tokens": 1662,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 1757
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "1.6",
+        "reason": "The measured evidence shows that the source with the visible words 'FRESH' and 'LIME' has a duration of 1.6 seconds, which is the shortest duration among the two sources. This evidence supports the goal of prioritizing the source with those visible words."
+      },
+      "outcome": "succeeded",
+      "error_code": null,
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "judge",
+      "round": 2,
+      "prompt_hash": "faed834e8cba89b3ef71be87802a9474766444d61b43759917a7452c4ba46e8c",
+      "context_hash": "b93592000ec782ecf72fb119f548363cffbe2fa00451f1a184e37215355f6341",
+      "context_receipt": {
+        "context_limit": 8192,
+        "full_context_hash": "b93592000ec782ecf72fb119f548363cffbe2fa00451f1a184e37215355f6341",
+        "full_input_upper_bound": 6201,
+        "omissions": [],
+        "policy": "grounded-edit-context-v1",
+        "reserved_output": 300,
+        "sent_context_hash": "b93592000ec782ecf72fb119f548363cffbe2fa00451f1a184e37215355f6341",
+        "sent_input_upper_bound": 6201
+      },
+      "call": {
+        "id": "toolcall_ca7024c1df28419c8bfb4d7e21539cf8",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "f9d38196f9a921e80e022b0e1a67dfa864f8555915a969e6a1add9f40388275d"
+      },
+      "provider_request_id": "chatcmpl-GklmMzKNlwouYFkvPYLOxlP2zEW3zFb8",
+      "requested_model": "smollm2-360m",
+      "reported_model": "smollm2-360m",
+      "request_hash": "6727c7a950e5fccb903c3e5d251bd52fa13e632a7ddf49acc71dc75f026de23d",
+      "measured_tokens": {
+        "completion_tokens": 92,
+        "prompt_tokens": 2569,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 2661
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "1.6",
+        "reason": "The measured evidence shows that the source with the visible words 'FRESH' and 'LIME' has a duration of 1.6 seconds, which is the shortest duration among the two sources. This evidence supports the goal of prioritizing the source with those visible words."
+      },
+      "outcome": "succeeded",
+      "error_code": null,
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    }
+  ],
+  "checks": [
+    "three distinct pinned model files, authenticated localhost model endpoints",
+    "authenticated Atlas viewer denied production write; project owner request reached all three real GGUF models",
+    "source OCR plus scoped evidence, measured token usage, provider identities; no external billing",
+    "repeated request preserves the same run and the original calls from every completed round",
+    "independent verdict or measured evidence gate blocked adoption of the original proposal",
+    "authenticated test reviewer adopted the eligible proposal; owner rendered, downloaded video/audio fully decoded"
+  ],
+  "engine": "version: 1.0.0-dev (build 12671, commit ab789a246)\nbuilt with GNU 11.4.0 for Linux x86_64",
+  "server_sha256": "e172daae7f3c14ed9bbcde1753cfcc9bf3d9e058eab478d1ec666138ed97e287",
+  "stage": "blocked",
+  "issue": {
+    "code": "TEAM_EVIDENCE_REQUIRED",
+    "message": "模型复核与原片观测未匹配，方案保留供局部修改。"
+  },
+  "elapsed_seconds": 244.579,
+  "project_id": "project_d1bdcc44bb4d4d8dba11303af1bcbbd5",
+  "run_id": "edit_2fefc02b9877431c796cc95721eb783209d1",
+  "goal": "Create a short shot list for FRESH LIME. Prioritize the source with those visible words. No new product claims.",
+  "inputs": [
+    {
+      "id": "asset_6d22d18a7c1e46da92e54086482ef5c2",
+      "filename": "SAMPLE.mp4",
+      "version": 1,
+      "content_hash": "e1b1ab24e69b610bf4bb9fa107c066f5162c026732323ba0ae9f956b4bda3fc1"
+    },
+    {
+      "id": "asset_40d5b1bf226849589f038bc39066ce00",
+      "filename": "FRESH LIME.mp4",
+      "version": 1,
+      "content_hash": "9ab47e1efdc57050fdd596b588cb6b3563085bce7d942e0ec601cbbfe4e88559"
+    }
+  ],
+  "loop_stop": "repeated_rejected_cut",
+  "review_rounds": [
+    {
+      "round": 1,
+      "decision": "revise",
+      "blocker": {
+        "code": "TEAM_EVIDENCE_REQUIRED",
+        "message": "模型复核与原片观测未匹配，方案保留供局部修改。"
+      },
+      "plan": {
+        "id": "plan_b1e1a0af7db2b1cd293cfb04677112e2",
+        "kind": "Plan",
+        "version": 1
+      }
+    },
+    {
+      "round": 2,
+      "decision": "revise",
+      "blocker": {
+        "code": "TEAM_EVIDENCE_REQUIRED",
+        "message": "模型复核与原片观测未匹配，方案保留供局部修改。"
+      },
+      "plan": {
+        "id": "plan_27233d3a368c3531289a30ecb515d964",
+        "kind": "Plan",
+        "version": 1
+      }
+    }
+  ],
+  "review_findings": [
+    {
+      "call_ref": {
+        "context_hash": "8d1f2a0815a2e552220bdd833693c3a446dfc55f5ce64478dd09f2e0b2a698d1",
+        "context_receipt": {
+          "context_limit": 8192,
+          "full_context_hash": "8d1f2a0815a2e552220bdd833693c3a446dfc55f5ce64478dd09f2e0b2a698d1",
+          "full_input_upper_bound": 4417,
+          "omissions": [],
+          "policy": "grounded-edit-context-v1",
+          "reserved_output": 300,
+          "sent_context_hash": "8d1f2a0815a2e552220bdd833693c3a446dfc55f5ce64478dd09f2e0b2a698d1",
+          "sent_input_upper_bound": 4417
+        },
+        "id": "toolcall_4cef2dc467da409fa74b4f7ac8d7a81e",
+        "kind": "ToolCall",
+        "prompt_hash": "03df33fd6f74bdf7d2352b90630c1c08c50c0c8d9a5d92b5a49fa4f2db0db230",
+        "reported_model": "qwen2.5-0.5b",
+        "role": "reviewer",
+        "round": 2,
+        "version": 2
+      },
+      "decision": "accept",
+      "evidence_id": "D1",
+      "evidence_problem": null,
+      "observed_value": "1.6",
+      "reason": "The measured evidence shows that the source with the visible words 'FRESH' and 'LIME' has a duration of 1.6 seconds, which is the shortest duration among the two sources. This evidence supports the goal of prioritizing the source with those visible words.",
+      "role": "reviewer",
+      "verified_observation": {
+        "asset_id": "asset_6d22d18a7c1e46da92e54086482ef5c2",
+        "kind": "duration_seconds",
+        "observed_value": "1.6",
+        "source": "SAMPLE.mp4"
+      }
+    },
+    {
+      "call_ref": {
+        "context_hash": "b93592000ec782ecf72fb119f548363cffbe2fa00451f1a184e37215355f6341",
+        "context_receipt": {
+          "context_limit": 8192,
+          "full_context_hash": "b93592000ec782ecf72fb119f548363cffbe2fa00451f1a184e37215355f6341",
+          "full_input_upper_bound": 6201,
+          "omissions": [],
+          "policy": "grounded-edit-context-v1",
+          "reserved_output": 300,
+          "sent_context_hash": "b93592000ec782ecf72fb119f548363cffbe2fa00451f1a184e37215355f6341",
+          "sent_input_upper_bound": 6201
+        },
+        "id": "toolcall_ca7024c1df28419c8bfb4d7e21539cf8",
+        "kind": "ToolCall",
+        "prompt_hash": "faed834e8cba89b3ef71be87802a9474766444d61b43759917a7452c4ba46e8c",
+        "reported_model": "smollm2-360m",
+        "role": "judge",
+        "round": 2,
+        "version": 2
+      },
+      "decision": "accept",
+      "evidence_id": "D1",
+      "evidence_problem": "复核重复了已有理由，未对当前剪法给出独立判断。",
+      "observed_value": "1.6",
+      "reason": "The measured evidence shows that the source with the visible words 'FRESH' and 'LIME' has a duration of 1.6 seconds, which is the shortest duration among the two sources. This evidence supports the goal of prioritizing the source with those visible words.",
+      "role": "judge",
+      "verified_observation": null
+    }
+  ],
+  "manual_recovery": {
+    "original_blocked": "edit_2fefc02b9877431c796cc95721eb783209d1",
+    "new_proposal": "edit_9e669d10047b8917ed92e74f2ef84f6edbd1",
+    "changed_shot": 0,
+    "at": 0.8,
+    "observed_ocr": [
+      {
+        "box_px": [
+          101,
+          92,
+          235,
+          57
+        ],
+        "confidence": 0.967,
+        "line": [
+          1,
+          1,
+          1
+        ],
+        "text": "FRESH"
+      },
+      {
+        "box_px": [
+          375,
+          92,
+          166,
+          56
+        ],
+        "confidence": 0.968,
+        "line": [
+          1,
+          1,
+          1
+        ],
+        "text": "LIME"
+      }
+    ]
+  },
+  "proposal": {
+    "title": "Create a short shot list for FRESH LIME. Prioritize the source with those visible words. No new prod",
+    "approach": "The source with the visible words 'FRESH' and 'LIME' has a duration of 1.6 seconds, which is the shortest duration among the two sources. This evidence supports the goal of prioritizing the source with those visible words.",
+    "shots": [
+      {
+        "asset_id": "asset_40d5b1bf226849589f038bc39066ce00",
+        "asset_version": 1,
+        "name": "FRESH LIME.mp4",
+        "reason": "Authenticated test editor selected a measured source showing FRESH LIME for the opening.",
+        "source_in": 0.2,
+        "source_out": 0.8,
+        "timeline_start": 0.0
+      },
+      {
+        "asset_id": "asset_6d22d18a7c1e46da92e54086482ef5c2",
+        "asset_version": 1,
+        "name": "SAMPLE.mp4",
+        "reason": "实测 0.20 秒画面，亮度 0.89，对比度 0.40，构图聚类 1。",
+        "source_in": 0.0,
+        "source_out": 1.0,
+        "timeline_start": 0.6
+      }
+    ],
+    "missing": [
+      "当前可用编排比目标短 0.40 秒。"
+    ],
+    "reviews": null,
+    "model_selection": null
+  },
+  "frame_qc": {
+    "checks": {
+      "audio_presence": true,
+      "bytes_present": true,
+      "dimensions": true,
+      "duration_positive": true,
+      "duration_within_tolerance": true,
+      "full_decode": true
+    },
+    "content_review_required": true,
+    "not_checked": [
+      "商品事实与数量",
+      "来源和使用许可",
+      "字幕语义和可读性",
+      "审美与场景连续性",
+      "人工指定音画语义锚点"
+    ],
+    "probe": {
+      "audio_codec": "aac",
+      "display_height": 180,
+      "display_width": 320,
+      "duration": 1.6,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "fps": "25/1",
+      "has_audio": true,
+      "has_video": true,
+      "height": 180,
+      "is_still": false,
+      "major_brand": "isom",
+      "probe_version": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+      "rotation_degrees": 0,
+      "source_time_base": "1/12800",
+      "streams": [
+        {
+          "avg_frame_rate": "25/1",
+          "codec_name": "h264",
+          "codec_type": "video",
+          "duration": "1.600000",
+          "height": 180,
+          "index": 0,
+          "nb_frames": "40",
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "25/1",
+          "start_time": "0.000000",
+          "time_base": "1/12800",
+          "width": 320
+        },
+        {
+          "avg_frame_rate": "0/0",
+          "channel_layout": "stereo",
+          "channels": 2,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "duration": "1.600000",
+          "index": 1,
+          "nb_frames": "76",
+          "r_frame_rate": "0/0",
+          "sample_rate": "48000",
+          "start_time": "0.000000",
+          "time_base": "1/48000"
+        }
+      ],
+      "video_codec": "h264",
+      "width": 320
+    },
+    "publish_ready": false,
+    "status": "technical_passed"
+  },
+  "movie_sha256": "17d46e8260a36045b2b69b24bab7af0559ac7b433a07a9b08b942cd449638596",
+  "timeline": {
+    "id": "timeline_cbe1e0a6d5cc48d5b5c4c709ae6f995e",
+    "kind": "Timeline",
+    "version": 1,
+    "hash": "f077f8f0c50b0d7fafbc748507fbb7d33a863ef88f4a4d5c985a937bbba65ae9"
+  }
+}

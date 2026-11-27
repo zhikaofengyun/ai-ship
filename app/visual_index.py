@@ -1,12 +1,93 @@
 """Time-coded CLIP index. Source rows and access decisions remain authoritative."""
 
+from functools import lru_cache
+import json
 import threading
+
+from .auth import actor_still_authorized
 
 from . import frame_vectors
 from .errors import DomainError
 from .media import check_current_media_rights, resolve_media
+from .store import digest
 
 _BUILDS = threading.BoundedSemaphore(1)
+
+
+# Limited, explicitly versioned zero-shot vocabulary. Scores are cosines, not probabilities.
+VOCABULARY = {
+    "scene": (
+        ("室内", "an indoor room"),
+        ("城市街道", "an urban street surrounded by buildings"),
+        ("户外自然", "a natural outdoor landscape"),
+        ("摄影棚背景", "an isolated object photographed against a plain studio background"),
+        ("花园", "a garden full of flowering plants"),
+        ("厨房或咖啡馆桌面", "a tabletop in a kitchen or cafe"),
+        ("图文画面", "a digital illustration with printed words"),
+    ),
+    "subject": (
+        ("人物", "a person"),
+        ("面孔", "a human face"),
+        ("服饰展示", "a person wearing clothing"),
+        ("手持商品", "hands holding a product"),
+        ("商品包装", "a product in its retail packaging"),
+        ("食物", "a dish of food"),
+        ("杯装饮品", "coffee, tea or a beverage in a cup"),
+        ("电子设备", "an electronic device"),
+        ("美妆护肤", "a cosmetic or skincare product"),
+        ("交通工具", "a vehicle"),
+        ("动物", "an animal"),
+        ("昆虫", "insects on flowers"),
+        ("花卉植物", "a flower or plant"),
+        ("珠宝首饰", "a piece of jewelry"),
+        ("印刷文字", "letters printed on a plain background"),
+    ),
+}
+
+
+MIN_COSINE = 0.23
+MIN_MARGIN = 0.02
+LABEL_REVISION = digest(["clip_candidate_v1", VOCABULARY, MIN_COSINE, MIN_MARGIN])
+
+
+@lru_cache(maxsize=1)
+def label_vectors(model):
+    return {
+        axis: [
+            (name, frame_vectors.encode_query(model, "a photo of " + prompt))
+            for name, prompt in choices
+        ]
+        for axis, choices in VOCABULARY.items()
+    }
+
+
+def candidate_labels(model, frames):
+    import numpy as np
+
+    labels = []
+    for pts, (sha, raw) in sorted(frames.items()):
+        vector = np.frombuffer(raw, dtype="<f4")
+        for axis, options in label_vectors(model).items():
+            scores = sorted(((float(vector @ v), n) for n, v in options), reverse=True)
+            best, name = scores[0]
+            margin = best - scores[1][0]
+            if not np.isfinite(best) or best < MIN_COSINE or margin < MIN_MARGIN:
+                continue
+            labels.append(
+                {
+                    "label": name,
+                    "category": axis,
+                    "method": "clip_candidate_v1",
+                    "vocabulary": LABEL_REVISION,
+                    "source_seconds": pts / 1_000_000,
+                    "sample_rgb_sha256": sha,
+                    "cosine": round(best, 5),
+                    "margin": round(margin, 5),
+                    "space": model[0],
+                    "review_state": "suggested",
+                }
+            )
+    return labels
 
 
 def _readable(store, actor, record):
@@ -40,48 +121,36 @@ def _build(store, actor, project, rows_for, limit, after):
                 scope,
             )
         )
+        classified = dict(
+            db.execute(
+                "SELECT version_id,pin FROM media_clip_candidates WHERE tenant=? AND project=? AND space=?",
+                (actor.tenant_id, project, model[0] + "/" + LABEL_REVISION),
+            )
+        )
         for vid in sorted(rows):
             _, data, record = rows[vid]
             pin = record["hash"]
             if (
                 vid <= after
-                or data["media_type"] != "video"
+                or data["media_type"] not in {"video", "image"}
                 or not record["data"].get("blob_location_id")
-                or existing.get(vid) == pin
+                or (existing.get(vid) == pin and classified.get(vid) == pin)
             ):
                 continue
             if _readable(store, actor, record):
-                pending.append((vid, pin, data["seconds"]))
-    encoded = []
+                pending.append((vid, pin, data["seconds"], data["media_type"] == "image"))
     errors = []
-    for vid, pin, seconds in pending[:limit]:
+    count = samples = 0
+    for vid, pin, seconds, still in pending[:limit]:
         try:
-            _, _, path = resolve_media(store, actor, vid, project_id=project, purpose="process")
-            encoded.append((vid, pin, frame_vectors.video_frames(model, path, seconds)))
+            added = index_source(store, actor, project, model, vid, pin, seconds, still)
+            count += bool(added)
+            samples += added
         except DomainError as exc:
             if exc.status in (429, 503):
                 raise
-            # Do not return identifying details for sources that became inaccessible.
             if exc.status not in (403, 404):
                 errors.append({"version_id": vid, "code": exc.code, "message": exc.message})
-    count = samples = 0
-    if encoded:
-        with store.transaction(), store.connection() as db:
-            current = rows_for(store, db, actor, project)
-            for vid, pin, frames in encoded:
-                row = current.get(vid)
-                if not row or row[2]["hash"] != pin or not _readable(store, actor, row[2]):
-                    continue
-                db.execute(
-                    "DELETE FROM media_frame_vectors WHERE tenant=? AND project=? AND space=? AND version_id=?",
-                    (*scope, vid),
-                )
-                db.executemany(
-                    "INSERT INTO media_frame_vectors(tenant,project,space,version_id,pin,pts_us,rgb_sha256,embedding) VALUES(?,?,?,?,?,?,?,?)",
-                    [(*scope, vid, pin, pts, h, v) for pts, (h, v) in frames.items()],
-                )
-                count += 1
-                samples += len(frames)
     return {
         "space": model[0],
         "processed": count,
@@ -90,6 +159,59 @@ def _build(store, actor, project, rows_for, limit, after):
         "remaining": max(0, len(pending) - limit),
         "next_after": pending[limit - 1][0] if len(pending) > limit else None,
     }
+
+
+def index_source(store, actor, project, model, vid, pin, seconds, still):
+    source, _, path = resolve_media(store, actor, vid, project_id=project, purpose="process")
+    if source["hash"] != pin:
+        raise DomainError("SOURCE_CHANGED", "素材已变化，请重试。", 409)
+    scope = (actor.tenant_id, project, model[0], vid)
+    label_space = model[0] + "/" + LABEL_REVISION
+    with store.connection() as db:
+        cached = db.execute(
+            "SELECT 1 FROM media_clip_candidates WHERE tenant=? AND project=? AND space=? AND version_id=? AND pin=?",
+            (actor.tenant_id, project, label_space, vid, pin),
+        ).fetchone()
+        frames = {
+            pts: (sha, embedding)
+            for pts, sha, embedding in db.execute(
+                "SELECT pts_us,rgb_sha256,embedding FROM media_frame_vectors "
+                "WHERE tenant=? AND project=? AND space=? AND version_id=? AND pin=?",
+                (*scope, pin),
+            )
+        }
+    if frames and cached:
+        return 0
+    if not frames:
+        frames = frame_vectors.video_frames(model, path, seconds, still=still)
+    labels = candidate_labels(model, frames)
+    with store.transaction(), store.connection() as db:
+        if not actor_still_authorized(actor):
+            raise DomainError("IDENTITY_REVOKED", "读取期间工作区权限已变化。", 403)
+        current, _, _ = resolve_media(store, actor, vid, project_id=project, purpose="process")
+        if current["hash"] != pin:
+            raise DomainError("SOURCE_CHANGED", "分析期间素材已变化，请重试。", 409)
+        db.execute(
+            "DELETE FROM media_frame_vectors WHERE tenant=? AND project=? AND space=? AND version_id=?",
+            scope,
+        )
+        db.executemany(
+            "INSERT INTO media_frame_vectors(tenant,project,space,version_id,pin,pts_us,rgb_sha256,embedding) VALUES(?,?,?,?,?,?,?,?)",
+            [(*scope, pin, pts, h, v) for pts, (h, v) in frames.items()],
+        )
+        db.execute(
+            "INSERT INTO media_clip_candidates VALUES(?,?,?,?,?,?) ON CONFLICT(tenant,project,version_id) "
+            "DO UPDATE SET pin=excluded.pin,space=excluded.space,labels_json=excluded.labels_json",
+            (
+                actor.tenant_id,
+                project,
+                vid,
+                pin,
+                label_space,
+                json.dumps(labels, ensure_ascii=False),
+            ),
+        )
+    return len(frames)
 
 
 def matches(store, db, actor, project, rows, space, query_vector):

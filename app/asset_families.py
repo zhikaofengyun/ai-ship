@@ -7,6 +7,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Request
 from pydantic import Field
 
+from . import semantic_families
 from .api import ok
 from .auth import Actor, current_actor, require_write, actor_still_authorized
 from .asset_lifecycle import AssetCommand, current_pin
@@ -177,8 +178,53 @@ def compare(body: Compare, request: Request, actor: Actor = Depends(current_acto
     return ok(on_request("asset-compare", body, actor, apply), request)
 
 
+class Suggest(AssetCommand):
+    members: list[ChosenVersion] = Field(min_length=2, max_length=32)
+    threshold: float = Field(default=0.8, ge=0.5, le=1)
+
+
+@router.post("/suggest")
+def suggest(body: Suggest, request: Request, actor: Actor = Depends(current_actor)):
+    require_write(actor)
+    store = get_store()
+    space = semantic_families.model_space()
+    evidence, vectors = semantic_families.snapshot(
+        store, actor, body.project_id, body.members, space
+    )
+    proposed = semantic_families.suggestions(evidence, vectors, body.threshold)
+
+    def apply():
+        current, _ = semantic_families.snapshot(store, actor, body.project_id, body.members, space)
+        if current != evidence:
+            raise DomainError("CLIP_EVIDENCE_CHANGED", "索引已变化，请重新生成候选。", 409)
+        return {
+            "audit": save(
+                actor,
+                "Audit",
+                body.project_id,
+                {
+                    "feature_id": "S04",
+                    "route_id": "S04-R3",
+                    "name": "视觉语义素材族候选",
+                    "algorithm": semantic_families.METHOD,
+                    "request_id": body.request_id,
+                    "space": space,
+                    "evidence": evidence,
+                    "threshold": body.threshold,
+                    **proposed,
+                },
+                [x["asset"] for x in evidence.values()],
+            )
+        }
+
+    result = on_request("asset-family-suggest", body, actor, apply)
+    if result["audit"]["data"]["space"] != space or result["audit"]["data"]["evidence"] != evidence:
+        raise DomainError("CLIP_EVIDENCE_CHANGED", "模型或索引已更新，请重新生成候选。", 409)
+    return ok(result, request)
+
+
 class Group(AssetCommand):
-    mode: Literal["review_near", "provenance", "semantic", "retire"]
+    mode: Literal["review_clip", "review_near", "provenance", "semantic", "retire"]
     members: list[ChosenVersion] = Field(default_factory=list, max_length=32)
     audit: ChosenVersion | None = None
     group: ChosenVersion | None = None
@@ -213,6 +259,14 @@ def immutable_roots(actor, pid, item):
 def group(body: Group, request: Request, actor: Actor = Depends(current_actor)):
     require_write(actor)
 
+    space = None
+    if body.mode == "review_clip":
+        if not body.audit or body.group or len(body.members) < 2:
+            raise DomainError("CLIP_AUDIT_REQUIRED", "请选择候选族与对应复核记录。")
+        space = semantic_families.model_space()
+        audit = current_pin(actor, body.project_id, body.audit, "Audit")
+        semantic_families.review(get_store(), actor, body.project_id, audit, body.members, space)
+
     def apply():
         pid = body.project_id
         if body.mode == "retire":
@@ -237,7 +291,14 @@ def group(body: Group, request: Request, actor: Actor = Depends(current_actor)):
         if body.group:
             raise DomainError("INVALID_GROUP", "新建组不能指定被替换的组。")
         refs = []
-        if body.mode == "review_near":
+        if body.mode == "review_clip":
+            audit = current_pin(actor, pid, body.audit, "Audit")
+            extra = semantic_families.review(get_store(), actor, pid, audit, body.members, space)
+            items = [current_pin(actor, pid, pin) for pin in body.members]
+            members = list(map(ref, items))
+            level, route = "semantic", "S04-R3"
+            refs.append(ref(audit))
+        elif body.mode == "review_near":
             if not body.audit or body.members:
                 raise DomainError("AUDIT_REQUIRED", "请选取一份有疑似重复结论的区间对照。")
             audit = current_pin(actor, pid, body.audit, "Audit")

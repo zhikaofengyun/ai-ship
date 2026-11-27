@@ -4,6 +4,7 @@ import csv
 import hashlib
 from functools import lru_cache
 import io
+import json
 import re
 import shutil
 import tempfile
@@ -11,10 +12,11 @@ from pathlib import Path
 from fractions import Fraction
 from math import floor
 from statistics import fmean
+from .auth import actor_still_authorized
 from .errors import DomainError
 from .media import resolve_media, probe_media, run_process
 from .production import ref
-from .store import get_store
+from .store import canonical, get_store
 
 
 def sample(path, seconds):
@@ -26,6 +28,10 @@ def sample(path, seconds):
             "info",
             "-copyts",
             "-start_at_zero",
+            "-threads",
+            "1",
+            "-filter_threads",
+            "1",
             "-protocol_whitelist",
             "file,pipe",
             "-ss",
@@ -71,6 +77,7 @@ def sample(path, seconds):
     )
     return {
         "at": float(pts[1]),
+        "rgb_sha256": hashlib.sha256(pixels).hexdigest(),
         "seek_requested": seconds,
         "descriptor": vector,
         "luminance": round(fmean(luma), 4),
@@ -125,6 +132,10 @@ def recognize_text(path, at, seek, *, frame_receipt=False):
                     "-v",
                     "info" if frame_receipt else "error",
                     *(["-copyts", "-start_at_zero"] if frame_receipt else []),
+                    "-threads",
+                    "1",
+                    "-filter_threads",
+                    "1",
                     "-protocol_whitelist",
                     "file,pipe",
                     "-ss",
@@ -146,7 +157,7 @@ def recognize_text(path, at, seek, *, frame_receipt=False):
             if frame_receipt:
                 pts = re.search(r"\bn:\s*0\s+pts:\s*-?\d+\s+pts_time:([\d.eE+-]+)", log)
                 if not pts or not image.is_file():
-                    return {"status": "unavailable", "at": None, "words": []}
+                    return {"status": "unavailable", "at": None, "words": [], "retryable": True}
                 at = float(pts[1])
             langs, _ = run_process(["tesseract", "--list-langs"], timeout=5)
             languages = [
@@ -224,27 +235,216 @@ def recognize_text(path, at, seek, *, frame_receipt=False):
                 "words": words[:60],
                 "coordinate_space": "analysis_frame_pixels",
             }
-    except (DomainError, ValueError, KeyError):
+    except DomainError as exc:
+        return {
+            "status": "unavailable",
+            "at": at,
+            "words": [],
+            "code": exc.code,
+            "retryable": exc.code in {"MEDIA_BUSY", "MEDIA_TIMEOUT", "MEDIA_EXECUTION_FAILED"},
+        }
+    except (ValueError, KeyError):
         return {"status": "unavailable", "at": at, "words": []}
+
+
+OBSERVATION_METHOD = "rgb-quadrants-3/tesseract-lstm-v1"
+
+
+def observation_tags(samples, ocr):
+    """Measured frame properties and OCR readings are evidence, never product assertions."""
+    tags = []
+    for frame in samples:
+        rgb = [fmean(frame["descriptor"][c::3]) for c in range(3)]
+        dominant = max(range(3), key=rgb.__getitem__)
+        if max(rgb) - min(rgb) > 0.18:
+            tag = ("红色调", "绿色调", "蓝色调")[dominant]
+        else:
+            tag = "低饱和色调"
+        tags.append(
+            {
+                "category": "color",
+                "label": tag,
+                "source_seconds": frame["at"],
+                "method": "sampled_rgb",
+                "sample_rgb_sha256": frame["rgb_sha256"],
+            }
+        )
+    for word in ocr.get("words", []):
+        if word["confidence"] >= 0.5:
+            tags.append(
+                {
+                    "category": "visible_text",
+                    "label": word["text"],
+                    "method": "tesseract_lstm",
+                    "source_seconds": ocr["at"],
+                    "ocr_confidence": word["confidence"],
+                    "sample_sha256": ocr["frame_sha256"],
+                    "box_px": word["box_px"],
+                }
+            )
+    return tags
+
+
+def measure_source(path):
+    probe = probe_media(path)
+    if not probe.get("has_video"):
+        raise DomainError("NO_VISUAL_STREAM", "此素材没有画面。")
+    still = probe["is_still"]
+    duration = floor(float(probe["duration"]) * 1000000) / 1000000
+    if still:
+        instants = [0]
+    else:
+        if duration < 0.04:
+            raise DomainError("SOURCE_TOO_SHORT", "当前渲染器需要至少 0.04 秒的片段。")
+        try:
+            rate = Fraction(probe["fps"])
+        except (ZeroDivisionError, ValueError, TypeError):
+            rate = 0
+        usable = max(0, duration - (float(1 / rate) if rate > 0 else 0.04))
+        instants = sorted({round(usable * f, 6) for f in (0.12, 0.50, 0.85)})
+    samples = [sample(path, t) for t in instants]
+    return {
+        "is_still": still,
+        "duration": duration,
+        "samples": samples,
+        "display_width": probe.get("display_width", probe["width"]),
+        "display_height": probe.get("display_height", probe["height"]),
+    }
+
+
+def observe_source(store, actor, project, rid, *, refresh=False):
+    source, blob, path = resolve_media(store, actor, rid, project_id=project)
+    scope = (actor.tenant_id, project, blob["id"])
+    analysis = None
+    if not refresh:
+        with store.connection() as db:
+            row = db.execute(
+                "SELECT analysis_json FROM media_observations WHERE tenant=? AND project=? "
+                "AND blob_id=? AND blob_pin=? AND method=?",
+                (*scope, blob["hash"], OBSERVATION_METHOD),
+            ).fetchone()
+        if row:
+            analysis = json.loads(row[0])
+            if not analysis["ocr"].get("retryable"):
+                return source, analysis, True
+    if analysis is None:
+        analysis = measure_source(path)
+    samples = analysis["samples"]
+    middle = samples[len(samples) // 2]
+    ocr = recognize_text(path, middle["at"], middle["seek_requested"], frame_receipt=True)
+    ocr["words"] = [word for word in ocr["words"] if word["confidence"] >= 0.5]
+    analysis["ocr"] = ocr
+    tags = observation_tags(samples, ocr)
+    w, h = analysis["display_width"], analysis["display_height"]
+    tags.append(
+        {
+            "label": "竖屏" if h > w else ("横屏" if w > h else "方形"),
+            "category": "orientation",
+            "method": "ffprobe_display_matrix",
+        }
+    )
+    with store.transaction(), store.connection() as db:
+        if not actor_still_authorized(actor):
+            raise DomainError("IDENTITY_REVOKED", "读取期间工作区权限已变化。", 403)
+        current, live_blob, _ = resolve_media(store, actor, rid, project_id=project)
+        if current["hash"] != source["hash"] or live_blob["hash"] != blob["hash"]:
+            raise DomainError("SOURCE_CHANGED", "分析期间素材已变化，请重试。", 409)
+        if ocr["status"] != "read":
+            # A slower failed reader must not replace a successful concurrent
+            # reading of the same bytes and analysis method.
+            found = db.execute(
+                "SELECT analysis_json FROM media_observations WHERE tenant=? AND project=? "
+                "AND blob_id=? AND blob_pin=? AND method=? "
+                "AND json_extract(analysis_json,'$.ocr.status')='read'",
+                (*scope, blob["hash"], OBSERVATION_METHOD),
+            ).fetchone()
+            if found:
+                return source, json.loads(found[0]), True
+        db.execute(
+            "INSERT INTO media_observations VALUES(?,?,?,?,?,?,?) "
+            "ON CONFLICT(tenant,project,blob_id) DO UPDATE SET blob_pin=excluded.blob_pin,"
+            "method=excluded.method,analysis_json=excluded.analysis_json,tags_json=excluded.tags_json",
+            (*scope, blob["hash"], OBSERVATION_METHOD, canonical(analysis), canonical(tags)),
+        )
+    return source, analysis, False
+
+
+def effective_suggestions(suggestions, assertions):
+    def overrides(assertion, candidate):
+        interval = assertion.get("interval")
+        return (
+            assertion.get("reviewer_lock") is True
+            and assertion.get("entity") == candidate["category"]
+            and isinstance(interval, list)
+            and len(interval) == 2
+            and all(type(x) in (float, int) for x in interval)
+            and interval[0] <= candidate["source_seconds"] < interval[1]
+        )
+
+    return [c for c in suggestions if not any(overrides(a, c) for a in assertions)]
+
+
+def editor_tags(store, actor, project, source):
+    with store.read_snapshot() as db:
+        if source["kind"] == "Asset":
+            original = db.execute(
+                "SELECT r.id FROM revisions v JOIN records r ON r.tenant_id=v.tenant_id AND r.id=v.record_id AND r.latest_version=v.version "
+                "WHERE v.tenant_id=? AND r.project_id=? AND r.kind='AssetVersion' AND "
+                "json_extract(v.data_json,'$.asset_id')=? AND json_extract(v.data_json,'$.variant')='original' "
+                "AND json_extract(v.data_json,'$.blob_location_id')=? ORDER BY r.id LIMIT 1",
+                (actor.tenant_id, project, source["id"], source["data"].get("blob_location_id")),
+            ).fetchone()
+            if not original:
+                return []
+            source = store.get(original["id"], actor.tenant_id)
+        data = source["data"]
+        first = (
+            data.get("tag_base_revision", source["version"])
+            if data.get("tier_revision") == source["version"]
+            else source["version"]
+        )
+        assertions = [
+            json.loads(r[0])
+            for r in db.execute(
+                "SELECT v.data_json FROM reference_index x JOIN records r ON r.tenant_id=x.tenant_id AND r.id=x.source_id "
+                "AND r.latest_version=x.source_version JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id "
+                "AND v.version=x.source_version WHERE x.tenant_id=? AND x.target_id=? AND x.target_version BETWEEN ? AND ? "
+                "AND r.project_id=? AND r.kind='Tag' AND coalesce(json_extract(v.data_json,'$.status'),'') "
+                "NOT IN ('revoked','rejected','archived','invalidated') ORDER BY v.created_at DESC,r.id LIMIT 32",
+                (actor.tenant_id, source["id"], first, source["version"], project),
+            )
+        ]
+        machine = db.execute(
+            "SELECT labels_json FROM media_clip_candidates WHERE tenant=? AND project=? AND version_id=? AND pin=?",
+            (actor.tenant_id, project, source["id"], source["hash"]),
+        ).fetchone()
+    labels = [
+        {
+            "label": str(a["label"])[:300],
+            "category": a.get("entity"),
+            "interval": a.get("interval"),
+            "method": a.get("method"),
+        }
+        for a in assertions
+        if a.get("label")
+    ]
+    for tag in effective_suggestions(json.loads(machine[0]) if machine else [], assertions):
+        labels.append(
+            {
+                k: tag[k]
+                for k in ("category", "label", "source_seconds", "method", "review_state", "cosine")
+            }
+        )
+    return labels
 
 
 def inspect(actor, project_id, asset_ids):
     sources = []
+    store = get_store()
     for rid in asset_ids:
-        asset, _, path = resolve_media(get_store(), actor, rid, project_id=project_id)
-        if asset["kind"] not in {"Asset", "AssetVersion"}:
-            raise DomainError("NOT_TIMED_VIDEO", "画面候选需要项目中的视频素材。")
-        probe = probe_media(path)
-        if not probe.get("has_video") or probe.get("is_still") or not probe.get("duration"):
-            raise DomainError("NOT_TIMED_VIDEO", "候选需包含真实、可解码的定时画面。")
-        duration = floor(float(probe["duration"]) * 1000000) / 1000000
-        rate = Fraction(probe.get("fps") or "25")
-        frame_seconds = float(1 / rate) if rate > 0 else 0.04
-        if duration < 0.04:
-            raise DomainError("SOURCE_TOO_SHORT", "当前渲染器需要至少 0.04 秒的片段。")
-        usable = max(0, duration - frame_seconds)
-        instants = sorted({round(usable * f, 6) for f in (0.12, 0.50, 0.85)})
-        samples = [sample(path, t) for t in instants]
+        asset, analysis, _ = observe_source(store, actor, project_id, rid)
+        if asset["kind"] not in {"Asset", "AssetVersion"} or analysis["is_still"]:
+            raise DomainError("NOT_TIMED_VIDEO", "画面候选需要项目中的定时视频素材。")
         sources.append(
             {
                 "asset_id": asset["id"],
@@ -252,11 +452,10 @@ def inspect(actor, project_id, asset_ids):
                 "name": str(asset["data"].get("filename") or asset["data"].get("name") or "原片")[
                     :240
                 ],
-                "duration": duration,
-                "samples": samples,
-                "ocr": recognize_text(
-                    path, samples[len(samples) // 2]["at"], instants[len(instants) // 2]
-                ),
+                "duration": analysis["duration"],
+                "samples": analysis["samples"],
+                "ocr": analysis["ocr"],
+                "labels": editor_tags(store, actor, project_id, asset),
                 "record_ref": ref(asset),
             }
         )
@@ -292,7 +491,18 @@ def local_proposal(goal, sources, target_seconds):
             if w["text"].casefold() in terms
         ]
 
-    ordered = sorted(enumerate(sources), key=lambda item: -len(matches(item[1])))
+    def matched_tags(source):
+        return [
+            t
+            for t in source.get("labels", [])
+            if t.get("label") and t["label"].casefold() in goal.casefold()
+        ]
+
+    def relevance(item):
+        tags = matched_tags(item[1])
+        return (-sum(t["method"] == "manual" for t in tags), -len(matches(item[1])), -len(tags))
+
+    ordered = sorted(enumerate(sources), key=relevance)
     for i, source in ordered:
 
         def priority(frame):
@@ -304,7 +514,22 @@ def local_proposal(goal, sources, target_seconds):
         length = durations[i]
         if length < 0.04:
             continue
-        start = round(max(0, min(source["duration"] - length, chosen["at"] - length / 2)), 6)
+        center = chosen["at"]
+        tags = matched_tags(source)
+        for tag in tags:
+            interval = tag.get("interval")
+            if (
+                isinstance(interval, list)
+                and len(interval) == 2
+                and all(type(x) in (int, float) for x in interval)
+                and 0 <= interval[0] < interval[1] <= source["duration"]
+            ):
+                center = (interval[0] + interval[1]) / 2
+                break
+            if isinstance(tag.get("source_seconds"), (int, float)):
+                center = tag["source_seconds"]
+                break
+        start = round(max(0, min(source["duration"] - length, center - length / 2)), 6)
         end = min(source["duration"], round(start + length, 6))
         groups[chosen["cluster"]] = groups.get(chosen["cluster"], 0) + 1
         previous = chosen["descriptor"]
@@ -318,7 +543,7 @@ def local_proposal(goal, sources, target_seconds):
         )
     return {
         "title": goal[:100],
-        "approach": "按目标与实帧 OCR 的词命中排序，同分保留素材顺序，按实测对比度和构图聚类选段。",
+        "approach": "优先复用与目标匹配的人工标注区间，再参考实帧 OCR、视觉候选、对比度和构图聚类选段。",
         "shots": shots,
         "missing": missing,
     }

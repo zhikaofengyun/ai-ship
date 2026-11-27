@@ -18,9 +18,20 @@ from playwright.sync_api import expect, sync_playwright
 from browser_regression import server
 
 
+def execute_feature(page, expected):
+    with page.expect_response(
+        lambda r: r.url.endswith("/api/v1/execution/start") and r.request.method == "POST",
+        timeout=60000,
+    ) as started:
+        page.locator("[data-action=run-feature]").click()
+    assert started.value.ok, started.value.text()
+    expect(page.locator("#feature-result h3")).to_have_text(expected, timeout=30000)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
+    parser.add_argument("--engine", choices=["chromium", "webkit"], default="chromium")
     args = parser.parse_args()
     output = Path(args.output).resolve()
     output.mkdir(exist_ok=True, parents=True)
@@ -30,12 +41,15 @@ def main():
         server(Path(tmp), output) as base,
         sync_playwright() as pw,
     ):
-        browser = pw.chromium.launch(
-            executable_path=os.getenv("AI_SHIP_CHROMIUM")
-            or shutil.which("chromium-headless-shell")
-            or shutil.which("chromium"),
-            chromium_sandbox=True,
-        )
+        if args.engine == "webkit":
+            browser = pw.webkit.launch(executable_path=os.getenv("AI_SHIP_WEBKIT"))
+        else:
+            browser = pw.chromium.launch(
+                executable_path=os.getenv("AI_SHIP_CHROMIUM")
+                or shutil.which("chromium-headless-shell")
+                or shutil.which("chromium"),
+                chromium_sandbox=True,
+            )
         page = browser.new_page(viewport={"width": 1366, "height": 900})
         page.on("pageerror", lambda e: errors.append(str(e)))
         page.goto(base, wait_until="domcontentloaded")
@@ -46,10 +60,13 @@ def main():
         form = page.locator("#dialog form[data-form]")
         form.locator("[name=name]").fill("分区操作回归")
         form.locator("button[type=submit]").click()
-        expect(page).to_have_url(re.compile("#production$"))
+        expect(page).to_have_url(re.compile("#production/batches$"))
+        expect(page.get_by_role("region", name="创建批次")).to_be_visible()
+        expect(page.get_by_role("button", name="提交批量剪辑")).to_be_visible()
+        page.get_by_role("main").get_by_role("link", name="单条制作").click()
         expect(page.locator("#production-goal")).to_be_visible()
         expect(page.locator(".context-label")).to_have_text("分区操作回归")
-        checks.append("empty_workspace_create_opens_ai_production")
+        checks.append("empty_workspace_create_opens_batch_production_with_single_item_handoff")
         page.goto(base + "/#module/project/P03", wait_until="domcontentloaded")
         page.locator("[data-action=feature-action]").click()
         expect(form.locator("[name=name]")).to_have_value("分区操作回归")
@@ -83,8 +100,7 @@ def main():
         prompt = page.locator("#feature-execution-fields textarea[data-execution-field]")
         expect(prompt).to_be_visible()
         prompt.fill("玻璃杯放在木桌上。")
-        page.locator("[data-action=run-feature]").click()
-        expect(page.locator("#feature-result h3")).to_have_text("已完成", timeout=15000)
+        execute_feature(page, "已完成")
         scripts = client.get(
             "/records", params={"project_id": project["id"], "kind": "Script"}
         ).json()["data"]
@@ -111,8 +127,7 @@ def main():
 
         page.goto(base + "/#module/label/L07", wait_until="domcontentloaded")
         page.select_option("#feature-route", "L07-R1")
-        page.locator("[data-action=run-feature]").click()
-        expect(page.locator("#feature-result h3")).to_have_text("待补齐条件", timeout=15000)
+        execute_feature(page, "待补齐条件")
         sounds = client.get(
             "/records", params={"kind": "Audio", "project_id": project["id"]}
         ).json()["data"]
@@ -182,7 +197,12 @@ def main():
         expect(page.locator("#dialog h2")).to_have_text("声音起音候选", timeout=20000)
         marker = page.locator("#dialog [data-moment]").first
         expect(marker).to_be_visible()
-        page.wait_for_function("document.querySelector('#dialog audio')?.readyState>=1")
+        page.locator("#dialog audio").evaluate(
+            """audio => audio.readyState >= 1 ? true : new Promise((resolve, reject) => {
+                audio.addEventListener('loadedmetadata', resolve, {once: true});
+                audio.addEventListener('error', () => reject(Error('Audio preview unavailable')), {once: true});
+            })"""
+        )
         marker.click()
         assert (
             abs(
@@ -228,6 +248,7 @@ def main():
         result = {
             "passed": True,
             "browser": browser.version,
+            "engine": args.engine,
             "checks": checks,
             "page_errors": errors,
         }

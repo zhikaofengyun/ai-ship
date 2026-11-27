@@ -147,6 +147,10 @@ export function showTransition(element, c, clips, at, baseOpacity) {
   }
   element.style.filter = filter;
   const [left, top, right, bottom] = c.mask?.rect || [0, 0, 1, 1];
+  element.style.maskImage =
+    c.mask?.shape === "ellipse"
+      ? `radial-gradient(ellipse ${(right - left) * 50}% ${(bottom - top) * 50}% at ${(left + right) * 50}% ${(top + bottom) * 50}%, black 100%, transparent 100%)`
+      : "";
   element.style.clipPath =
     c.mask || leftWipe || rightWipe
       ? `inset(${top * 100}% ${Math.max(1 - right, rightWipe) * 100}% ${(1 - bottom) * 100}% ${Math.max(left, leftWipe) * 100}%)`

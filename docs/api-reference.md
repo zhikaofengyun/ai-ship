@@ -87,6 +87,7 @@
 | POST | `/api/v1/production/assets/exploration` | Exploration | `Exploration` |
 | POST | `/api/v1/production/assets/tier` | Change Tier | `TierChange` |
 | POST | `/api/v1/production/asset-families/compare` | Compare | `Compare` |
+| POST | `/api/v1/production/asset-families/suggest` | Suggest | `Suggest` |
 | POST | `/api/v1/production/asset-families/group` | Group | `Group` |
 | POST | `/api/v1/production/creative/verify-trend` | Verify Trend | `TrendReview` |
 | POST | `/api/v1/production/creative/match` | Match Topic | `TopicMatch` |
@@ -101,6 +102,8 @@
 | GET | `/api/v1/production/tiktok/login/callback` | Callback | `—` |
 | POST | `/api/v1/production/tiktok/login/accounts/{account}/refresh` | Refresh | `app__tiktok_login__Choice` |
 | POST | `/api/v1/production/tiktok/login/accounts/{account}/revoke` | Revoke | `app__tiktok_login__Choice` |
+| POST | `/api/v1/production/tiktok/inbox/{pid}/send` | Send | `InboxRevision` |
+| POST | `/api/v1/production/tiktok/inbox/{pid}/status` | Status | `InboxRevision` |
 | POST | `/api/v1/production/acquisition/changes` | Amend Sources | `Manifest` |
 | GET | `/api/v1/production/source-media/settings` | Read Settings | `—` |
 | POST | `/api/v1/production/source-media/settings` | Configure | `SourceSettings` |
@@ -110,6 +113,7 @@
 | GET | `/api/v1/providers/availability` | Availability | `—` |
 | POST | `/api/v1/providers/chat` | Chat Route | `ChatInput` |
 | POST | `/api/v1/providers/team` | Run Team | `TeamInput` |
+| POST | `/api/v1/providers/team/{run_id}/resume` | Resume Team | `TeamResume` |
 | POST | `/api/v1/production/trends` | Import Trend | `TrendInput` |
 | POST | `/api/v1/production/products/import` | Import Products | `ProductImport` |
 | POST | `/api/v1/production/tags` | Add Tag | `TagInput` |
@@ -168,6 +172,8 @@
 | POST | `/api/v1/production/auto-edits/{run_id}/approve` | Approve Edit | `AcceptEdit` |
 | POST | `/api/v1/production/auto-edits/{run_id}/render` | Render Edit | `RenderEdit` |
 | POST | `/api/v1/production/auto-edits/{run_id}/replace-shot` | Replace Shot | `ReplaceShot` |
+| GET | `/api/v1/production/batches/{bid}/publications` | Existing Page | `—` |
+| POST | `/api/v1/production/batches/{bid}/publications/prepare` | Prepare | `PreparePage` |
 | GET | `/api/v1/production/batches/observability/health` | Health | `—` |
 | GET | `/api/v1/production/batches/observability/compare` | Compare | `—` |
 | POST | `/api/v1/production/batches/contracts` | Create Contract | `ContractInput` |
@@ -214,6 +220,7 @@
 | POST | `/api/v1/production/asset-index/build` | Build | `Build` |
 | POST | `/api/v1/production/asset-index/switch` | Switch | `Switch` |
 | POST | `/api/v1/production/asset-index/embed` | Embed | `Embed` |
+| POST | `/api/v1/production/asset-index/analyze` | Analyze | `Analyze` |
 | POST | `/api/v1/production/asset-index/frames/build` | Build Frames | `FrameBuild` |
 | POST | `/api/v1/production/asset-index/query` | Query | `Query` |
 | POST | `/api/v1/production/voice-studio/maps` | Make Map | `MapInput` |
@@ -239,7 +246,7 @@
 | POST | `/api/v1/production/soundtrack/remove-music` | Remove Music | `RemoveMusic` |
 | POST | `/api/v1/production/soundtrack/listen-review` | Listen Review | `ListeningReview` |
 
-共 210 个 HTTP 操作。完整 path/query/header 条件、枚举、范围、错误与二进制声明在 OpenAPI 中。
+共 217 个 HTTP 操作。完整 path/query/header 条件、枚举、范围、错误与二进制声明在 OpenAPI 中。
 
 ## 工作流和组件扩展
 

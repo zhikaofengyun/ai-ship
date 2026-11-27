@@ -1,8 +1,16 @@
 # 本地视频画面检索
 
-在「索引与检索 → 检索素材」展开「索引版本」，选择「提取视频画面索引」。一批处理最多四份视频。需要下一批时继续点击。检索方式选择「画面语义（CLIP）」，输入画面描述，例如 `a bee visiting a flower`。本次画面实测使用三条英文查询。
+在「索引与检索 → 检索素材」展开「索引版本」，选择「提取画面语义索引」。界面每批处理最多四份视频或图片。需要下一批时继续点击。检索方式选择「画面语义（CLIP）」，输入画面描述，例如 `a bee visiting a flower`。本次画面实测使用三条英文查询。
 
 选择「预览」会打开匹配帧的实际源时码。可在「登记场景或动作标注」中填写自己观察到的标签、核对依据和起止时间。只有明确提交后才会写入人工标注与源帧凭证。进入剪辑台时保留同一素材版本与时码。
+
+## 自动入库分析
+
+上传文件、采集目录、连接器和生成任务产生的图片或视频会与其分析队列项在同一事务落库。应用启动后，一个本地后台线程按当前权限读取实际字节，保存旋转后的画幅、采样颜色、源时码，以及可用的 Tesseract OCR 文字和指纹。配置下方 CLIP 权重后，同一任务会写入图片首帧或视频最多三帧的向量，并按有限的场景、主体词表给出带来源和分数的候选。相似度小于 0.23 或与次选相差不足 0.02 时保留空白。阈值为当前实现参数，准确率需要在业务素材上另行标定。
+
+工作台「检索素材 → 索引版本 → 批量分析素材」可扫描历史素材和重做缺失部分，停止后已完成的数据可复用。API 为 `POST /api/v1/production/asset-index/analyze`，输入 `project_id`、`limit` 和上页的 `next_after` 作为 `after`。设置 `refresh: true` 可在修复 OCR 语言包后重新提取实帧与文字。每个上传素材的后台状态在索引历史响应的 `analysis_queue` 中汇总。需要单独控制资源的服务可设置 `AI_SHIP_MATERIAL_WORKER=0` 暂停后台领取，新素材仍登记队列，人工批量分析仍可用。
+
+首次进入自动剪辑也会按需读取实帧。导演从同一媒体落点复用采样与 OCR，重新核验当前版本、加工权限和人工标签。命中人工锁定的标签区间时，导演优先采用对应区间。操作员在检索结果中可定位到词条的来源时码。模型候选保留原模型空间与相似度。该分类词表不识别品牌 SKU、数量、人物身份或转化率。
 
 ## 安装
 
@@ -54,6 +62,9 @@ sha256sum "$AI_SHIP_CLIP_MODEL_DIR"/*
 ```sh
 python -m pip install -r requirements-dev.txt -r requirements-semantic.txt
 python scripts/verify_visual_search.py --fixture-dir /tmp/clip-fixtures --output /tmp/clip-result
+python scripts/verify_material_intake.py --fixture-dir /tmp/clip-fixtures --output /tmp/intake-result
 ```
 
 可额外传入 `--browser chromium` 或 `--browser webkit` 验证真实页面、人工标注与剪辑台定位。脚本使用 MDN 的 CC0 摄影视频、scikit-image 的两张样例照片以及 FFmpeg 编码的双场景对照片段。首次下载会核对固定 SHA-256，运行结果记录来源、实际时码、RGB 指纹、余弦分数和授权验证。模型权重和参考媒体不随仓库分发。
+
+自动入库用例核对后台队列、批量回填复用数、候选标签与源时码，以及浏览器图片预览。验证使用上方固定权重与三份固定媒体。[自动入库实测结果](../evidence/material-intake/result.json)

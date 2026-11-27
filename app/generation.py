@@ -116,7 +116,9 @@ def profiles():
                 node, key = pair
                 value = workflow[node]["inputs"][key]
                 expected = str if field == "text_input" else int
-                if type(value) is not expected:
+                if type(value) is not expected or not has_dependency(
+                    workflow, str(cfg["output_node"]), node
+                ):
                     raise ValueError()
             if "video_input" in cfg:
                 if (
@@ -691,7 +693,7 @@ def generate(body: Generate, request: Request, actor: Actor = Depends(current_ac
                     "WORKFLOW_REJECTED",
                     f"本地工作流返回 HTTP {response.status_code}，请核对节点与权重。",
                 ),
-                {},
+                {"provider_http_status": response.status_code},
             )
         else:
             response.raise_for_status()

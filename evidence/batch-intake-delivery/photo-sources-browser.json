@@ -1,0 +1,56 @@
+{
+  "engine": "Chromium",
+  "fixture_source": {
+    "astronaut.png": {
+      "source": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/astronaut.png",
+      "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5"
+    },
+    "coffee.png": {
+      "source": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/coffee.png",
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+    }
+  },
+  "outputs": [
+    {
+      "matched_source": "coffee.png",
+      "duration_seconds": 2.0,
+      "decoded_frames": 48,
+      "fps": 24,
+      "size": [
+        320,
+        320
+      ],
+      "codec": "h264",
+      "file_sha256": "2f8bc5d93a4b4ea3261aa5eee7e0fbb92d62f50c52573a8818e8c96a6f37a4bb",
+      "rgb_mean_absolute_error_0_to_255": {
+        "astronaut.png": 85.89,
+        "coffee.png": 3.94
+      }
+    },
+    {
+      "matched_source": "astronaut.png",
+      "duration_seconds": 1.25,
+      "decoded_frames": 30,
+      "fps": 24,
+      "size": [
+        320,
+        320
+      ],
+      "codec": "h264",
+      "file_sha256": "dca612cd7fddc16d37448ac9166ce791fc928f6feedd1a1fbfc9e23d1f7c06e4",
+      "rgb_mean_absolute_error_0_to_255": {
+        "astronaut.png": 3.57,
+        "coffee.png": 75.18
+      }
+    }
+  ],
+  "operations": [
+    "Create an empty project through the UI and open its default batch workspace",
+    "Import two original PNG photographs through the file chooser",
+    "Choose both photos in one source slot, enter their independent durations, request both combinations at 320×320 and 24 fps",
+    "Click both browser download links; ffprobe each file and decode every frame"
+  ],
+  "browser": "158.0.8127.0",
+  "validation": "At 64×64 RGB, mean absolute pixel error across all decoded frames was compared to both input photos using the better of center crop and letterbox. The closest original must agree with the selected duration and exact decoded frame count.",
+  "js_errors": []
+}

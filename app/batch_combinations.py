@@ -7,7 +7,10 @@ from .store import digest
 
 
 def dimensions(slots):
-    return tuple((len(slot.choices), bool(slot.generate)) for slot in slots)
+    return tuple(
+        (len(slot.choices), max(1, len(slot.generate.prompt_variants)) if slot.generate else 0)
+        for slot in slots
+    )
 
 
 @lru_cache(maxsize=256)
@@ -34,7 +37,7 @@ def positions_for(shape, seed, ordinal):
         # Each fully sourced sequence is used once. Later passes always include a new
         # seeded generation, rotating which eligible shot is generated on successive passes.
         i = generators[(offset + cycle - 1) % len(generators)]
-        positions[i] = shape[i][0]
+        positions[i] = shape[i][0] + (cycle - 1) % shape[i][1]
     return positions
 
 
@@ -46,6 +49,15 @@ def choices_for(recipe, ordinal):
     ]
 
 
+def generation_prompt(recipe, ordinal, index):
+    slot = recipe.slots[index]
+    if not slot.generate.prompt_variants:
+        return slot.generate.prompt
+    position = positions_for(dimensions(recipe.slots), recipe.seed, ordinal)[index]
+    variant = slot.generate.prompt_variants[position - len(slot.choices)]
+    return f"{slot.generate.prompt}\n{variant}"
+
+
 @lru_cache(maxsize=256)
 def generation_counts(shape, seed, count):
     """Count the exact planned submissions without loading sources or contacting a model."""
@@ -55,7 +67,7 @@ def generation_counts(shape, seed, count):
         for ordinal in range(1, count + 1):
             positions = positions_for(shape, seed, ordinal)
             for i in mixed:
-                if positions[i] == shape[i][0]:
+                if positions[i] >= shape[i][0]:
                     results[i] += 1
     return tuple(results)
 
@@ -69,4 +81,4 @@ def item_generation_flags(recipe, workflow_calls):
     else:
         for ordinal in range(1, recipe.count + 1):
             positions = positions_for(shape, recipe.seed, ordinal)
-            yield int(any(pos == choices for pos, (choices, _) in zip(positions, shape)))
+            yield int(any(pos >= choices for pos, (choices, _) in zip(positions, shape)))

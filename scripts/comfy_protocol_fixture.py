@@ -143,7 +143,10 @@ def sample_generator(clip: Path, *, segment_clip: Path | None = None):
             "label": "接口测试生成器",
             "model": "fixture-no-inference",
             "base_url": f"http://127.0.0.1:{http.server_port}",
-            "workflow": {"1": {"inputs": {"text": "", "seed": 0}}, "90": {"inputs": {}}},
+            "workflow": {
+                "1": {"inputs": {"text": "", "seed": 0}},
+                "90": {"inputs": {"sample": ["1", 0]}},
+            },
             "text_input": ["1", "text"],
             "seed_input": ["1", "seed"],
             "output_node": "90",
@@ -153,7 +156,10 @@ def sample_generator(clip: Path, *, segment_clip: Path | None = None):
         **cfg["browser-protocol"],
         "label": "接口测试关键帧",
         "output_kind": "image",
-        "workflow": {"1": {"inputs": {"text": "", "seed": 0}}, "90": {"inputs": {"image": True}}},
+        "workflow": {
+            "1": {"inputs": {"text": "", "seed": 0}},
+            "90": {"inputs": {"sample": ["1", 0], "image": True}},
+        },
     }
     cfg["reference-protocol"] = {
         **cfg["browser-protocol"],
@@ -162,7 +168,7 @@ def sample_generator(clip: Path, *, segment_clip: Path | None = None):
         "workflow": {
             "1": {"inputs": {"text": "", "seed": 0}},
             "2": {"class_type": "LoadImage", "inputs": {"image": ""}},
-            "90": {"inputs": {"frames": ["2", 0]}},
+            "90": {"inputs": {"sample": ["1", 0], "frames": ["2", 0]}},
         },
     }
     if segment_clip is not None:
@@ -175,7 +181,7 @@ def sample_generator(clip: Path, *, segment_clip: Path | None = None):
             "workflow": {
                 "1": {"inputs": {"text": "", "seed": 0}},
                 "9": {"class_type": "LoadVideo", "inputs": {"file": ""}},
-                "90": {"inputs": {"frames": ["9", 0]}},
+                "90": {"inputs": {"sample": ["1", 0], "frames": ["9", 0]}},
             },
         }
     try:

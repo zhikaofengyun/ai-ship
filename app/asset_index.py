@@ -8,7 +8,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Request
 from pydantic import Field
 
-from . import frame_vectors, text_vectors, visual_index
+from . import frame_vectors, text_vectors, visual_index, visual_candidates
 from .api import Body, ok
 from .auth import Actor, current_actor, require_write
 from .errors import DomainError
@@ -90,11 +90,37 @@ def source_rows(store, conn, actor, project):
             for link in item["refs"]:
                 if link["kind"] == "AssetVersion":
                     tags[link["id"]].append((link["version"], item))
+    observations = dict(
+        conn.execute(
+            "SELECT o.blob_id,o.tags_json FROM media_observations o JOIN records b "
+            "ON b.tenant_id=o.tenant AND b.id=o.blob_id AND b.project_id=o.project JOIN revisions v "
+            "ON v.tenant_id=b.tenant_id AND v.record_id=b.id AND v.version=b.latest_version "
+            "WHERE o.tenant=? AND o.project=? AND o.blob_pin=v.content_hash AND o.method=?",
+            (actor.tenant_id, project, visual_candidates.OBSERVATION_METHOD),
+        )
+    )
+    suggestions = {
+        (vid, pin): labels
+        for vid, pin, labels in conn.execute(
+            "SELECT version_id,pin,labels_json FROM media_clip_candidates WHERE tenant=? AND project=?",
+            (actor.tenant_id, project),
+        )
+    }
     rows = {}
     for v in versions:
         data = v["data"]
         asset = assets.get(data.get("asset_id"))
-        if not asset or data.get("storage_tier") in {"quarantine", "local_cold"}:
+        if (
+            not asset
+            or data.get("storage_tier") in {"quarantine", "local_cold"}
+            or (
+                asset["data"].get("storage_tier") in {"quarantine", "local_cold"}
+                and (
+                    data.get("variant") == "original"
+                    or data.get("blob_location_id") == asset["data"].get("blob_location_id")
+                )
+            )
+        ):
             continue
         label = data.get("filename") or asset["data"].get("name") or "素材"
         tag_base = (
@@ -103,7 +129,15 @@ def source_rows(store, conn, actor, project):
             else v["version"]
         )
         valid = [t for rev, t in tags[v["id"]] if tag_base <= rev <= v["version"]]
-        terms = [label] + [str(t["data"].get("label", "")) for t in valid]
+        machine = json.loads(observations.get(data.get("blob_location_id"), "[]"))
+        machine.extend(
+            visual_candidates.effective_suggestions(
+                json.loads(suggestions.get((v["id"], v["hash"]), "[]")), [t["data"] for t in valid]
+            )
+        )
+        terms = [label, *(tag["label"] for tag in machine)] + [
+            str(t["data"].get("label", "")) for t in valid
+        ]
         payload = {
             "asset_id": asset["id"],
             "version_id": v["id"],
@@ -121,9 +155,11 @@ def source_rows(store, conn, actor, project):
                     "method": t["data"].get("method"),
                 }
                 for t in valid
-            ],
+            ]
+            + machine,
         }
-        pin = digest([v["hash"], asset["hash"], [t["hash"] for t in valid]])
+        inputs = [v["hash"], asset["hash"], [t["hash"] for t in valid]]
+        pin = digest([*inputs, machine] if machine else inputs)
         rows[v["id"]] = (pin, payload, v)
     return rows
 
@@ -138,7 +174,16 @@ def history(project_id: str, request: Request, actor: Actor = Depends(current_ac
     require_project(store, actor, project_id)
     with store.read_snapshot() as c:
         return ok(
-            {"head": head(c, actor, project_id), "snapshots": snapshots(c, actor, project_id)},
+            {
+                "head": head(c, actor, project_id),
+                "snapshots": snapshots(c, actor, project_id),
+                "analysis_queue": dict(
+                    c.execute(
+                        "SELECT state,count(*) FROM material_analysis_jobs WHERE tenant=? AND project=? GROUP BY state",
+                        (actor.tenant_id, project_id),
+                    )
+                ),
+            },
             request,
         )
 
@@ -331,6 +376,89 @@ class FrameBuild(Body):
     after: str = Field(default="", max_length=256)
 
 
+class Analyze(FrameBuild):
+    refresh: bool = False
+
+
+@router.post("/analyze")
+def analyze(body: Analyze, request: Request, actor: Actor = Depends(current_actor)):
+    require_write(actor)
+    store, project = get_store(), body.project_id
+    require_project(store, actor, project)
+    with store.connection() as db:
+        page = db.execute(
+            "SELECT r.id FROM records r JOIN revisions v ON v.tenant_id=r.tenant_id AND "
+            "v.record_id=r.id AND v.version=r.latest_version WHERE r.tenant_id=? AND r.project_id=? "
+            "AND r.kind='AssetVersion' AND r.id>? AND json_extract(v.data_json,'$.blob_location_id') "
+            "IS NOT NULL ORDER BY r.id LIMIT ?",
+            (actor.tenant_id, project, body.after, body.limit + 1),
+        ).fetchall()
+    model = None
+    model_status = "unconfigured"
+    try:
+        model = frame_vectors.local_model()
+        if model:
+            model_status = "available"
+    except DomainError as exc:
+        model_status = exc.code
+    result = {"processed": 0, "reused": 0, "clip_frames": 0, "errors": [], "ocr_unavailable": 0}
+    for row in page[: body.limit]:
+        try:
+            source, observation, reused = visual_candidates.observe_source(
+                store, actor, project, row["id"], refresh=body.refresh
+            )
+            result["reused" if reused else "processed"] += 1
+            result["ocr_unavailable"] += observation["ocr"]["status"] != "read"
+            if model:
+                result["clip_frames"] += visual_index.index_source(
+                    store,
+                    actor,
+                    project,
+                    model,
+                    row["id"],
+                    source["hash"],
+                    observation["duration"],
+                    observation["is_still"],
+                )
+            if observation["ocr"].get("retryable"):
+                # Leave the worker's bounded retry pending. Measured tags are
+                # already usable by search and a later scan can recover the OCR.
+                continue
+            with store.connection() as db:
+                db.execute(
+                    "UPDATE material_analysis_jobs SET state=?,code=NULL WHERE tenant=? AND project=? "
+                    "AND version_id=? AND state IN ('failed','queued','measured')",
+                    (
+                        (
+                            "completed"
+                            if model_status in {"available", "unconfigured"}
+                            else "measured"
+                        ),
+                        actor.tenant_id,
+                        project,
+                        row["id"],
+                    ),
+                )
+        except DomainError as exc:
+            if exc.code == "IDENTITY_REVOKED":
+                raise
+            if exc.status not in (403, 404) and exc.code not in {
+                "NO_VISUAL_STREAM",
+                "ASSET_OFFLINE",
+            }:
+                result["errors"].append(
+                    {"version_id": row["id"], "code": exc.code, "message": exc.message}
+                )
+    return ok(
+        {
+            **result,
+            "clip_status": model_status,
+            "next_after": page[body.limit - 1]["id"] if len(page) > body.limit else None,
+        },
+        request,
+    )
+
+
 @router.post("/frames/build")
 def build_frames(body: FrameBuild, request: Request, actor: Actor = Depends(current_actor)):
     require_write(actor)
@@ -420,11 +548,29 @@ def query(body: Query, request: Request, actor: Actor = Depends(current_actor)):
                 check_current_media_rights(store, actor, version, purpose="process")
             except DomainError:
                 continue
+            tag_match = None
+            for tag in payload["tags"] if found else []:
+                if not any(t in str(tag.get("label", "")).casefold() for t in found):
+                    continue
+                interval = tag.get("interval")
+                at = (
+                    interval[0]
+                    if isinstance(interval, list) and interval
+                    else tag.get("source_seconds")
+                )
+                if type(at) in (int, float) and at >= 0:
+                    tag_match = {
+                        "source_seconds": at,
+                        "label": tag["label"],
+                        "method": tag.get("method"),
+                    }
+                    break
             is_current = key in idx and idx[key] == pin
             hits.append(
                 {
                     **{k: v for k, v in payload.items() if k != "terms"},
                     "matched": found,
+                    **({"tag_match": tag_match} if tag_match else {}),
                     **({"semantic_score": round(scores[key], 6)} if key in scores else {}),
                     **(
                         {

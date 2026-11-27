@@ -106,6 +106,8 @@ def run(output, round_id, engine):
             form.locator("[name=name]").fill("镜头变体验收")
             form.locator("[name=goals]").fill("固定开场，为后半段选择另一条素材")
             form.locator("button[type=submit]").click()
+            expect(page).to_have_url(re.compile(r"#production/batches$"))
+            page.locator('.batch-head a[href="#production"]').click()
             expect(page).to_have_url(re.compile(r"#production$"))
             page.locator("[data-production-files]").set_input_files([str(x[0]) for x in files])
             expect(page.locator(".director-source input:checked")).to_have_count(3, timeout=45000)

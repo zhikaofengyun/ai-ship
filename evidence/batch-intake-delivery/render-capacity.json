@@ -1,0 +1,16 @@
+{
+  "workers": 2,
+  "media": "Synthetic FFmpeg testsrc2; 3 x 0.20 s per output, 160 x 90, 25 FPS. Single-machine SQLite; no provider or platform traffic.",
+  "runs": {
+    "render": {
+      "requested": 120,
+      "completed": 120,
+      "enqueue_seconds": 0.224,
+      "time_to_completion_seconds": 93.027,
+      "distinct_timelines": 120,
+      "distinct_artifact_records": 120,
+      "downloaded_and_decoded": 120,
+      "unique_download_sha256": 120
+    }
+  }
+}

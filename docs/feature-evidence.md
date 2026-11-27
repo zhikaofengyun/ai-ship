@@ -11,8 +11,14 @@
 | [拍摄目录导入](../evidence/batch-production/browser/directory-import.json) | A05/Q05、Q06 | 两个路径的相同字节产生一个素材和两份来源记录，重新打开可读取导入状态。 |
 | 同日素材对照 [Chromium](../evidence/matched-placements/chromium.json) · [WebKit](../evidence/matched-placements/webkit.json) | M09/Q02、Q03、Q06（局部） | 两条本地 FFmpeg 成片分别核对后，两个浏览器从帖子观察窗选择 0 至 0.5 秒。自然流量的基准留存 80/100、候选 55/100，同一发布日相差 −25 个百分点，付费流量无样本。编辑固定回执、反证、改法和停止条件。帖子与曲线使用合成数据。 |
 | 模型生成杯具失真 [Chromium](../evidence/batch-production/mixed-routing/visual-review/chromium.json) · [WebKit](../evidence/batch-production/mixed-routing/visual-review/webkit.json) | G05/Q01、Q05；G06/Q04（局部） | 审阅使用同一实拍输入和已记录的模型产物。实际候选帧位于 0.375 秒，两个浏览器均保存了待修订、拒绝两个判断和各自理由。产品保真依靠人工判断，此轮浏览器使用已生成的字节。 双浏览器实播四帧参考，将输入 PTS 0.25 秒映射至原片 1.24 秒并保存待修订决议。 |
+| [自动分析与实帧检索](../evidence/material-intake/result.json) | L01/Q02、L06/Q02、S02/Q01 | 两图一视频完成分析。宇航员图在没有标签候选时仍可从实帧命中。咖啡图和花卉视频保存采样时间、帧摘要及候选相似度。 |
+| [一图两提示和实拍选项](../evidence/batch-production/directed-still/report.json) | G02/Q04、G03/Q01、Q02、N04/Q01 | 两个任务的参考 PNG 摘要相同，实际提示与种子分别记录。两个呈彩色噪点的候选各有四个不同解码帧。三项均编码，模型候选未通过视觉验收。 |
+| [照片与带锁关键帧的两个样片](../evidence/batch-production/controlled-photo/report.json) | E05/Q01、E06/Q03 | 恒定同一张照片，横移和纵移各 48 个不同解码帧，测得位移 −100 和 −184 像素。两项生成调用均为零。 |
+| [通用团队角色回执恢复](../evidence/team-recovery/cpu-role-receipts.json) | H06/Q01、Q11、C09/Q06、C11/Q05 | 两种本地权重承担三个角色，故障后沿原回执恢复。裁决原样复述前序角色，记录三笔用量、零条采纳决定。 |
+| [三模型两轮选剪和接管](../evidence/team-recovery/two-round-edit.json) | C09/Q01、Q06、C11/Q01、Q04 | 三种权重实际完成六次角色调用，原案重复提出被拒镜头后停止。人工核对 0.8 秒处 OCR 后获得可解码成片。 |
+| [固定模型的素材族建议与退役](../evidence/material-intake/semantic-families/result.json) | S04-R3、S04/Q01 | 四份实物素材中，咖啡原图与其移动裁切片同组，最低双向帧匹配分为 0.94954。宇航员与花卉没有入组；确认后的素材族从 v1 退役为 v2。 |
 
-这些报告各有专用读取规则，核对正确的文件、报告字段及预期结果。单个 `passed: true` 或存在测试文件均不足以建立上述记录。这五种报告只支持表中明确列出的局部观察。运行时间、软件环境、模型能力和素材条件以各报告实际保存的内容为准；旧报告缺少统一的当前版本指纹，保留为空。
+这些报告各有专用读取规则，核对正确的文件、报告字段及预期结果。单个 `passed: true` 或存在测试文件均不足以建立上述记录。固定格式的报告只支持表中明确列出的局部观察。运行时间、软件环境、模型能力和素材条件以各报告实际保存的内容为准；旧报告缺少统一的当前版本指纹，保留为空。
 
 ## 登记新运行
 

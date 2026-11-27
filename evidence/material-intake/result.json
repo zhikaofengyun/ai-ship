@@ -1,0 +1,76 @@
+{
+  "sources": {
+    "astronaut.png": {
+      "source": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/astronaut.png",
+      "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5"
+    },
+    "coffee.png": {
+      "source": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/coffee.png",
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+    },
+    "flower.mp4": {
+      "source": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      "sha256": "0cd83d944a6ca7822b4a8306cecc60a36e859b041f6702c6a1ad9ead78924451"
+    }
+  },
+  "automatic_analysis_queue": {
+    "completed": 3
+  },
+  "top_visual_match": {
+    "name": "astronaut.png",
+    "semantic_score": 0.270077,
+    "frame_match": {
+      "source_seconds": 0.0,
+      "sample_rgb_sha256": "d4ad02fb59752482acc8d64c6b474d2da8839208cb526d7525044e639d2ede5e",
+      "space": "clip-b32/98c718df886ac03f7aeb914c9c6e2a9850f141cb071cadd6f65cc7a812c4715d"
+    }
+  },
+  "vocabulary_sha256": "fe9a711ede5c40f744a03fcf59187c8d7ff32b4de2e82b31aa590658b05dfea9",
+  "machine_candidates": {
+    "astronaut.png": [],
+    "coffee.png": [
+      {
+        "label": "厨房或咖啡馆桌面",
+        "source_seconds": 0.0,
+        "cosine": 0.26397,
+        "rgb_sha256": "56451a33d088bc66d04eca77c77699f8d8beb6e222aa793535bf69fec746b20c"
+      },
+      {
+        "label": "杯装饮品",
+        "source_seconds": 0.0,
+        "cosine": 0.28273,
+        "rgb_sha256": "56451a33d088bc66d04eca77c77699f8d8beb6e222aa793535bf69fec746b20c"
+      }
+    ],
+    "flower.mp4": [
+      {
+        "label": "花卉植物",
+        "source_seconds": 0.0,
+        "cosine": 0.27757,
+        "rgb_sha256": "7617d37bc04b587c14a98708d17fe5d2d65022e367aacd22586bd32a9466301d"
+      },
+      {
+        "label": "花园",
+        "source_seconds": 2.535867,
+        "cosine": 0.25526,
+        "rgb_sha256": "6c941f949e3cefa7edf8bab00ffcf5bc18320ea8cfbc7f0f15a8e1c6d6e6a471"
+      },
+      {
+        "label": "花卉植物",
+        "source_seconds": 2.535867,
+        "cosine": 0.28057,
+        "rgb_sha256": "6c941f949e3cefa7edf8bab00ffcf5bc18320ea8cfbc7f0f15a8e1c6d6e6a471"
+      },
+      {
+        "label": "花卉植物",
+        "source_seconds": 4.237567,
+        "cosine": 0.27487,
+        "rgb_sha256": "78b9c8fbe92398793ea21ddaef45f7c0ddc659c23f6c0e54ea424e3589bf3d83"
+      }
+    ]
+  },
+  "browser_bulk_status": "新分析 0 份，复用 3 份，语义索引新增 0 帧。",
+  "browser_image_width": 512,
+  "browser_version": "158.0.8127.0",
+  "page_errors": []
+}

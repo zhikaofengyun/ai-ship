@@ -438,6 +438,9 @@ const ctx = {
   projectPicker,
   modelList,
   approveArtifact,
+  accountForm: accountList,
+  importFiles,
+  drawImport,
   publicationForm,
   preflightPublication,
   receiptForm,
@@ -454,7 +457,8 @@ function shell() {
       <a class="brand" href="#overview" aria-label="AI Ship 项目"><span class="brand-mark" aria-hidden="true">${icon("brand")}</span><span class="brand-name">AI Ship</span></a>
       <nav class="nav-group" aria-label="工作区">
         ${menuLink(["overview", "项目", "folder"])}
-        ${menuLink(["production", "制作台", "spark"])}
+        ${menuLink(["production/batches", "批量制作", "layers"])}
+        ${menuLink(["production", "单条制作", "spark"])}
       </nav>
       <div class="nav-divider"></div>
       <nav class="atlas-nav" aria-label="业务分区">
@@ -518,14 +522,19 @@ async function renderRoute() {
   state.actionCleanup?.();
   state.actionCleanup = null;
   const route = (
-    location.hash.slice(1) || (project() ? "production" : "overview")
+    location.hash.slice(1) || (project() ? "production/batches" : "overview")
   ).split("/");
   const main = $("#main");
   if (!main) return;
   $$(".nav-item[data-route]").forEach((el) =>
     el.setAttribute(
       "aria-current",
-      el.dataset.route === route[0] ? "page" : "false",
+      el.dataset.route ===
+        (route[0] === "production" && route[1] === "batches"
+          ? "production/batches"
+          : route[0])
+        ? "page"
+        : "false",
     ),
   );
   $(".context-label").textContent = projectName();
@@ -649,8 +658,8 @@ function newProject(record = null) {
       state.projectId = p.id;
       localStorage.setItem("ship-project", p.id);
       toast("项目已创建");
-      if (location.hash === "#production") await renderRoute();
-      else nav("production");
+      if (location.hash === "#production/batches") await renderRoute();
+      else nav("production/batches");
     },
   );
 }
@@ -667,8 +676,8 @@ function projectPicker() {
         state.projectId = b.dataset.project;
         localStorage.setItem("ship-project", state.projectId);
         d.close();
-        if (location.hash === "#production") renderRoute();
-        else nav("production");
+        if (location.hash === "#production/batches") renderRoute();
+        else nav("production/batches");
       }),
   );
   d.querySelector("[data-action=new]").onclick = () => {
@@ -697,7 +706,7 @@ async function overview() {
     "select-project": (b) => {
       state.projectId = b.dataset.id;
       localStorage.setItem("ship-project", state.projectId);
-      nav("production");
+      nav("production/batches");
     },
   });
 }
@@ -827,10 +836,13 @@ async function showTrace(r) {
   );
 }
 async function preflightPublication(p) {
+  p = await api("/records/" + encodeURIComponent(p.id));
   const r = await api(`/production/publications/${p.id}/preflight`);
+  const inbox = p.data.channel === "tiktok_inbox",
+    owner = state.health.actor.role === "owner";
   const dialog = modal(
     "发布前检查",
-    `<div class="surface-title"><h3>${r.can_handoff ? "可以人工交接" : "需补齐条件"}</h3></div>${arr(
+    `<div class="surface-title"><h3>${inbox && r.can_send ? "可以交付至 TikTok 收件箱" : r.can_handoff ? "可以人工交接" : "交付状态与条件"}</h3></div>${arr(
       r.problems,
     )
       .map(
@@ -841,6 +853,79 @@ async function preflightPublication(p) {
         "",
       )}${p.data.channel === "manual" ? '<button class="button secondary" type="button" data-account-quota>管理人工交接席位</button>' : ""}<details class="source-details"><summary>技术详情</summary><pre>${esc(pretty(r))}</pre></details>`,
   );
+  if (inbox) {
+    const info = document.createElement("p");
+    const stages = {
+      initializing: "请求已登记",
+      transferring: "传输中",
+      uploaded: "已上传，等待平台处理",
+      needs_reconciliation: "交付结果待核对",
+      init_refused: "平台已拒绝初始化",
+      PROCESSING_UPLOAD: "平台处理中",
+      SEND_TO_USER_INBOX: "已送达创作者收件箱",
+      PUBLISH_COMPLETE: "平台确认已发表",
+      FAILED: "平台处理失败",
+    };
+    info.textContent =
+      (stages[p.data.inbox_stage] || "待上传") +
+      "。创作者在 TikTok 收件箱中确认文案、可见性并完成发表。";
+    dialog.append(info);
+    const send =
+      owner &&
+      r.can_send &&
+      (!p.data.inbox_stage || p.data.inbox_stage === "init_refused");
+    if (send || (owner && p.data.inbox_publish_id)) {
+      const b = document.createElement("button");
+      b.className = "button secondary";
+      b.type = "button";
+      b.textContent = send ? "将此成片上传至收件箱" : "查询平台回执";
+      dialog.append(b);
+      b.onclick = async () => {
+        b.disabled = true;
+        try {
+          await api(
+            "/production/tiktok/inbox/" +
+              encodeURIComponent(p.id) +
+              (send ? "/send" : "/status"),
+            { method: "POST", body: { expected_revision: p.version } },
+          );
+          await reloadData();
+          if (b.isConnected && dialog.open) await preflightPublication(p);
+        } catch (err) {
+          toast(err.message, "error");
+        } finally {
+          b.disabled = false;
+        }
+      };
+    }
+  }
+  for (const [code, label, kind] of [
+    ["CONTENT_CHECK_REQUIRED", "审阅成片内容", "content_check"],
+    ["RIGHTS_CHECK_REQUIRED", "核对素材与音乐授权", "rights_check"],
+  ]) {
+    if (
+      !["owner", "reviewer"].includes(state.health.actor.role) ||
+      !r.problems.some((issue) => issue.code === code)
+    )
+      continue;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "button secondary";
+    b.textContent = label;
+    dialog.append(b);
+    b.onclick = async () => {
+      try {
+        const a = await api(
+          "/records/" + encodeURIComponent(p.data.artifact_id),
+        );
+        if (a.version !== p.data.artifact_version)
+          throw new Error("成片版本已变化，请先核对版本记录。");
+        if (dialog.open && b.isConnected) approveArtifact(a, kind);
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    };
+  }
   const quota = dialog.querySelector("[data-account-quota]");
   if (quota) quota.onclick = () => accountQuota(ctx, p);
 }
@@ -1383,9 +1468,10 @@ function drawImport() {
   const el = $("#import-progress");
   if (!el) return;
   el.innerHTML = state.importQueue
-    .map(
-      (x, i) =>
-        `<div class="import-entry">${["importing", "verifying"].includes(x.status) ? '<span class="spinner"></span>' : icon(x.status === "failed" ? "warning" : x.status === "done" ? "checkcircle" : "file")}<span>${esc(x.name)}</span>${badge(x.status === "importing" ? `上传 ${x.total ? Math.round(((x.offset || 0) / x.total) * 100) : 0}%` : x.status === "verifying" ? "核验入库" : x.status === "done" ? (x.duplicate ? "已识别重复" : "已入库") : x.status === "failed" ? "失败" : x.status === "paused" ? "已暂停" : x.status === "cancelled" ? "已取消" : "等待", x.status === "failed" ? "red" : x.status === "done" ? "green" : "")}<small class="muted">${esc(x.error || "")}</small>${x.status === "importing" ? `<button class="icon-button" type="button" data-import-pause="${i}" aria-label="暂停上传">${icon("pause")}</button>` : ["paused", "failed"].includes(x.status) ? `<button class="icon-button" type="button" data-import-resume="${i}" aria-label="恢复上传">${icon("play")}</button>` : ""}${!["done", "cancelled"].includes(x.status) ? `<button class="icon-button" type="button" data-import-cancel="${i}" aria-label="取消上传">${icon("close")}</button>` : ""}</div>`,
+    .map((x, i) =>
+      x.projectId !== state.projectId
+        ? ""
+        : `<div class="import-entry">${["importing", "verifying"].includes(x.status) ? '<span class="spinner"></span>' : icon(x.status === "failed" ? "warning" : x.status === "done" ? "checkcircle" : "file")}<span>${esc(x.name)}</span>${badge(x.status === "importing" ? `上传 ${x.total ? Math.round(((x.offset || 0) / x.total) * 100) : 0}%` : x.status === "verifying" ? "核验入库" : x.status === "done" ? (x.duplicate ? "已识别重复" : "已入库") : x.status === "failed" ? "失败" : x.status === "paused" ? "已暂停" : x.status === "cancelled" ? "已取消" : "等待", x.status === "failed" ? "red" : x.status === "done" ? "green" : "")}<small class="muted">${esc(x.error || "")}</small>${x.status === "importing" ? `<button class="icon-button" type="button" data-import-pause="${i}" aria-label="暂停上传">${icon("pause")}</button>` : ["paused", "failed"].includes(x.status) ? `<button class="icon-button" type="button" data-import-resume="${i}" aria-label="恢复上传">${icon("play")}</button>` : ""}${!["done", "cancelled"].includes(x.status) ? `<button class="icon-button" type="button" data-import-cancel="${i}" aria-label="取消上传">${icon("close")}</button>` : ""}</div>`,
     )
     .join("");
   $$("[data-import-pause]", el).forEach(
@@ -1431,6 +1517,7 @@ async function importFiles(files) {
     }
     state.importQueue = Array.from(files).map((file) => ({
       file,
+      projectId: state.projectId,
       name: file.webkitRelativePath || file.name,
       status: "waiting",
       offset: 0,
@@ -1455,7 +1542,7 @@ async function runImportQueue() {
       row.error = "";
       drawImport();
       try {
-        const r = await uploadFile(api, state.projectId, row.file, {
+        const r = await uploadFile(api, row.projectId, row.file, {
           onProgress: (progress) => {
             Object.assign(row, progress);
             drawImport();
@@ -1570,6 +1657,7 @@ function transformAsset(r) {
 async function agents() {
   const profiles = records("ModelProfile"),
     roles = records("AgentRole"),
+    recentTeams = state.runs.filter((r) => r.data?.team_request).slice(0, 24),
     catalogRoles = arr(state.catalog.agentSystem?.roles);
   $("#main").innerHTML =
     `<div class="page">${pageHead("AGENT WORKSPACE", "Agent 团队", "按职责组合模型与工具。配置、能力验证和实际运行各自保留状态。", `${btn("运行环境与配方", "harness-runtime", "flow", "button secondary")}${btn("模型配置", "model-list", "sliders", "button secondary")}${btn("添加模型", "new-model", "plus", "button secondary")}${btn("运行团队", "run-team", "play", "button primary")}`)}<div class="section-heading"><div><h2>团队角色</h2></div>${btn("团队部署", "deployment", "agents", "button secondary")}</div><div class="role-grid">${catalogRoles
@@ -1580,13 +1668,17 @@ async function agents() {
           );
         return `<section class="role-card"><div class="role-top"><div class="role-symbol">${icon(["spark", "box", "volume", "music", "film", "layers", "send", "chart", "eye", "settings", "history"][i] || "agents")}</div>${badge(configured ? "已配置" : "待配置", configured ? "blue" : "")}</div><h3>${esc(r.label)}</h3><div class="role-bottom"><span>${profile ? esc(profile.data.model_id) : "尚未绑定模型"}</span>${btn("配置", "role", "sliders", "button small secondary", `data-id="${r.id}"`)}</div></section>`;
       })
-      .join("")}</div></div>`;
+      .join(
+        "",
+      )}</div>${recentTeams.length ? `<h2>团队运行记录</h2>${recentTeams.map((r) => `<div class="list-row"><strong>${esc(r.data.team_request.goal || r.data.goal)}</strong><span>${esc(r.data.checkpoint?.next_role || 0)} / ${esc(r.data.team_request.roles.length)} 个角色</span>${btn("查看运行", "open-team-run", "", "button small secondary", 'data-id="' + esc(r.id) + '"')}</div>`).join("")}` : ""}</div>`;
   bind({
     "harness-runtime": () => harnessRuntime(ctx),
     "new-model": () => modelForm(),
     "model-list": modelList,
     role: (b) => roleForm(catalogRoles.find((r) => r.id === b.dataset.id)),
     deployment: deploymentForm,
+    "open-team-run": async (b) =>
+      openRecord(await api("/records/" + encodeURIComponent(b.dataset.id))),
     "run-team": teamForm,
     module: (b) => nav(`module/${b.dataset.id}`),
   });
@@ -1932,7 +2024,7 @@ async function delivery() {
     pubs = records("Publication"),
     accounts = records("Account");
   $("#main").innerHTML =
-    `<div class="page">${pageHead("DELIVERY & PUBLISHING", "交付与发布", "成片、审阅、交接和平台回执分别确认。", `${btn("管理账号", "accounts", "globe", "button secondary")}${btn("商品交接", "commercial-handoff", "layers", "button secondary")}${btn("新建发布意图", "new-publication", "plus", "button primary")}`)}<div class="section-heading" style="margin-top:0"><h2>交付产物</h2>${btn("进入剪辑室", "editor", "film", "button ghost")}</div><div class="surface">${artifacts.length ? `<div class="table-scroll"><table class="data-table"><thead><tr><th>交付文件</th><th>规格</th><th>状态</th><th>操作</th></tr></thead><tbody>${artifacts.map((a) => `<tr><td>${esc(a.data.name || a.data.filename || "渲染产物")}<small>${date(a.created_at)}</small></td><td>${esc(a.data.probe?.width ?? a.data.width ?? a.data.profile?.width ?? "—")} × ${esc(a.data.probe?.height ?? a.data.height ?? a.data.profile?.height ?? "—")}<small>${mediaDuration(a) ? time(mediaDuration(a)) : ""}</small></td><td>${badge(statusLabel(a.data.status || "content_review_required"), "amber")}</td><td><div class="heading-actions"><a class="button small secondary" href="/api/v1/media/artifacts/${encodeURIComponent(a.id)}/file" download>${icon("download")}下载</a>${btn("审阅", "approve-artifact", "eye", "button small secondary", `data-id="${a.id}"`)}${iconBtn("查看产物来源", "record", "history", `data-id="${a.id}"`)}</div></td></tr>`).join("")}</tbody></table></div>` : empty("还没有交付文件", "", "editor", "打开剪辑室", "film")}</div><div class="section-heading"><div><h2>发布意图</h2></div>${badge(`${pubs.length} 项`)}</div><div class="surface">${pubs.length ? pubs.map((p) => `<div class="list-row">${icon("send")}<div class="list-row-body"><strong>${esc(p.data.title || p.data.metadata?.title || "未命名发布")}</strong><p>${esc(accounts.find((a) => a.id === p.data.account_id)?.data.name || "账号待核对")} · ${esc(p.data.channel || "manual")}${p.data.scheduled_at ? " · " + date(p.data.scheduled_at) : ""}</p></div>${badge(statusLabel(p.data.status || "draft"), p.data.status === "receipt_recorded" ? "blue" : "")}<div class="heading-actions">${btn("预检", "preflight", "checkcircle", "button small secondary", `data-id="${p.id}"`)}${btn("回填回执", "receipt", "link", "button small secondary", `data-id="${p.id}"`)}${btn("管理意图", "manage-pub", "sliders", "button small ghost", `data-id="${p.id}"`)}</div></div>`).join("") : empty("暂无发布意图", "", "", "", "send")}</div></div>`;
+    `<div class="page">${pageHead("DELIVERY & PUBLISHING", "交付与发布", "成片、审阅、交接和平台回执分别确认。", `${btn("管理账号", "accounts", "globe", "button secondary")}${btn("商品交接", "commercial-handoff", "layers", "button secondary")}${btn("新建发布意图", "new-publication", "plus", "button primary")}`)}<div class="section-heading" style="margin-top:0"><h2>交付产物</h2>${btn("进入剪辑室", "editor", "film", "button ghost")}</div><div class="surface">${artifacts.length ? `<div class="table-scroll"><table class="data-table"><thead><tr><th>交付文件</th><th>规格</th><th>状态</th><th>操作</th></tr></thead><tbody>${artifacts.map((a) => `<tr><td>${esc(a.data.name || a.data.filename || "渲染产物")}<small>${date(a.created_at)}</small></td><td>${esc(a.data.probe?.width ?? a.data.width ?? a.data.profile?.width ?? "—")} × ${esc(a.data.probe?.height ?? a.data.height ?? a.data.profile?.height ?? "—")}<small>${mediaDuration(a) ? time(mediaDuration(a)) : ""}</small></td><td>${badge(statusLabel(a.data.status || "content_review_required"), "amber")}</td><td><div class="heading-actions"><a class="button small secondary" href="/api/v1/media/artifacts/${encodeURIComponent(a.id)}/file?download=true" download>${icon("download")}下载</a>${btn("审阅", "approve-artifact", "eye", "button small secondary", `data-id="${a.id}"`)}${iconBtn("查看产物来源", "record", "history", `data-id="${a.id}"`)}</div></td></tr>`).join("")}</tbody></table></div>` : empty("还没有交付文件", "", "editor", "打开剪辑室", "film")}</div><div class="section-heading"><div><h2>发布意图</h2></div>${badge(`${pubs.length} 项`)}</div><div class="surface">${pubs.length ? pubs.map((p) => `<div class="list-row">${icon("send")}<div class="list-row-body"><strong>${esc(p.data.title || p.data.metadata?.title || "未命名发布")}</strong><p>${esc(accounts.find((a) => a.id === p.data.account_id)?.data.name || "账号待核对")} · ${esc(p.data.channel || "manual")}${p.data.scheduled_at ? " · " + date(p.data.scheduled_at) : ""}</p></div>${badge(statusLabel(p.data.status || "draft"), p.data.status === "receipt_recorded" ? "blue" : "")}<div class="heading-actions">${btn("预检", "preflight", "checkcircle", "button small secondary", `data-id="${p.id}"`)}${btn("回填回执", "receipt", "link", "button small secondary", `data-id="${p.id}"`)}${btn("管理意图", "manage-pub", "sliders", "button small ghost", `data-id="${p.id}"`)}</div></div>`).join("") : empty("暂无发布意图", "", "", "", "send")}</div></div>`;
   bind({
     editor: () => nav("editor"),
     accounts: accountList,
@@ -2325,7 +2417,13 @@ async function openRecord(r) {
   const schema = readOnly ? null : await entitySchema(r.kind);
   if (r.project_id && r.project_id !== state.projectId) return;
   const facts = `<dl class="detail-facts"><div><dt>类型</dt><dd>${esc(entityName(r.kind))}</dd></div><div><dt>版本</dt><dd>v${r.version}</dd></div>${readOnly ? displayRecordFacts(r.data) : ""}</dl>`;
-  const actions = `${btn("版本历史", "history", "history", "button secondary")}${btn("来源链", "trace", "link", "button secondary")}`;
+  const resumable =
+    r.kind === "Run" &&
+    r.data.team_request &&
+    ["running", "blocked", "pending", "outcome_unknown", "paused"].includes(
+      r.data.attempt_status,
+    );
+  const actions = `${resumable ? btn("从检查点继续", "resume-team", "play", "button primary") : ""}${btn("版本历史", "history", "history", "button secondary")}${btn("来源链", "trace", "link", "button secondary")}`;
   let collect;
   const content = readOnly
     ? `${facts}<details class="source-details"><summary>技术详情</summary><pre>${esc(pretty(r.data))}</pre></details><div class="dialog-actions">${actions}</div>`
@@ -2344,7 +2442,23 @@ async function openRecord(r) {
     true,
   );
   if (!readOnly) collect = recordFields($("#record-fields", d), schema, r.data);
-  onAction(d, { history: () => showHistory(r), trace: () => showTrace(r) });
+  onAction(d, {
+    history: () => showHistory(r),
+    trace: () => showTrace(r),
+    "resume-team": async (b) => {
+      b.disabled = true;
+      try {
+        const out = await api(
+          "/providers/team/" + encodeURIComponent(r.id) + "/resume",
+          { method: "POST", body: { expected_revision: r.version } },
+        );
+        await reloadData();
+        if (b.isConnected && d.open) await openRecord(out.run);
+      } finally {
+        b.disabled = false;
+      }
+    },
+  });
 }
 
 async function showHistory(r) {

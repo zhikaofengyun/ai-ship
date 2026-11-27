@@ -763,7 +763,7 @@ export async function mountEditor(container, ctx) {
     if (!audio)
       actions.push(
         btn(
-          c.mask ? "编辑矩形遮罩" : "添加矩形遮罩",
+          c.mask ? "编辑画面遮罩" : "添加画面遮罩",
           "clip-mask",
           "layers",
           "button small secondary",
@@ -2150,8 +2150,17 @@ export async function mountEditor(container, ctx) {
           )
           .join("");
         const dialog = modal(
-          "矩形遮罩",
+          "画面遮罩",
           '<form data-form class="form-grid"><p>边界相对片段完成旋转与适配后的画面。</p>' +
+            select(
+              "形状",
+              "shape",
+              [
+                ["rectangle", "矩形"],
+                ["ellipse", "椭圆"],
+              ],
+              c.mask?.shape || "rectangle",
+            ) +
             fields +
             '<div class="form-actions"><button type="button" class="button secondary" data-clear-mask>清除遮罩</button><button type="submit" class="button primary">应用遮罩</button></div></form>',
           (form) => {
@@ -2160,7 +2169,11 @@ export async function mountEditor(container, ctx) {
             if (bounds[0] >= bounds[2] || bounds[1] >= bounds[3])
               throw Error("右边界须在左边界右侧，下边界须在上边界下方。");
             mutate(() => {
-              c.mask = { space: "post_fit_clip", rect: bounds };
+              c.mask = {
+                space: "post_fit_clip",
+                rect: bounds,
+                ...(values.shape === "ellipse" ? { shape: "ellipse" } : {}),
+              };
             });
             draw();
           },

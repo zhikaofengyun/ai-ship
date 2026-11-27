@@ -141,14 +141,14 @@ def decode_frame(path, at):
     return round(seconds * 1_000_000), result.stdout
 
 
-def video_frames(model, path, duration):
+def video_frames(model, path, duration, *, still=False):
     import numpy as np
 
-    if not duration or not math.isfinite(duration) or duration <= 0:
+    if not still and (not duration or not math.isfinite(duration) or duration <= 0):
         raise DomainError("FRAME_DURATION_MISSING", "缺少有效的视频时长。", 422)
     frames = {}
     try:
-        for at in [0, duration / 2, duration * 5 / 6]:
+        for at in ([0] if still else [0, duration / 2, duration * 5 / 6]):
             decoded = decode_frame(path, at)
             if not decoded:
                 continue

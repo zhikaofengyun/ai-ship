@@ -37,6 +37,55 @@ def new_id(kind):
     return kind.lower() + "_" + uuid.uuid4().hex
 
 
+_MISSING_LOCK_VALUE = object()
+
+
+def _lock_value(data, path):
+    for key in path.split("."):
+        if isinstance(data, dict) and key in data:
+            data = data[key]
+        elif (
+            isinstance(data, list)
+            and key.isascii()
+            and key.isdecimal()
+            and len(key) < 10
+            and int(key) < len(data)
+        ):
+            data = data[int(key)]
+        else:
+            return _MISSING_LOCK_VALUE
+    return data
+
+
+def check_manual_locks(original, proposed, *, require_resolved=False):
+    locks = original.get("locks", [])
+    if isinstance(locks, dict):
+        locks = [
+            {"path": key, **(value if isinstance(value, dict) else {"value": value})}
+            for key, value in locks.items()
+        ]
+    for lock in locks:
+        path = lock.get("path", lock.get("parameter_path")) if isinstance(lock, dict) else None
+        if not isinstance(path, str) or not path:
+            if require_resolved:
+                raise DomainError(
+                    "BATCH_TEMPLATE_LOCK", "人工样片含无法定位的锁，无法核对派生结果。", 409
+                )
+            continue
+        previous = _lock_value(original, path)
+        if (require_resolved and previous is _MISSING_LOCK_VALUE) or previous != _lock_value(
+            proposed, path
+        ):
+            raise DomainError(
+                "LOCK_CONFLICT",
+                "修改触及人工锁；请先提出变更或显式解锁。",
+                409,
+                {"path": path, "owner": lock.get("owner")},
+            )
+    if locks and original.get("locks") != proposed.get("locks"):
+        raise DomainError("LOCK_REMOVAL", "通用更新不能删除人工锁。", 409)
+
+
 DDL = """
 CREATE TABLE IF NOT EXISTS records(
  tenant_id TEXT NOT NULL, id TEXT NOT NULL, kind TEXT NOT NULL,
@@ -540,7 +589,7 @@ class Store:
                 data["origin_execution_context"] = old["data"]["execution_context"]
             validate_record(old["kind"], data)
             self._scope(old["kind"], old["project_id"], tenant_id, record_id, data)
-            self._check_locks(old, data, actor_id)
+            check_manual_locks(old["data"], data)
             normrefs = self._references(
                 old["kind"],
                 data,
@@ -567,38 +616,6 @@ class Store:
                 trace_id,
                 now(),
             )
-
-    def _check_locks(self, old, data, actor_id):
-        # Explicit lock release is a separate command; generic record replacement
-        # must not erase a manual lock or silently overwrite a protected field.
-        locks = old["data"].get("locks", [])
-        if isinstance(locks, dict):
-            locks = [
-                {"path": k, **(v if isinstance(v, dict) else {"value": v})}
-                for k, v in locks.items()
-            ]
-        for lock in locks:
-            if not isinstance(lock, dict):
-                continue
-            path = lock.get("path", lock.get("parameter_path"))
-            if path:
-
-                def read(obj, p):
-                    for key in p.split("."):
-                        if not isinstance(obj, dict):
-                            return None
-                        obj = obj.get(key)
-                    return obj
-
-                if read(old["data"], path) != read(data, path):
-                    raise DomainError(
-                        "LOCK_CONFLICT",
-                        "修改触及人工锁；请先提出变更或显式解锁。",
-                        409,
-                        {"path": path, "owner": lock.get("owner")},
-                    )
-        if locks and old["data"].get("locks") != data.get("locks"):
-            raise DomainError("LOCK_REMOVAL", "通用更新不能删除人工锁。", 409)
 
     def _insert(
         self, kind, rid, version, data, refs, tenant, project, actor, reason, trace_id, stamp

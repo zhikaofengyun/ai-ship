@@ -24,7 +24,7 @@ from .production import Body, current_dependency_problem, digest, record, ref, s
 from .selection import ChosenVersion
 from .store import get_store
 from .variant_fingerprints import DIMENSIONS, difference, fingerprint
-from .visual_candidates import inspect
+from .visual_candidates import editor_tags, inspect
 
 router = APIRouter(prefix="/production/variants", tags=["ai-production"])
 FAMILY = "storyboard_variant_family"
@@ -113,9 +113,15 @@ def source_context(actor, run, body):
     locked = set(body.locked_slots) | set(plan["data"].get("locked_slots", []))
     if any(i < 0 or i >= len(base) for i in locked):
         raise DomainError("INVALID_LOCKED_SLOT", "锁定的镜头不在基础方案中。")
-    records = list(run["data"]["evidence"])
-    auto_edits.verify_sources(actor, project, records)
-    evidence = {s["asset_id"]: s for s in records}
+    evidence = {}
+    store = get_store()
+    for previous in run["data"]["evidence"]:
+        rid = previous["asset_id"]
+        current, _, _ = resolve_media(store, actor, rid, project_id=project)
+        check_revision(current, previous["asset_version"])
+        # A newly requested family uses the editor's current labels. Its own evidence
+        # is frozen at creation and checked again before a candidate can be selected.
+        evidence[rid] = {**previous, "labels": editor_tags(store, actor, project, current)}
     extras = [o.id for o in [*body.pool, *body.manual_shots] if o.id not in evidence]
     if len(set(extras) | set(evidence)) > 24:
         raise DomainError("VARIANT_POOL_LIMIT", "请将本次比较的来源缩小至 24 段。")

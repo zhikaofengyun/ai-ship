@@ -679,12 +679,13 @@ class ProviderLedgerTests(ProductionBase):
                     raise failure
                 if after_post:
                     after_post()
+                payload = content(kwargs["json"]) if callable(content) else content
                 return httpx.Response(
                     200,
                     json={
                         "id": "synthetic-provider-id",
                         "model": reported_model or kwargs["json"]["model"],
-                        "choices": [{"message": {"content": content}, "finish_reason": "stop"}],
+                        "choices": [{"message": {"content": payload}, "finish_reason": "stop"}],
                         "usage": {"prompt_tokens": 20, "completion_tokens": 10},
                     },
                 )
@@ -726,7 +727,7 @@ class ProviderLedgerTests(ProductionBase):
                 },
                 {
                     "role": "reviewer",
-                    "model_profile_id": second["id"],
+                    "model_profile_id": self.profile["id"],
                     "independence_group": "review",
                 },
                 {
@@ -741,7 +742,24 @@ class ProviderLedgerTests(ProductionBase):
             "max_cost": 3,
         }
         self.calls = 0
-        with patch("app.providers.httpx.Client", self.factory()):
+        with patch(
+            "app.providers.httpx.Client",
+            self.factory(
+                content=lambda payload: json.dumps(
+                    {
+                        "proposal": "Synthetic rough cut",
+                        "evidence_refs": [evidence["id"]],
+                        "counter_evidence": [],
+                        "unresolved": [],
+                        "quality_checks": (
+                            ["The proposal only uses information in the frozen test brief."]
+                            if "the judge" in payload["messages"][0]["content"]
+                            else []
+                        ),
+                    }
+                )
+            ),
+        ):
             result = self.post("/providers/team", body)
             repeated = self.post("/providers/team", body)
         self.assertEqual(self.calls, 3)
@@ -906,7 +924,11 @@ class ProviderLedgerTests(ProductionBase):
                     "model_profile_id": self.profile["id"],
                     "independence_group": "a",
                 },
-                {"role": "reviewer", "model_profile_id": second["id"], "independence_group": "b"},
+                {
+                    "role": "reviewer",
+                    "model_profile_id": self.profile["id"],
+                    "independence_group": "b",
+                },
                 {"role": "judge", "model_profile_id": second["id"], "independence_group": "c"},
             ],
             "evidence_refs": [self.account["id"]],
@@ -921,7 +943,18 @@ class ProviderLedgerTests(ProductionBase):
         with patch.dict(os.environ, {"AI_SHIP_MODE": "team", "AI_SHIP_API_KEYS": json.dumps(keys)}):
             with patch(
                 "app.providers.httpx.Client",
-                self.factory(after_post=lambda: os.environ.__setitem__("AI_SHIP_API_KEYS", "{}")),
+                self.factory(
+                    content=json.dumps(
+                        {
+                            "proposal": "Synthetic rough cut",
+                            "evidence_refs": [self.account["id"]],
+                            "unresolved": [],
+                            "counter_evidence": [],
+                            "quality_checks": [],
+                        }
+                    ),
+                    after_post=lambda: os.environ.__setitem__("AI_SHIP_API_KEYS", "{}"),
+                ),
             ):
                 result = self.client.post(
                     "/api/v1/providers/team",

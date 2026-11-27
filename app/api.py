@@ -145,6 +145,14 @@ def admit_manual_record(kind, data, actor):
         raise DomainError("TREND_REVIEW_REQUIRED", "热点交叉核验结论须由核验入口写入。", 403)
     if kind == "TaskContract" and data.get("status") == "satisfied":
         raise DomainError("ACCEPTANCE_REQUIRED", "任务完成必须由执行器验收产物。")
+    if kind == "Publication" and (
+        any(k.startswith("inbox_") for k in data)
+        or "platform_post_ids" in data
+        or "batch_ordinal" in data
+    ):
+        raise DomainError(
+            "PUBLISH_ENDPOINT_REQUIRED", "批次交付与平台回执由专用发布入口写入。", 403
+        )
     if kind == "Publication" and data.get("status") not in (None, "draft", "草稿"):
         raise DomainError("PUBLISH_ENDPOINT_REQUIRED", "发布状态必须由发布处理器或人工回执更新。")
     if kind == "Account" and data.get("identity_status") == "verified":
@@ -318,6 +326,10 @@ def _patch_record(record_id, body, request, actor):
 
     if record_id.startswith((SCORE_RELEASE_PREFIX, COMMENT_PREFIX, "edit_pref_", "edit_memory_")):
         raise DomainError("DEDICATED_ENDPOINT_REQUIRED", "该记录仅由其专用流程写入。", 403)
+    if old["kind"] == "Publication" and (
+        old["data"].get("inbox_stage") or old["data"].get("batch_id")
+    ):
+        raise DomainError("PUBLISH_ENDPOINT_REQUIRED", "请从发布意图的变更或回执入口操作。", 403)
     if old["kind"] == "Publication":
         from .account_quota import ensure_intent_editable
 

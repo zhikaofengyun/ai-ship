@@ -984,15 +984,20 @@ def create_publication(
     body: PublicationInput, request: Request, actor: Actor = Depends(current_actor)
 ):
     require_write(actor)
+    return ok(new_publication(actor, body), request)
+
+
+def new_publication(actor, body, *, batch_run=None, ordinal=None):
     artifact = record(actor, body.artifact_id, "Artifact", project=body.project_id)
     account = record(actor, body.account_id, "Account", project=body.project_id)
+    batch_fields = {"batch_id": batch_run["id"], "batch_ordinal": ordinal} if batch_run else {}
     metadata = {"title": body.title, "privacy": body.privacy, "disclosures": body.disclosures}
     schedule = (
         resolve_schedule(body.local_datetime, body.timezone, body.fold)
         if body.local_datetime
         else {}
     )
-    publication = save(
+    return save(
         actor,
         "Publication",
         body.project_id,
@@ -1009,11 +1014,11 @@ def create_publication(
             "expected_post_count": None,
             "post_refs": [],
             "title": body.title,
+            **batch_fields,
             **schedule,
         },
-        [ref(artifact), ref(account)],
+        [ref(artifact), ref(account)] + ([ref(batch_run)] if batch_run else []),
     )
-    return ok(publication, request)
 
 
 def publication_preflight(actor: Actor, publication: dict, *, check_quota=True) -> dict:
@@ -1043,21 +1048,48 @@ def publication_preflight(actor: Actor, publication: dict, *, check_quota=True) 
     )
     if not technical:
         problems.append({"code": "MEDIA_QC_REQUIRED", "message": "缺少真实媒体技术质检通过记录。"})
-    approvals = get_store().list(
-        actor.tenant_id, kind="Approval", project_id=publication["project_id"], limit=500
-    )
-    valid = [
-        a
-        for a in approvals
-        if a["data"].get("subject_id") == artifact["id"]
-        and a["data"].get("subject_version") == artifact["version"]
-        and a["data"].get("subject_hash") == artifact["hash"]
-        and a["data"].get("status") == "approved"
-        and a["data"].get("expires_at")
-        and timestamp(a["data"]["expires_at"]) > datetime.now(timezone.utc)
-    ]
+    # Scope by the frozen artifact before reading decisions, even in a large project.
+    # The latest applicable decision for each kind takes precedence over older approvals.
+    with get_store().connection() as db:
+        rows = db.execute(
+            """SELECT r.id,v.data_json FROM reference_index x
+               JOIN records r ON r.tenant_id=x.tenant_id AND r.id=x.source_id
+                 AND r.latest_version=x.source_version
+               JOIN revisions v ON v.tenant_id=r.tenant_id AND v.record_id=r.id AND v.version=r.latest_version
+               WHERE x.tenant_id=? AND x.target_id=? AND x.target_version=?
+                 AND r.project_id=? AND r.kind='Approval'
+                 AND json_extract(v.data_json,'$.subject_id')=?
+                 AND json_extract(v.data_json,'$.subject_version')=?
+                 AND json_extract(v.data_json,'$.subject_hash')=?
+               ORDER BY r.created_at DESC,r.rowid DESC""",
+            (
+                actor.tenant_id,
+                artifact["id"],
+                artifact["version"],
+                publication["project_id"],
+                artifact["id"],
+                artifact["version"],
+                artifact["hash"],
+            ),
+        )
+        decisions = {}
+        for row in rows:
+            decision = json.loads(row["data_json"])
+            if decision.get("account_id") not in (None, account["id"]) or decision.get(
+                "metadata_hash"
+            ) not in (None, data.get("metadata_hash")):
+                continue
+            decisions.setdefault(decision.get("kind"), (row["id"], decision))
     for kind in ("content_check", "rights_check"):
-        found = [a for a in valid if a["data"].get("kind") == kind]
+        selected = decisions.get(kind)
+        found = (
+            [{"id": selected[0]}]
+            if selected
+            and selected[1].get("status") == "approved"
+            and selected[1].get("expires_at")
+            and timestamp(selected[1]["expires_at"]) > datetime.now(timezone.utc)
+            else []
+        )
         checks.append(
             {"check": kind, "passed": bool(found), "evidence_refs": [a["id"] for a in found]}
         )
@@ -1126,7 +1158,30 @@ def publication_preflight(actor: Actor, publication: dict, *, check_quota=True) 
                 "message": "已发出或结果未知，必须核对原发布意图，禁止重复发送。",
             }
         )
-    if data.get("channel") != "manual":
+    if issue := current_dependency_problem(account):
+        problems.append(issue)
+    if data.get("channel") == "tiktok_inbox":
+        from .tiktok_inbox import upload_binding
+        from .tiktok_metrics import check_connection
+
+        if data.get("inbox_stage") == "FAILED":
+            problems.append(
+                {"code": "INBOX_PROVIDER_FAILED", "message": "平台已拒绝此次交付，请核对原回执。"}
+            )
+        if data.get("scheduled_at") and timestamp(data["scheduled_at"]) > datetime.now(
+            timezone.utc
+        ):
+            problems.append(
+                {"code": "INBOX_NOT_DUE", "message": "尚未到本次收件箱交付的排程时间。"}
+            )
+        try:
+            if account["data"].get("provider") != "tiktok":
+                raise DomainError("TIKTOK_ACCOUNT_SCOPE", "需绑定 TikTok 账号。", 409)
+            check_connection(get_store(), actor, publication["project_id"], account["id"])
+            upload_binding(actor, publication["project_id"], account["id"])
+        except DomainError as exc:
+            problems.append({"code": exc.code, "message": exc.message})
+    elif data.get("channel") != "manual":
         capability = account["data"].get("api_connection_status")
         if capability != "verified":
             problems.append(
@@ -1173,8 +1228,8 @@ def publication_preflight(actor: Actor, publication: dict, *, check_quota=True) 
     return {
         "publication_id": publication["id"],
         "version": publication["version"],
-        "can_handoff": not problems,
-        "can_send": False,
+        "can_handoff": data.get("channel") == "manual" and not problems,
+        "can_send": data.get("channel") == "tiktok_inbox" and not problems,
         "problems": problems,
         "checks": checks,
         "checked_at": now(),
@@ -1197,6 +1252,18 @@ class ReceiptInput(Body):
     visibility: Literal["unknown", "private", "public", "removed"] = "unknown"
 
 
+def associated_post(actor, pub, platform_id):
+    with get_store().connection() as db:
+        row = db.execute(
+            """SELECT r.id FROM records r JOIN revisions v
+               ON r.tenant_id=v.tenant_id AND r.id=v.record_id AND r.latest_version=v.version
+               WHERE r.tenant_id=? AND r.project_id=? AND r.kind='Post'
+               AND json_extract(v.data_json,'$.account_id')=? AND json_extract(v.data_json,'$.platform_post_id')=? LIMIT 1""",
+            (actor.tenant_id, pub["project_id"], pub["data"]["account_id"], platform_id),
+        ).fetchone()
+    return record(actor, row[0], "Post") if row else None
+
+
 @router.post("/publications/{publication_id}/receipt")
 def manual_receipt(
     publication_id: str, body: ReceiptInput, request: Request, actor: Actor = Depends(current_actor)
@@ -1211,15 +1278,7 @@ def manual_receipt(
         if pub["version"] != body.expected_revision:
             raise DomainError("REVISION_CONFLICT", "发布意图已改变，请刷新。", 409)
         account = record(actor, pub["data"]["account_id"], "Account")
-        with get_store().connection() as connection:
-            duplicate = connection.execute(
-                """SELECT r.id FROM records r JOIN revisions v
-                ON r.tenant_id=v.tenant_id AND r.id=v.record_id AND r.latest_version=v.version
-                WHERE r.tenant_id=? AND r.project_id=? AND r.kind='Post'
-                AND json_extract(v.data_json,'$.account_id')=? AND json_extract(v.data_json,'$.platform_post_id')=? LIMIT 1""",
-                (actor.tenant_id, pub["project_id"], account["id"], body.platform_post_id),
-            ).fetchone()
-        repeated = record(actor, duplicate[0], "Post") if duplicate else None
+        repeated = associated_post(actor, pub, body.platform_post_id)
         if repeated:
             if repeated["data"].get("publication_id") != pub["id"]:
                 raise DomainError(

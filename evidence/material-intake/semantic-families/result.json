@@ -1,0 +1,176 @@
+{
+  "inputs": {
+    "assetversion_2c7f6e8bd745418fbb7a6bccfee4ca68": {
+      "id": "assetversion_2c7f6e8bd745418fbb7a6bccfee4ca68",
+      "version": 1,
+      "filename": "astronaut.png",
+      "file_sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5"
+    },
+    "assetversion_8615afddc1c14e2c9c232c28af7241d1": {
+      "id": "assetversion_8615afddc1c14e2c9c232c28af7241d1",
+      "version": 1,
+      "filename": "coffee.png",
+      "file_sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+    },
+    "assetversion_1206239bfed444199578316780990a8a": {
+      "id": "assetversion_1206239bfed444199578316780990a8a",
+      "version": 1,
+      "filename": "flower.mp4",
+      "file_sha256": "0cd83d944a6ca7822b4a8306cecc60a36e859b041f6702c6a1ad9ead78924451"
+    },
+    "assetversion_44224fe26bb94fb69ba96c0909b9c476": {
+      "id": "assetversion_44224fe26bb94fb69ba96c0909b9c476",
+      "version": 1,
+      "filename": "coffee-pan.mp4",
+      "file_sha256": "b37a0b6538d24a87455b78dab21af4e5f2089bed8a32b60c1a7b9fc7fe75ccab"
+    }
+  },
+  "sources": {
+    "astronaut.png": {
+      "source": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/astronaut.png",
+      "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5"
+    },
+    "coffee.png": {
+      "source": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/coffee.png",
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+    },
+    "flower.mp4": {
+      "source": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      "sha256": "0cd83d944a6ca7822b4a8306cecc60a36e859b041f6702c6a1ad9ead78924451"
+    }
+  },
+  "index": {
+    "space": "clip-b32/98c718df886ac03f7aeb914c9c6e2a9850f141cb071cadd6f65cc7a812c4715d",
+    "processed": 4,
+    "frames": 8,
+    "errors": [],
+    "remaining": 0,
+    "next_after": null
+  },
+  "audit": {
+    "algorithm": "clip_bidirectional_frame_coverage_complete_link_v1",
+    "evidence": {
+      "assetversion_1206239bfed444199578316780990a8a": {
+        "asset": {
+          "id": "assetversion_1206239bfed444199578316780990a8a",
+          "kind": "AssetVersion",
+          "version": 1
+        },
+        "frames": [
+          {
+            "embedding_sha256": "20311aac959623a9e486d714463c7d85ddd3f5276c45ad22f0d564a4ca96dee0",
+            "pts_us": 0,
+            "rgb_sha256": "7617d37bc04b587c14a98708d17fe5d2d65022e367aacd22586bd32a9466301d"
+          },
+          {
+            "embedding_sha256": "a770ec428e55b5e34267a5322faac4eab9cb9f7a3089ebfa23a4dbd98cdc53cf",
+            "pts_us": 2535867,
+            "rgb_sha256": "6c941f949e3cefa7edf8bab00ffcf5bc18320ea8cfbc7f0f15a8e1c6d6e6a471"
+          },
+          {
+            "embedding_sha256": "ba4bb3904d7d143426027e5b79b7748e093d8125e4ad0529c525222d87fa9d1e",
+            "pts_us": 4237567,
+            "rgb_sha256": "78b9c8fbe92398793ea21ddaef45f7c0ddc659c23f6c0e54ea424e3589bf3d83"
+          }
+        ],
+        "revision_sha256": "e39eae76a87340284c8e807d4d082c56ed90bec171c52598baa3616010fbb6d6"
+      },
+      "assetversion_2c7f6e8bd745418fbb7a6bccfee4ca68": {
+        "asset": {
+          "id": "assetversion_2c7f6e8bd745418fbb7a6bccfee4ca68",
+          "kind": "AssetVersion",
+          "version": 1
+        },
+        "frames": [
+          {
+            "embedding_sha256": "06c129e30a891695c4102aafb9e46126c0d60a7e8e6d714787a1bf76a41580a5",
+            "pts_us": 0,
+            "rgb_sha256": "d4ad02fb59752482acc8d64c6b474d2da8839208cb526d7525044e639d2ede5e"
+          }
+        ],
+        "revision_sha256": "cf4cbb882674fd21b32d3e0bda8cad9adb34240f6b6eab9de07cb2852b075527"
+      },
+      "assetversion_44224fe26bb94fb69ba96c0909b9c476": {
+        "asset": {
+          "id": "assetversion_44224fe26bb94fb69ba96c0909b9c476",
+          "kind": "AssetVersion",
+          "version": 1
+        },
+        "frames": [
+          {
+            "embedding_sha256": "0afb0fff565537e214254e8cd3fbcce40ba2e508d383bd041e8817beda538dc6",
+            "pts_us": 0,
+            "rgb_sha256": "6abd7a0ead12e31cfa8ebe362427cb56e798785050788fce5fd493b3d5537f3d"
+          },
+          {
+            "embedding_sha256": "8ef00ea52a540706904063f736ce5bba9ee999920c8d83be8a245421091e95f1",
+            "pts_us": 1000000,
+            "rgb_sha256": "c40c7855f59bca897c079335c34b46070f1028d11d74e0018ea45572eaf5f071"
+          },
+          {
+            "embedding_sha256": "b1d31e73b05edecca4015a0630e68b337a25eaba8d3e0b951692325c084f398f",
+            "pts_us": 1666667,
+            "rgb_sha256": "5a708ab9949a1523ba85353ccf7b91cb56145e7e8c580faafc62a563b89edf12"
+          }
+        ],
+        "revision_sha256": "8fd2588d844feb2e00ac108d1c4331b39e17819c73c1630e8d0d9aaa5d56376e"
+      },
+      "assetversion_8615afddc1c14e2c9c232c28af7241d1": {
+        "asset": {
+          "id": "assetversion_8615afddc1c14e2c9c232c28af7241d1",
+          "kind": "AssetVersion",
+          "version": 1
+        },
+        "frames": [
+          {
+            "embedding_sha256": "e6c721497e983d065fd6653adae57ac48d92b05ded9f26d9b6b433c790a4e60a",
+            "pts_us": 0,
+            "rgb_sha256": "56451a33d088bc66d04eca77c77699f8d8beb6e222aa793535bf69fec746b20c"
+          }
+        ],
+        "revision_sha256": "a2830bf15f1a7217010bdbf148226c1989df5e9b56c6e084596e88be6490e0f8"
+      }
+    },
+    "feature_id": "S04",
+    "groups": [
+      {
+        "members": [
+          "assetversion_44224fe26bb94fb69ba96c0909b9c476",
+          "assetversion_8615afddc1c14e2c9c232c28af7241d1"
+        ],
+        "minimum_score": 0.9495369480037302,
+        "pairs": [
+          {
+            "best_frame_cosine": 0.9622681480591984,
+            "left": "assetversion_44224fe26bb94fb69ba96c0909b9c476",
+            "left_pts_us": 1000000,
+            "right": "assetversion_8615afddc1c14e2c9c232c28af7241d1",
+            "right_pts_us": 0,
+            "score": 0.9495369480037302
+          }
+        ]
+      }
+    ],
+    "name": "视觉语义素材族候选",
+    "request_id": "c1e8e8c95ad74097abb53cb9fac65d12",
+    "route_id": "S04-R3",
+    "space": "clip-b32/98c718df886ac03f7aeb914c9c6e2a9850f141cb071cadd6f65cc7a812c4715d",
+    "threshold": 0.8,
+    "unmatched": [
+      "assetversion_1206239bfed444199578316780990a8a",
+      "assetversion_2c7f6e8bd745418fbb7a6bccfee4ca68"
+    ]
+  },
+  "audit_pin": {
+    "id": "audit_e3994afe9c1d4e83b3e340864fba877b",
+    "version": 1
+  },
+  "confirmed": {
+    "id": "cluster_00ff120d53884c02bf30bf3636d653a7",
+    "version": 1
+  },
+  "retired": {
+    "id": "cluster_00ff120d53884c02bf30bf3636d653a7",
+    "version": 2
+  }
+}

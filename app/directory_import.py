@@ -411,6 +411,13 @@ def advance(body: Advance, request: Request, actor: Actor = Depends(current_acto
         for row in rows:
             try:
                 process(actor, body, fd, key, origin, row)
+                # An empty/locked/changing file remains eligible after another stable
+                # interval. Let other ready files reach the front in the meantime.
+                with get_store().connection() as db:
+                    db.execute(
+                        "UPDATE directory_inputs SET observed=? WHERE scope=? AND path=? AND signature=? AND state='waiting' AND observed=?",
+                        (time.time(), key, row["path"], row["signature"], row["observed"]),
+                    )
             except (DomainError, OSError) as err:
                 problem = {
                     "code": getattr(err, "code", "CAPTURE_READ_FAILED"),

@@ -36,28 +36,37 @@ def inspect_video(path):
             k: stream[k] for k in ("codec_name", "width", "height", "r_frame_rate", "time_base")
         },
         "decoded_frames": len(frames),
+        "frames_sha256": hashlib.sha256("\n".join(frames).encode()).hexdigest(),
         "distinct_decoded_frames": len(set(frames)),
     }
 
 
-def run(base, output, *, tiny_vae=False):
+def run(base, output, *, tiny_vae=False, directions=(), registered_profile=None):
     output.mkdir(parents=True, exist_ok=False)
     footage = ROOT / "evidence/batch-production/real-footage/coffee-excerpt.mp4"
     credit = json.loads(footage.with_name("coffee-evidence.json").read_bytes())
     source_hash = hashlib.sha256(footage.read_bytes()).hexdigest()
     assert source_hash == credit["attributed_download_sha256"]
     report = {"source": credit["source"], "source_sha256": source_hash, "items": []}
-    cfg = json.loads((ROOT / "contracts/examples/comfy-animatediff.json").read_bytes())[
-        "animatediff-reference"
-    ]
+    if registered_profile is not None:
+        cfg = registered_profile
+    else:
+        cfg = json.loads((ROOT / "contracts/examples/comfy-animatediff.json").read_bytes())[
+            "animatediff-reference"
+        ]
+        # Keep the CPU smoke test bounded while running the full trained model and motion module.
+        cfg["workflow"]["10"]["inputs"].update(width=160, height=160)
+        cfg["workflow"]["12"]["inputs"]["amount"] = 4
+        if directions:
+            # Portrait source, two-step motion weights and mild denoising match the approved
+            # recipe from the earlier visual comparison. Only direction and seed vary.
+            cfg["workflow"]["10"]["inputs"].update(width=96, height=160)
+            cfg["workflow"]["6"]["inputs"].update(steps=2, denoise=0.12)
+        if tiny_vae:
+            cfg["workflow"]["13"] = {"class_type": "VAELoader", "inputs": {"vae_name": "taesd"}}
+            for node in ("7", "11"):
+                cfg["workflow"][node]["inputs"]["vae"] = ["13", 0]
     cfg["base_url"] = base
-    # Keep the CPU smoke test bounded while running the full trained model and motion module.
-    cfg["workflow"]["10"]["inputs"].update(width=160, height=160)
-    cfg["workflow"]["12"]["inputs"]["amount"] = 4
-    if tiny_vae:
-        cfg["workflow"]["13"] = {"class_type": "VAELoader", "inputs": {"vae_name": "taesd"}}
-        for node in ("7", "11"):
-            cfg["workflow"][node]["inputs"]["vae"] = ["13", 0]
     with httpx.Client(base_url=base, trust_env=False, timeout=10) as client:
         stats = client.get("/system_stats")
         stats.raise_for_status()
@@ -66,7 +75,7 @@ def run(base, output, *, tiny_vae=False):
             for k, v in stats.json()["system"].items()
             if k in {"comfyui_version", "pytorch_version", "python_version", "os"}
         }
-        for node in ("ADE_AnimateDiffLoaderGen1", "SaveWEBM", "CheckpointLoaderSimple"):
+        for node in {definition["class_type"] for definition in cfg["workflow"].values()}:
             assert node in client.get("/object_info/" + node).json(), node
     fixture = ProductionBase()
     fixture.setUp()
@@ -113,9 +122,57 @@ def run(base, output, *, tiny_vae=False):
                 }
             ],
         }
+        expected_calls = len(directions) or 1
+        reference = asset
+        reference_hash = source_hash
+        if directions:
+            frame = subprocess.check_output(
+                [
+                    "ffmpeg",
+                    "-v",
+                    "error",
+                    "-ss",
+                    "1.239",
+                    "-i",
+                    str(footage),
+                    "-frames:v",
+                    "1",
+                    "-c:v",
+                    "png",
+                    "-threads",
+                    "1",
+                    "-f",
+                    "image2pipe",
+                    "pipe:1",
+                ]
+            )
+            (output / "reference.png").write_bytes(frame)
+            still = api.post(
+                "/api/v1/media/import",
+                params={"project_id": fixture.pid, "filename": "coffee-table.png"},
+                content=frame,
+            )
+            still.raise_for_status()
+            reference = still.json()["data"]["asset"]
+            reference_hash = hashlib.sha256(frame).hexdigest()
+            slot = spec["slots"][0]["generate"]
+            slot.update(
+                prompt="Keep the cup, saucer, tablecloth and table from the reference photograph.",
+                prompt_variants=list(directions),
+                reference_asset_id=reference["id"],
+                reference_asset_version=reference["version"],
+            )
+            slot.pop("reference_time_seconds")
+            spec.update(
+                count=1 + expected_calls, max_generation_calls=expected_calls, width=96, height=160
+            )
         path = "/production/batches"
         report["estimate"] = fixture.post(path + "/estimate", spec)
-        assert report["estimate"] == {"generation_calls": 1, "workflow_calls": 0, "slot_calls": [1]}
+        assert report["estimate"] == {
+            "generation_calls": expected_calls,
+            "workflow_calls": 0,
+            "slot_calls": [expected_calls],
+        }
         initial = fixture.post(path, spec)
         assert fixture.post(path, spec)["id"] == initial["id"]
         start = time.monotonic()
@@ -145,19 +202,20 @@ def run(base, output, *, tiny_vae=False):
                 break
             if not worked:
                 time.sleep(0.5)
-        assert current["counts"]["succeeded"] == 2, current
+        assert current["counts"]["succeeded"] == spec["count"], current
         report.update(
             batch_id=initial["id"],
             states=observed,
             elapsed_seconds=round(time.monotonic() - start, 3),
             profile=cfg,
         )
-        assert sum(len(x["generation_jobs"]) for x in current["items"]) == 1
+        assert sum(len(x["generation_jobs"]) for x in current["items"]) == expected_calls
         for item in current["items"]:
             route = "generated" if item["generation_jobs"] else "camera"
             encoded = api.get("/api/v1/media/artifacts/" + item["artifact_id"] + "/file")
             encoded.raise_for_status()
-            path_out = output / (route + ".mp4")
+            name = f"{route}-{item['ordinal']}" if directions else route
+            path_out = output / (name + ".mp4")
             path_out.write_bytes(encoded.content)
             summary = {
                 "ordinal": item["ordinal"],
@@ -169,32 +227,43 @@ def run(base, output, *, tiny_vae=False):
             if item["generation_jobs"]:
                 job = fixture.store.get(item["generation_id"], "local")
                 proof = job["data"]["reference_input"]
-                assert (
-                    proof["source_time_seconds"] == 1.239
-                    and proof["original_sha256"] == source_hash
-                )
+                assert proof["original_sha256"] == reference_hash
+                if not directions:
+                    assert proof["source_time_seconds"] == 1.239
                 assert job["data"]["reference_upload"]["verified_sha256"] == proof["png_sha256"]
                 assert proof["asset_ref"] == {
-                    "id": asset["id"],
-                    "version": asset["version"],
-                    "kind": asset["kind"],
+                    "id": reference["id"],
+                    "version": reference["version"],
+                    "kind": reference["kind"],
                 }
                 generated = api.get(
                     "/api/v1/media/" + item["generation_jobs"][0]["asset_id"] + "/file"
                 )
                 generated.raise_for_status()
-                raw = output / "model-output.webm"
+                raw = output / (
+                    f"model-output-{item['ordinal']}.webm" if directions else "model-output.webm"
+                )
                 raw.write_bytes(generated.content)
                 summary.update(
                     generation_id=job["id"],
                     seed=job["data"]["seed"],
+                    prompt=job["data"]["prompt"],
                     reference_input=proof,
                     uploaded_reference_sha256=job["data"]["reference_upload"]["verified_sha256"],
                     model_output=inspect_video(raw),
                 )
                 assert summary["model_output"]["decoded_frames"] == 4
             report["items"].append(summary)
-        assert len({item["sha256"] for item in report["items"]}) == 2
+        assert len({item["sha256"] for item in report["items"]}) == spec["count"]
+        if directions:
+            generated = [item for item in report["items"] if item["route"] == "generated"]
+            assert {item["prompt"] for item in generated} == {
+                slot["prompt"] + "\n" + d for d in directions
+            }
+            assert len({item["uploaded_reference_sha256"] for item in generated}) == 1
+            assert (
+                len({item["model_output"]["frames_sha256"] for item in generated}) == expected_calls
+            )
     finally:
         fixture.tearDown()
     (output / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
@@ -209,5 +278,23 @@ if __name__ == "__main__":
         action="store_true",
         help="Use locally installed TAESD encoder/decoder weights",
     )
+    parser.add_argument(
+        "--prompt-direction",
+        action="append",
+        default=[],
+        help="Generate one clip per direction from the same project still, plus a camera cut.",
+    )
+    parser.add_argument(
+        "--profile-file",
+        type=Path,
+        help="Registered single ComfyUI video profile for a four-frame, eight-fps smoke run",
+    )
     args = parser.parse_args()
-    run(args.base_url, args.output, tiny_vae=args.tiny_vae)
+    custom = json.loads(args.profile_file.read_text()) if args.profile_file else None
+    run(
+        args.base_url,
+        args.output,
+        tiny_vae=args.tiny_vae,
+        directions=args.prompt_direction,
+        registered_profile=custom,
+    )

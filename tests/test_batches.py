@@ -153,6 +153,63 @@ class BatchTests(ProductionBase):
             self.assertTrue(batches.work_once(self.store))
         self.assertEqual(self.get(bid)["items"][0]["artifact_id"], art_ids[0])
 
+    def test_imported_photo_has_editable_hold_duration_and_exact_source_frame(self):
+        photo = subprocess.check_output(
+            [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                str(Path(self.temp.name) / "changes.mp4"),
+                "-frames:v",
+                "1",
+                "-threads",
+                "1",
+                "-f",
+                "image2pipe",
+                "-c:v",
+                "png",
+                "-",
+            ]
+        )
+        imported = self.client.post(
+            "/api/v1/media/import",
+            params={"project_id": self.pid, "filename": "product.png"},
+            content=photo,
+        )
+        self.assertEqual(imported.status_code, 200, imported.text)
+        image = imported.json()["data"]["asset"]
+        self.assertTrue(image["data"]["probe"]["is_still"])
+        cuts = [
+            dict(asset_id=image["id"], version=1, source_in=0, source_out=sec) for sec in (0.4, 0.8)
+        ]
+        spec = {**self.spec, "slots": [{"choices": cuts}], "output": "render"}
+        wrong = deepcopy(spec)
+        wrong["slots"][0]["choices"][0]["source_in"] = 0.1
+        self.assertEqual(self.post(self.path, wrong, 422)["error"]["code"], "BATCH_STILL_RANGE")
+        wrong["slots"][0]["choices"][0] = {**self.choices[0], "source_out": 20}
+        self.assertEqual(self.post(self.path, wrong, 422)["error"]["code"], "BATCH_SOURCE_RANGE")
+        bid = self.post(self.path, spec)["id"]
+        for _ in range(2):
+            self.assertTrue(batches.work_once(self.store))
+        result = self.get(bid)
+        self.assertEqual(result["counts"]["succeeded"], 2, result)
+        durations = set()
+        for row in result["items"]:
+            artifact = self.store.get(row["artifact_id"], "local")
+            self.assertTrue(artifact["data"]["qc"]["checks"]["full_decode"])
+            durations.add(artifact["data"]["qc"]["probe"]["duration"])
+            mapping = next(
+                r
+                for r in self.store.list("local", kind="TimeMap", project_id=self.pid)
+                if r["data"]["output_ref"]["id"] == artifact["id"]
+            )
+            layer = mapping["data"]["segments"][0]["contributions"][0]
+            self.assertEqual(layer["mapping_curve"]["kind"], "hold")
+            self.assertEqual(layer["source_interval"], [0, 0])
+            self.assertEqual(layer["source_ref"]["id"], image["id"])
+        self.assertEqual(durations, {0.4, 0.8})
+
     def test_template_replacement_preserves_hand_edits_and_checks_revision(self):
         original = self.create(
             "Timeline",
@@ -203,6 +260,60 @@ class BatchTests(ProductionBase):
         self.assertEqual(row["status"], "failed", row)
         self.assertEqual(row["error"]["code"], "REVISION_CONFLICT")
         self.assertEqual(self.post(self.path + "/" + bid + "/retry", {})["counts"]["queued"], 1)
+
+    def test_locked_manual_sample_renders_and_protects_nested_parameters_on_next_edit(self):
+        clip = {
+            "id": "hands",
+            "name": "手部特写",
+            "asset_id": self.asset["id"],
+            "source_in": 0.0,
+            "source_out": 0.4,
+            "timeline_start": 0.0,
+            "volume": 0.45,
+            "speed": 0.5,
+            "opacity": 0.8,
+            "track": 0,
+            "keyframes": {"opacity": [{"time": 0, "value": 0.4}, {"time": 0.4, "value": 0.8}]},
+        }
+        data = {
+            "name": "人工调过的样片",
+            "clips": [clip],
+            "audio_tracks": [],
+            "captions": [],
+            "format": {"width": 128, "height": 96, "fps": 25},
+            "locks": [
+                {"path": field, "owner": "editor"}
+                for field in (
+                    "clips.0.volume",
+                    "clips.0.speed",
+                    "clips.0.keyframes",
+                    "format.fps",
+                    "captions",
+                )
+            ],
+        }
+        original = self.create("Timeline", data, refs=[{"id": self.asset["id"], "version": 1}])
+        spec = {**self.spec, "template": {"id": original["id"], "version": 1}, "output": "render"}
+        bad = self.post(self.path + "/estimate", {**spec, "fps": 30}, 409)
+        self.assertEqual(bad["error"]["details"]["path"], "format.fps")
+        bid = self.post(self.path, spec)["id"]
+        for _ in range(2):
+            self.assertTrue(batches.work_once(self.store))
+        result = self.get(bid)
+        self.assertEqual(result["counts"]["succeeded"], 2, result)
+        for row in result["items"]:
+            timeline = self.store.get(row["timeline_id"], "local")
+            actual = timeline["data"]["clips"][0]
+            for field in ("volume", "speed", "keyframes", "name", "opacity"):
+                self.assertEqual(actual[field], clip[field])
+            self.assertEqual(timeline["data"]["locks"], data["locks"])
+            artifact = self.store.get(row["artifact_id"], "local")
+            self.assertAlmostEqual(artifact["data"]["qc"]["probe"]["duration"], 0.8, delta=0.04)
+            self.assertTrue(artifact["data"]["qc"]["checks"]["full_decode"])
+            changed = deepcopy(timeline["data"])
+            changed["clips"][0]["volume"] = 0.5
+            with self.assertRaisesRegex(Exception, "人工锁"):
+                self.store.update(timeline["id"], changed, tenant_id="local", expected_revision=1)
 
     def test_batch_dispatches_frozen_dag_input_and_records_child_run(self):
         wf = self.create(
@@ -439,6 +550,114 @@ class BatchGenerationTransport(unittest.TestCase):
         self.assertEqual(
             self.store.get(child, "local")["data"]["checkpoint"]["nodes"]["gen"]["attempts"], 1
         )
+
+    def test_frozen_image_and_directed_prompt_variants_mix_and_render(self):
+        t = self.transport
+        reference, _ = t.reference_setup()
+        footage = t.client.post(
+            "/api/v1/media/import",
+            params={"project_id": t.pid, "filename": "real.mp4"},
+            content=t.video,
+        ).json()["data"]["asset"]
+        directions = ["Macro push-in", "Lateral travel", "Pull back from product"]
+        spec = self.body(
+            {
+                "profile_id": "demo",
+                "prompt": "Keep the orange product and logo",
+                "duration": 0.2,
+                "reference_asset_id": reference["id"],
+                "reference_asset_version": 1,
+                "prompt_variants": directions,
+            }
+        )
+        spec["slots"][0]["choices"] = [{"asset_id": footage["id"], "version": 1, "source_out": 0.2}]
+        spec.update(count=4, width=160, height=120, fps=25, output="render", generation_window=1)
+        self.assertEqual(
+            t.client.post(self.path + "/estimate", json=spec).json()["data"]["slot_calls"], [3]
+        )
+        invalid = deepcopy(spec)
+        invalid["slots"][0]["generate"]["prompt_variants"] = ["same", " same "]
+        self.assertEqual(t.client.post(self.path, json=invalid).status_code, 422)
+        bid = t.client.post(self.path, json=spec).json()["data"]["id"]
+        self.assertEqual(t.client.post(self.path, json=spec).json()["data"]["id"], bid)
+        t.status = "done"
+        delivered_prompts = set()
+        for _ in range(8):
+            before = t.submits
+            data = self.cycle(bid)
+            if t.submits > before:
+                delivered_prompts.add(t.job["prompt"]["1"]["inputs"]["text"])
+            if data["status"] == "completed":
+                break
+        self.assertEqual(data["counts"]["succeeded"], 4, data)
+        self.assertEqual(t.submits, 3)
+        self.assertEqual(
+            delivered_prompts,
+            {spec["slots"][0]["generate"]["prompt"] + "\n" + d for d in directions},
+        )
+        seeds, references = set(), set()
+        for row in data["items"]:
+            artifact = self.store.get(row["artifact_id"], "local")
+            self.assertTrue(artifact["data"]["qc"]["checks"]["full_decode"])
+            if row["generation_id"]:
+                job = self.store.get(row["generation_id"], "local")["data"]
+                seeds.add(job["seed"])
+                references.add(job["reference_upload"]["verified_sha256"])
+                self.assertEqual(job["reference_asset_ref"]["id"], reference["id"])
+        self.assertEqual(len(seeds), 3)
+        self.assertEqual(len(references), 1)
+
+    def test_opt_in_source_fallback_obeys_terminal_receipt_and_preserves_lineage(self):
+        t = self.transport
+        footage = (
+            Path(__file__).resolve().parents[1]
+            / "evidence/batch-production/real-footage/coffee-excerpt.mp4"
+        )
+        source = t.client.post(
+            "/api/v1/media/import",
+            params={"project_id": t.pid, "filename": footage.name},
+            content=footage.read_bytes(),
+        ).json()["data"]["asset"]
+        spec = self.body({"profile_id": "demo", "prompt": "product", "duration": 0.2})
+        spec["slots"][0].update(
+            choices=[{"asset_id": source["id"], "version": 1, "source_out": 0.2}],
+            allow_source_fallback=True,
+        )
+        spec.update(seed=1, output="render", width=160, height=120)
+        for code, enabled, expected in [
+            (422, True, "succeeded"),
+            (403, True, "failed"),
+            (422, False, "failed"),
+        ]:
+            with self.subTest(code=code, enabled=enabled):
+                t.reject_status = code
+                spec["idempotency_key"] = f"fallback-key-{code}-{enabled}"
+                spec["slots"][0]["allow_source_fallback"] = enabled
+                bid = t.client.post(self.path, json=spec).json()["data"]["id"]
+                result = self.cycle(bid)["items"][0]
+                self.assertEqual(result["status"], expected, result)
+                if expected == "succeeded":
+                    self.assertEqual(result["generation_jobs"][0]["status"], "source_fallback")
+                    timeline = self.store.get(result["timeline_id"], "local")
+                    receipt = timeline["data"]["source_fallbacks"][0]
+                    self.assertEqual(receipt["replacement"]["asset_id"], source["id"])
+                    self.assertEqual(receipt["issue"]["code"], "WORKFLOW_REJECTED")
+                    self.assertEqual(receipt["generation"]["id"], result["generation_id"])
+                    artifact = self.store.get(result["artifact_id"], "local")
+                    self.assertTrue(artifact["data"]["qc"]["checks"]["full_decode"])
+                else:
+                    self.assertIsNone(result["artifact_id"])
+        t.reject_status = None
+        t.lost = True
+        spec["slots"][0]["allow_source_fallback"] = True
+        spec["idempotency_key"] = "fallback-unknown-key"
+        bid = t.client.post(self.path, json=spec).json()["data"]["id"]
+        result = self.cycle(bid)
+        self.assertEqual(result["items"][0]["error"]["code"], "GENERATION_RECONCILE_FIRST", result)
+        with self.store.connection() as db:
+            self.assertEqual(batch_queue.get_batch(db, "local", bid)["control"], "paused")
+        self.assertIsNone(result["items"][0]["timeline_id"])
+        self.assertEqual(t.submits, 4)
 
     def test_camera_frame_batch_slot_mixed_with_original_clip(self):
         t = self.transport

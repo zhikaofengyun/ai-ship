@@ -94,10 +94,13 @@ def interval_contributors(segments, lo, hi):
         if a >= b:
             continue
         for layer in segment.get("contributions", []):
-            if layer.get("mapping_curve", {}).get("kind") != "linear":
-                raise DomainError("UNSUPPORTED_RENDER_MAP", "当前仅支持本地渲染的线性时间段。", 409)
+            curve = layer.get("mapping_curve", {}).get("kind")
+            if curve not in {"linear", "hold", "constant"}:
+                raise DomainError(
+                    "UNSUPPORTED_RENDER_MAP", "当前仅支持本地渲染的线性或定格时间段。", 409
+                )
             start, stop = layer["source_interval"]
-            rate = (stop - start) / (end - begin)
+            rate = (stop - start) / (end - begin) if curve == "linear" else 0
             rows.append(
                 {
                     "source_ref": layer["source_ref"],

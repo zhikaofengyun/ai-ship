@@ -137,6 +137,8 @@ def run(output, round_id, engine):
             dialog.locator("[name=name]").fill("首镜实帧核对")
             dialog.locator("[name=goals]").fill(GOAL)
             dialog.locator("form[data-form] button[type=submit]").click()
+            expect(page).to_have_url(re.compile(r"#production/batches$"))
+            page.locator('.batch-head a[href="#production"]').click()
             expect(page).to_have_url(re.compile("#production$"))
             loc("[data-production-files]").set_input_files([str(f[0]) for f in fixtures])
             expect(loc(".director-source input:checked")).to_have_count(2, timeout=45000)

@@ -1,0 +1,125 @@
+{
+  "test": "real local model HTTP, durable receipt recovery through production endpoints",
+  "models": {
+    "qwen-0.5b": {
+      "weight": "reviewer.gguf",
+      "sha256": "c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515"
+    },
+    "smollm-360m": {
+      "weight": "judge.gguf",
+      "sha256": "2fa3f013dcdd7b99f9b237717fa0b12d75bbb89984cc1274be1471a465bac9c2"
+    }
+  },
+  "result": "output_invalid",
+  "before_restart": {
+    "call": "toolcall_44481a256597457085ec983d5378c6b9",
+    "status": "succeeded",
+    "usage": {
+      "completion_tokens": 91,
+      "prompt_tokens": 290,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 381
+    }
+  },
+  "issue": {
+    "code": "INDEPENDENT_REVIEW_REQUIRED",
+    "message": "裁决复用了先前角色的原话，需要独立核对依据。"
+  },
+  "receipts": [
+    {
+      "outcome": "succeeded",
+      "requested_provider_model": "smollm-360m",
+      "actual_provider_model": "smollm-360m",
+      "provider_request_id": "chatcmpl-nGxsFzBcmg63YDBwejFKTMO4pFmgVDa9",
+      "usage": {
+        "completion_tokens": 132,
+        "prompt_tokens": 642,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 774
+      },
+      "error_code": null,
+      "id": "toolcall_3bd792b397aa4fe6907c72f1a5f7cac2"
+    },
+    {
+      "outcome": "succeeded",
+      "requested_provider_model": "qwen-0.5b",
+      "actual_provider_model": "qwen-0.5b",
+      "provider_request_id": "chatcmpl-h9sWQliFJV7PYAbXnND3JFB7J2fB2I2H",
+      "usage": {
+        "completion_tokens": 91,
+        "prompt_tokens": 290,
+        "prompt_tokens_details": {
+          "cached_tokens": 6
+        },
+        "total_tokens": 381
+      },
+      "error_code": null,
+      "id": "toolcall_0e1c45d493254b03977c9d8f60adc1c3"
+    },
+    {
+      "outcome": "succeeded",
+      "requested_provider_model": "qwen-0.5b",
+      "actual_provider_model": "qwen-0.5b",
+      "provider_request_id": "chatcmpl-ikwPzccbGUSpnu3UONLgU5LSg0HYvM0E",
+      "usage": {
+        "completion_tokens": 91,
+        "prompt_tokens": 290,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 381
+      },
+      "error_code": null,
+      "id": "toolcall_44481a256597457085ec983d5378c6b9"
+    }
+  ],
+  "roles": [
+    {
+      "role": "planner",
+      "result": {
+        "counter_evidence": [],
+        "evidence_refs": [
+          "brief_b1dc985219964633ad4571a89b8b197e"
+        ],
+        "proposal": "The source shows two green limes on a wooden table. Open on limes, close on table.",
+        "quality_checks": [],
+        "unresolved": []
+      }
+    },
+    {
+      "role": "creator",
+      "result": {
+        "counter_evidence": [],
+        "evidence_refs": [
+          "brief_b1dc985219964633ad4571a89b8b197e"
+        ],
+        "proposal": "The source shows two green limes on a wooden table. Open on limes, close on table.",
+        "quality_checks": [],
+        "unresolved": []
+      }
+    },
+    {
+      "role": "judge",
+      "result": {
+        "counter_evidence": [],
+        "evidence_refs": [
+          "brief_b1dc985219964633ad4571a89b8b197e"
+        ],
+        "proposal": "The source shows two green limes on a wooden table. Open on limes, close on table.",
+        "quality_checks": [
+          "The source shows two green limes on a wooden table. Open on limes, close on table.",
+          "The source shows two green limes on a wooden table. Open on limes, close on table."
+        ],
+        "unresolved": []
+      }
+    }
+  ],
+  "decision_count": 0,
+  "cost_records": 3,
+  "elapsed_resume_s": 16.397,
+  "original_receipt_reused": true
+}

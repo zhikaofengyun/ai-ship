@@ -305,6 +305,15 @@ def _dispatch(store, actor, command):
         data = copy.deepcopy(old["data"])
         state = data.get("state", "待校验")
         unknown = data.get("outcome_unknown", False)
+        if data.get("team_key") and data.get("attempt_status") in {
+            "cancelled",
+            "output_invalid",
+            "output_incomplete",
+            "rejected",
+            "not_sent",
+            "proposals_ready",
+        }:
+            raise DomainError("TERMINAL_RUN", "该团队运行已结束，原始回执已固定。", 409)
         if typ == "SuspendTask":
             target = "停止中" if state == "执行中" else "暂停"
             if unknown:
@@ -353,6 +362,22 @@ def _dispatch(store, actor, command):
                 "control_reason": command["reason"],
             }
         )
+        if data.get("team_key") and not unknown and typ in {"SuspendTask", "RequestCancel"}:
+            lease = store._local.conn.execute(
+                "SELECT expires_at FROM leases WHERE tenant_id=? AND resource_id=?",
+                (actor.tenant_id, old["id"]),
+            ).fetchone()
+            if not lease or lease["expires_at"] <= now():
+                # A crashed worker may already have posted its current role. Recover its receipt before settling the stop.
+                if data.get("attempt_status") in {"running", "pending", "outcome_unknown"}:
+                    data["status"] = "stopping"
+                else:
+                    cancel = typ == "RequestCancel"
+                    data.update(
+                        state="取消" if cancel else "暂停",
+                        status="cancelled" if cancel else "paused",
+                        attempt_status="cancelled" if cancel else "paused",
+                    )
         result = store.update(
             old["id"],
             data,

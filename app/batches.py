@@ -6,22 +6,27 @@ import os
 import threading
 import time
 from contextlib import contextmanager
-from copy import deepcopy
-from typing import Literal
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query, Request
-from pydantic import Field, StrictInt, model_validator
+from pydantic import Field, StrictInt, StringConstraints, model_validator
 
 from . import batch_queue as queue
 from . import batch_acceptance, batch_market, batch_observability, batch_workflows, generation
 from .api import ok
-from .batch_combinations import choices_for, dimensions, generation_counts, item_generation_flags
+from .batch_combinations import (
+    choices_for,
+    dimensions,
+    generation_counts,
+    generation_prompt,
+    item_generation_flags,
+)
 from .auth import Actor, actor_still_authorized, current_actor, require_approval, require_write
 from .errors import DomainError
 from .media import MAX_DURATION, MAX_PIXELS, check_revision, render_timeline, resolve_media
 from .production import Body, record, ref
 from .selection import ChosenVersion
-from .store import digest, get_store, now
+from .store import check_manual_locks, digest, get_store, now
 
 router = APIRouter(prefix="/production/batches", tags=["bulk production"])
 router.include_router(batch_observability.router)
@@ -41,19 +46,35 @@ class Cut(Body):
 class GeneratedSlot(Body):
     profile_id: str = Field(min_length=1, max_length=180)
     prompt: str = Field(min_length=1, max_length=6000)
+    prompt_variants: list[
+        Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
+    ] = Field(default_factory=list, max_length=32)
     duration: float = Field(ge=0.04, le=MAX_DURATION)
     reference_asset_id: str | None = None
     reference_asset_version: StrictInt | None = Field(default=None, ge=1)
     reference_end_seconds: float | None = Field(default=None, strict=True, gt=0, le=3600)
     reference_time_seconds: float | None = Field(default=None, strict=True, ge=0, lt=3600)
 
+    @model_validator(mode="after")
+    def validate_prompts(self):
+        if not self.prompt.strip():
+            raise ValueError("镜头提示词不能为空。")
+        if len(set(self.prompt_variants)) != len(self.prompt_variants):
+            raise ValueError("同一镜头的生成方向不可重复。")
+        if any(len(self.prompt) + 1 + len(direction) > 6000 for direction in self.prompt_variants):
+            raise ValueError("每个方向与共享提示词合计最多 6000 字。")
+        return self
+
 
 class Slot(Body):
     choices: list[Cut] = Field(default_factory=list, max_length=64)
     generate: GeneratedSlot | None = None
+    allow_source_fallback: bool = False
 
     @model_validator(mode="after")
     def source(self):
+        if self.allow_source_fallback and not (self.choices and self.generate):
+            raise ValueError("只有同时配置实拍候选和生成服务的镜头可以启用原片兜底。")
         if not self.choices and not self.generate:
             raise ValueError("每个镜头位至少需要一个素材区间或生成配置。")
         if len({(c.asset_id, c.source_in, c.source_out) for c in self.choices}) != len(
@@ -110,6 +131,10 @@ def source(actor, project, cut, cache):
     item = cache[cut.asset_id]
     check_revision(item, cut.version)
     probe = item["data"].get("probe", {}) or item["data"].get("qc", {}).get("probe", {})
+    if probe.get("is_still") and probe.get("has_video"):
+        if cut.source_in != 0 or cut.source_out < 0.04:
+            raise DomainError("BATCH_STILL_RANGE", "照片从首帧开始，镜头持续时间至少为 0.04 秒。")
+        return item
     if not probe.get("has_video") or not (
         0 <= cut.source_in < cut.source_out <= (probe.get("duration") or 0) + 1e-8
     ):
@@ -124,9 +149,9 @@ def template_for(actor, recipe):
     check_revision(item, recipe.template.version)
     data = item["data"]
     first = record(actor, item["id"], "Timeline", version=1)
-    if data.get("locks") or any(x.get("voice_alignment_plan") for x in [data, first["data"]]):
+    if any(x.get("voice_alignment_plan") for x in [data, first["data"]]):
         raise DomainError(
-            "BATCH_TEMPLATE_LOCK", "本模板含人工锁或逐帧配音绑定，需另存可换镜头的模板。", 409
+            "BATCH_TEMPLATE_LOCK", "本模板含逐帧配音绑定，需另存可换镜头的模板。", 409
         )
     if first["data"].get("opening_text") != data.get("opening_text"):
         raise DomainError("BATCH_TEMPLATE_CONSTRAINT", "首镜校验条件在模板历史中不一致。", 409)
@@ -197,6 +222,8 @@ def freeze(actor, recipe):
             cfg_hash[gen.profile_id] = digest(cfg)
             durations.append(gen.duration)
         ceiling += max(durations)
+    if template and template["data"].get("locks"):
+        preflight_template_locks(actor, recipe, template, assets)
     if not template and ceiling > MAX_DURATION:
         raise DomainError("MEDIA_RESOURCE_LIMIT", "批次中的最长时间线超过本地编码上限。")
     dag_generations = 0
@@ -249,7 +276,12 @@ def enqueue(body: Recipe, request: Request, actor: Actor = Depends(current_actor
     queue.initialize(store)
     spec = body.model_dump()
     for slot in spec["slots"]:
+        if not slot["allow_source_fallback"]:
+            slot.pop("allow_source_fallback")
         if slot.get("generate"):
+            # Keep persisted pre-variation recipe digests and replay keys compatible.
+            if not slot["generate"]["prompt_variants"]:
+                slot["generate"].pop("prompt_variants")
             for time_field in ("reference_time_seconds", "reference_end_seconds"):
                 if slot["generate"][time_field] is None:
                     slot["generate"].pop(time_field)
@@ -497,7 +529,7 @@ def cancel_slots(store, item, actor):
     # New provider submissions need a reservation first. Only reconcile existing jobs.
     with store.connection() as db:
         outstanding = db.execute(
-            "SELECT slot,generation_id FROM production_generation_slots WHERE batch=? AND ordinal=? AND status NOT IN ('ready','cancelled','failed')",
+            "SELECT slot,generation_id FROM production_generation_slots WHERE batch=? AND ordinal=? AND status NOT IN ('ready','cancelled','failed','source_fallback')",
             (item["batch"], item["ordinal"]),
         ).fetchall()
     pending = False
@@ -529,6 +561,18 @@ def generated_cut(store, item, actor, recipe, index, cfg_hash):
         saved = db.execute(
             "SELECT * FROM production_generation_slots WHERE batch=? AND ordinal=? AND slot=?", key
         ).fetchone()
+
+    def fallback():
+        choices = recipe.slots[index].choices
+        # Stable across process restarts, independent of mutable library or provider order.
+        selected = int(digest([recipe.seed, item["ordinal"], index, "source_fallback"])[:16], 16)
+        cut = choices[selected % len(choices)]
+        checked = source(actor, recipe.project_id, cut, {})
+        generation_checkpoint(store, item, key, gid, "source_fallback", checked)
+        return cut
+
+    if saved and saved["status"] == "source_fallback":
+        return fallback()
     if saved and saved["status"] == "ready":
         return Cut(
             asset_id=saved["asset_id"], version=saved["asset_version"], source_out=slot.duration
@@ -556,7 +600,7 @@ def generated_cut(store, item, actor, recipe, index, cfg_hash):
             project_id=recipe.project_id,
             slot=f"{recipe.name[:120]} · {item['ordinal']}/{index+1}",
             profile_id=slot.profile_id,
-            prompt=slot.prompt,
+            prompt=generation_prompt(recipe, item["ordinal"], index),
             seed=(recipe.seed + (item["ordinal"] - 1) * len(recipe.slots) + index) % 2147483648,
             reference_asset_id=slot.reference_asset_id,
             reference_asset_version=slot.reference_asset_version,
@@ -579,6 +623,20 @@ def generated_cut(store, item, actor, recipe, index, cfg_hash):
             "code": "GENERATION_STOPPED",
             "message": "生成器未返回可用素材。",
         }
+        job_data = receipt["job"]["data"]
+        explicit_failure = (
+            issue["code"] == "GENERATION_STOPPED" and job_data.get("provider_terminal") == "error"
+        ) or (
+            issue["code"] == "WORKFLOW_REJECTED"
+            and job_data.get("provider_http_status") in {400, 422}
+        )
+        if (
+            recipe.slots[index].allow_source_fallback
+            and stage == "failed"
+            and explicit_failure
+            and control_state(store, item) == "active"
+        ):
+            return fallback()
         queue.update(store, item, status="failed", error=issue)
     elif stage == "outcome_unknown":
         # This slot already owns a stable provider submission. Pause future sends until the
@@ -602,24 +660,87 @@ def generated_cut(store, item, actor, recipe, index, cfg_hash):
     return None
 
 
-def materialize(store, actor, recipe, run, item, cuts):
-    template = template_for(actor, recipe)
-    data = deepcopy(template["data"]) if template else {"audio_tracks": [], "captions": []}
+def derived_fields(template, recipe, actor, batch_id, ordinal):
+    data = dict(template["data"]) if template else {"audio_tracks": [], "captions": []}
     for key in (
         "execution_context",
         "origin_execution_context",
         "locked_at",
         "locked_by",
         "clip_uses",
+        "localization_evidence",
+        "source_fallbacks",
     ):
         data.pop(key, None)
+    locked = recipe.output == "render"
+    data.update(
+        name=f"{recipe.name} · {ordinal}",
+        locked=locked,
+        status="locked" if locked else "draft",
+        format={
+            **data.get("format", {}),
+            "width": recipe.width,
+            "height": recipe.height,
+            "fps": recipe.fps,
+        },
+        batch_id=batch_id,
+        batch_ordinal=ordinal,
+    )
+    if locked:
+        data.update(locked_at=now(), locked_by=actor.actor_id)
+    return data
+
+
+def replace_clip(original, asset, start, end, name):
+    clip = dict(original)
+    for key in ("asset_version_id", "source_ref", "source_id", "source_range"):
+        clip.pop(key, None)
+    clip.update(asset_id=asset, source_in=start, source_out=end)
+    clip.setdefault("name", name)
+    return clip
+
+
+def preflight_template_locks(actor, recipe, template, assets):
+    # Each replacement changes only its own clip. Checking each alternative in place
+    # proves the locked paths for all combinations without materializing their product.
+    original = template["data"]
+    batch_id = "batch_" + digest([actor.tenant_id, recipe.project_id, recipe.idempotency_key])[:40]
+    data = derived_fields(template, recipe, actor, batch_id, 1)
+    data["clips"] = list(original["clips"])
+    check_manual_locks(original, data, require_resolved=True)
+    if recipe.count > 1:
+        check_manual_locks(
+            original,
+            derived_fields(template, recipe, actor, batch_id, recipe.count),
+            require_resolved=True,
+        )
+    for index, slot in enumerate(recipe.slots):
+        existing = original["clips"][index]
+        for cut in slot.choices:
+            name = assets[cut.asset_id]["data"].get("name") or cut.asset_id
+            data["clips"][index] = replace_clip(
+                existing, cut.asset_id, cut.source_in, cut.source_out, name
+            )
+            check_manual_locks(original, data, require_resolved=True)
+        if slot.generate:
+            # A model output has no committed identity or name until receipt verification.
+            data["clips"][index] = replace_clip(
+                existing, object(), 0, slot.generate.duration, object()
+            )
+            check_manual_locks(original, data, require_resolved=True)
+        data["clips"][index] = existing
+
+
+def materialize(store, actor, recipe, run, item, cuts):
+    template = template_for(actor, recipe)
+    data = derived_fields(template, recipe, actor, run["id"], item["ordinal"])
     old_clips = data.get("clips", [])
     clips, sources = [], {}
     cursor = 0.0
     for index, cut in enumerate(cuts):
         source(actor, recipe.project_id, cut, sources)
-        clip = (
-            dict(old_clips[index])
+        original = (
+            old_clips[index]
             if template
             else {
                 "id": f"cut-{index+1}",
@@ -629,33 +750,17 @@ def materialize(store, actor, recipe, run, item, cuts):
                 "timeline_start": cursor,
             }
         )
-        for key in ("asset_version_id", "source_ref", "source_id", "source_range"):
-            clip.pop(key, None)
-        clip.update(
-            asset_id=cut.asset_id,
-            source_in=cut.source_in,
-            source_out=cut.source_out,
-            name=sources[cut.asset_id]["data"].get("name") or cut.asset_id,
+        clips.append(
+            replace_clip(
+                original,
+                cut.asset_id,
+                cut.source_in,
+                cut.source_out,
+                sources[cut.asset_id]["data"].get("name") or cut.asset_id,
+            )
         )
-        clips.append(clip)
         cursor = round(cursor + cut.source_out - cut.source_in, 8)
-    locked = recipe.output == "render"
-    data.update(
-        name=f"{recipe.name} · {item['ordinal']}",
-        clips=clips,
-        locked=locked,
-        status="locked" if locked else "draft",
-        format={
-            **data.get("format", {}),
-            "width": recipe.width,
-            "height": recipe.height,
-            "fps": recipe.fps,
-        },
-        batch_id=run["id"],
-        batch_ordinal=item["ordinal"],
-    )
-    if locked:
-        data.update(locked_at=now(), locked_by=actor.actor_id)
+    data["clips"] = clips
     dependencies = [ref(run), *map(ref, sources.values())]
     if recipe.market_brief:
         local_brief, checked = batch_market.check(actor, recipe, {"data": data})
@@ -670,17 +775,36 @@ def materialize(store, actor, recipe, run, item, cuts):
                 key = pin.get("id") if isinstance(pin, dict) else pin
             item_record, _, _ = resolve_media(store, actor, key, project_id=recipe.project_id)
             dependencies.append(ref(item_record))
-    if item.get("generation_id"):
+    if any(slot.generate for slot in recipe.slots):
         with store.connection() as db:
-            generated = db.execute(
-                "SELECT generation_id FROM production_generation_slots WHERE batch=? AND ordinal=? AND status='ready' ORDER BY slot",
+            committed = db.execute(
+                "SELECT slot,generation_id,status FROM production_generation_slots WHERE batch=? AND ordinal=? AND status IN ('ready','source_fallback') ORDER BY slot",
                 (item["batch"], item["ordinal"]),
-            )
-            dependencies.extend(ref(generation.load(actor, r["generation_id"])) for r in generated)
+            ).fetchall()
+        for receipt in committed:
+            job = generation.load(actor, receipt["generation_id"])
+            dependencies.append(ref(job))
+            if receipt["status"] == "source_fallback":
+                cut = cuts[receipt["slot"] - 1]
+                data.setdefault("source_fallbacks", []).append(
+                    {
+                        "slot": receipt["slot"],
+                        "generation": ref(job),
+                        "issue": job["data"]["issue"],
+                        "replacement": cut.model_dump(),
+                    }
+                )
     with store.transaction():
+        state = control_state(store, item)
+        if state != "active":
+            queue.update(store, item, status="cancelled" if state == "cancelled" else "queued")
+            return None
         # Recheck frozen record revisions immediately before commit.
         for asset in sources.values():
             check_revision(store.get(asset["id"], actor.tenant_id), asset["version"])
+        if template:
+            check_revision(store.get(template["id"], actor.tenant_id), template["version"])
+            check_manual_locks(template["data"], data, require_resolved=True)
         timeline = store.create(
             "Timeline",
             data,
@@ -744,6 +868,8 @@ def execute_item(store, item):
         check_revision(timeline, 1)
     else:
         timeline = materialize(store, actor, recipe, run, item, cuts)
+        if timeline is None:
+            return
     batch_acceptance.validate_output(store, actor, recipe, item, timeline)
     if recipe.market_brief:
         batch_market.check(actor, recipe, timeline)

@@ -241,6 +241,28 @@ def change(pid: str, body: Change, request: Request, actor: Actor = Depends(curr
             old_schedule,
         ):
             raise DomainError("PUBLICATION_UNCHANGED", "请改变排程、标题、成片版本或目标账号。")
+        from .batch_publications import current_intent, membership
+
+        batch_fields = membership(actor, pub)
+        if batch_fields and account["id"] != d["account_id"]:
+            if d["channel"] == "tiktok_inbox" and account["data"].get("provider") != "tiktok":
+                raise DomainError("TIKTOK_ACCOUNT_SCOPE", "收件箱交付需要 TikTok 账号。", 422)
+            with get_store().connection() as db:
+                dest, _ = current_intent(
+                    db,
+                    actor,
+                    project,
+                    batch_fields["batch_id"],
+                    batch_fields["batch_ordinal"],
+                    account["id"],
+                    d["channel"],
+                )
+            if dest:
+                raise DomainError(
+                    "BATCH_PUBLICATION_ACCOUNT_OCCUPIED",
+                    "目标账号已为同一批次作品登记了发布意图。",
+                    409,
+                )
         metadata = {**deepcopy(d.get("metadata", {})), "title": title}
         new_data = {
             "title": title,
@@ -258,6 +280,7 @@ def change(pid: str, body: Change, request: Request, actor: Actor = Depends(curr
             "predecessor_intent": ref(pub),
             "migration_reason": body.reason,
             **schedule,
+            **batch_fields,
         }
         # The verifier will flag mismatches with this old binding until an explicit new review.
         if d.get("commerce_binding"):

@@ -145,3 +145,22 @@ N01 的简报确定创作意图，N02 区分镜头的必须证据和排序偏好
 在「生成补充镜头」或批量制作的生成镜头选择「连续实拍区间生成短片」，选本项目的实拍原件，输入连续参考入点、出点。时间区间按半开区间计算。生成请求及批量镜头同时传 reference_asset_id、reference_asset_version、reference_time_seconds 和 reference_end_seconds；工作流 G03-R2 通过 reference 端口锁定素材版本，使用相同的两个时间参数。混合镜头仍可同时添加原素材直剪候选。批量预估按最终选中生成分支的作品数计算。
 
 可注册 [ComfyUI 连续视频配置](../contracts/examples/comfy-video-segment.json)。配置声明 video_input 指向可达输出节点的 LoadVideo.file，同时声明 reference_fps（1–30）与 max_reference_frames（2–32）。示例接受 8 fps、2 到 16 个完整采样帧，区间可长至 2 秒。输入仅包含画面，做等比缩放、方形像素转换、长边最多 512，编码为无损 RGB Video。原作品的尺寸、fps、展示时长与生成输入可以不同。每一次采样保留相对于源容器起点的真实显示 PTS；拍摄帧率较低时，相邻采样可能选中同一显示帧。系统按项目、原件版本、源内容 SHA-256、起止位置和采样率缓存区间，重新检查源与派生文件许可、版本及指纹。ComfyUI 需回传同一文件版本并通过完整字节回读验证，随后使用 LoadVideo → GetVideoComponents → VAEEncode 编码整个图像批次。上传产物、源时间戳列表和模型文件可从 [实测记录](../evidence/batch-production/video-segment/README.md) 复核。
+
+## 角色检查点与模型回执
+
+Agent 团队工作台调用 `POST /providers/team`。每个角色读取同一组冻结证据，规划与创作先独立给出提案，裁决再阅读既有提案。运行保留证据修订、模型修订、供应商配置摘要、费用上限和当前角色位置。每个角色开工时取得有限时长的独占执行权。另一个请求同时进入时可以看到当前进度。
+
+页面重新打开后可用 `POST /providers/team/{run_id}/resume` 提交当前的 `expected_revision`。接续工作进程跳过已有检查点的角色。如果进程在供应商答复已经入账、角色检查点尚未写入时退出，系统按原角色键取回同一个 ToolCall。未决回执保留原调用和费用预留。有实际授权的操作者能在原任务上继续核对。最终的提案记录和完成检查点在同一个数据库事务提交。较早版本创建的未完任务需要原请求及其幂等键。
+
+每份提案必须引用本次证据快照中的 ID。裁决使用与所有前置角色独立的模型身份，还须给出自己的核对内容。原样复制另一角色提案或核对意见的裁决会被拦下。引用校验与文字重复检测只能排除这两类明确错误。项目简报、采样帧和用户复核仍是判断剪辑质量的依据。
+
+本轮在第一份真实模型回执落库后注入进程中断，再从恢复接口接续。Qwen2.5 0.5B 与 SmolLM2 360M 共承担三个角色。三笔模型回执对应三笔费用记录，恢复复用了第一笔。裁决把前一位角色的提案重复写入两条检查记录，系统保留三个输出并停止在独立复核环节。[逐角色模型、用量和恢复回执](../evidence/team-recovery/cpu-role-receipts.json)
+
+调度设计分别对照了 DeepSeek Harness 的会话单写者、Codex 的子线程身份恢复与 Claude Code 的任务领取、依赖及完成检查。AI Ship 使用自己的 SQLite 租约、版本检查、供应商调用账本和领域验收来实现这些行为。[DeepSeek 会话锁实现](https://github.com/deepseek-ai/deepseek-harness/blob/4b399c39a6d1479cd84ca591b4d7c88e24d38a96/packages/session/session-persistence-sqlite/src/lease.ts) · [Codex 子线程恢复](https://github.com/openai/codex/blob/afe555b9d3e95b4f58b247212565070f1555bc5d/codex-rs/core/src/agent/control/spawn.rs) · [Claude Code 团队任务与质量门槛](https://code.claude.com/docs/en/agent-teams)
+
+
+在角色执行期间暂停或取消时，已提交的模型调用继续核对并保留费用和输出。下一个角色的调用准入与费用预留使用同一写事务。暂停后可以从尚未执行的角色继续。
+
+对正常视频制作入口的另一次检验使用三个固定版本的 CPU 模型。Qwen2.5 1.5B 编排镜头，Qwen2.5 0.5B 复核，SmolLM2 360M 裁决。系统拦下了重复上游理由的裁决，随后审阅身份修订选片并采用，服务生成并下载了 320 × 180、25 fps、1.6 秒的 H.264/AAC 成片。文件经完整音视频解码。[单轮实测](../evidence/team-recovery/three-model-edit.json) · [审阅后的视频](../evidence/team-recovery/reviewed-cut.mp4)
+
+相同检验另设两轮上限。三个模型各真实返回两次，模型阶段共 244.579 秒。第二次仍重复被否决的剪法后，控制器停止迭代。审阅者依据 0.8 秒处两条 OCR 观测纠正首镜，修订后再次通过渲染、下载和全片解码。[两轮调用与每次用量](../evidence/team-recovery/two-round-edit.json) · [两轮后的修订成片](../evidence/team-recovery/reviewed-two-round-cut.mp4)

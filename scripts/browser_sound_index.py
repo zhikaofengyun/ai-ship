@@ -201,8 +201,27 @@ def main():
             open_feature("search", "S02")
             expect(dlg.locator("[data-hits]")).to_contain_text(source.name)
             dlg.get_by_text("索引版本", exact=True).click()
+            dlg.locator("[data-analyze]").click()
+            expect(dlg.locator("[data-index-history]")).to_contain_text(
+                "语义索引新增", timeout=30000
+            )
             dlg.locator("[data-build=shadow]").click()
+            expect(dlg.locator("[data-switch]")).to_be_enabled()
+            # New source evidence must block the old snapshot, even when its rows
+            # and the media files are otherwise unchanged.
+            post(
+                "/production/tags",
+                project_id=pid,
+                asset_version_id=version["id"],
+                start=0,
+                end=1,
+                label="桌面参考",
+                category="scene",
+                evidence="操作员复核原片第一秒",
+            )
             dlg.locator("[data-switch]").click()
+            expect(dlg.locator("[data-index-status]")).to_contain_text("构建后素材或标注已经变化")
+            dlg.get_by_role("button", name="按最新素材重建并启用").click()
             expect(dlg.locator("[data-index-history]")).to_contain_text("正在使用")
             dlg.locator("[name=text]").fill("table-source")
             dlg.locator("[name=channel]").select_option("semantic")

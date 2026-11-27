@@ -338,7 +338,7 @@ def run(output, engine):
             page.add_init_script("localStorage.setItem('ship-project', " + json.dumps(pid) + ")")
             page.on("pageerror", lambda e: errors.append(str(e)))
             page.goto(base + "/#production")
-            page.get_by_role("link", name="批量制作").click()
+            page.locator('.nav-item[href="#production/batches"]').click()
             select = page.locator
             select("[name=name]").fill("两种开场 · 交付")
             page.get_by_role("button", name="选素材", exact=True).click()
@@ -368,6 +368,19 @@ def run(output, engine):
             expect(select("dialog .data-table")).to_contain_text("完整解码")
             page.keyboard.press("Escape")
             checks.append("versioned output contract with real per-file decode receipts")
+            page.get_by_role("button", name="准备批量发布").click()
+            page.get_by_role("button", name="创建发布草稿并预检").click()
+            expect(select("[data-totals]")).to_contain_text("新建 2")
+            expect(select("[data-results] [data-pub]")).to_have_count(2)
+            page.get_by_role("button", name="创建发布草稿并预检").click()
+            expect(select("[data-totals]")).to_contain_text("已登记 2")
+            select("[data-results] [data-pub]").first.click()
+            expect(page.get_by_role("button", name="审阅成片内容")).to_be_visible()
+            select("#dialog .dialog-close-form button").click()
+            checks.append(
+                "batch publications reuse two frozen renders and expose missing approval actions"
+            )
+
             select("[name=batch_filter]").select_option("failed")
             expect(select(".batch-rows")).to_contain_text("没有作品")
             select("[name=batch_filter]").select_option("succeeded")
@@ -422,7 +435,8 @@ def run(output, engine):
             page.get_by_role("button", name="比较两批").click()
             expect(select("dialog h2")).to_have_text("批次运行对照")
             expect(select("dialog")).to_contain_text("交付类型不同")
-            page.keyboard.press("Escape")
+            select("dialog[open]").get_by_role("button", name="关闭", exact=True).click()
+            expect(select("dialog[open]")).to_have_count(0)
             checks.append(
                 "compare measured batch throughput and isolate non-comparable delivery modes"
             )

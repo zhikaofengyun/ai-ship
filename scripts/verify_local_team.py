@@ -134,6 +134,12 @@ def main():
                         str(keyfile),
                         "--threads",
                         "2",
+                        "--threads-batch",
+                        "2",
+                        "--batch-size",
+                        "64",
+                        "--ubatch-size",
+                        "32",
                         "--ctx-size",
                         "8192",
                         "--parallel",
@@ -220,7 +226,8 @@ def main():
                     httpx.Client(
                         base_url=url,
                         trust_env=False,
-                        timeout=180,
+                        # A synchronous request can cover three model calls per round.
+                        timeout=httpx.Timeout(30, read=3 * a.review_rounds * 120 + 60),
                         headers={"Authorization": "Bearer " + key},
                     )
                 )
@@ -320,12 +327,13 @@ def main():
                         "measured_tokens": info["usage"],
                         "decision": (info.get("response") or {}).get("json"),
                         "outcome": info["outcome"],
+                        "error_code": info.get("error_code"),
                         "cost_status": cost["data"]["status"],
                         "calculated_charge": cost["data"].get("calculated_charge"),
                     }
                 )
-            history = d["session"]["data"]["review_rounds"]
-            assert 1 <= len(history) <= a.review_rounds
+            history = d["session"]["data"].get("review_rounds", [])
+            assert 1 <= len(history) <= a.review_rounds, (report["stage"], report["issue"])
             assert [turn["role"] for turn in report["decisions"]] == list(ROLES) * len(
                 history
             ), report

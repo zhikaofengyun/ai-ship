@@ -1470,6 +1470,157 @@ TEST_GROUPS += [
 ]
 
 
+# Link the operator's production path to the original Atlas IDs. These bindings
+# register individual entry points and test definitions, never a new acceptance grade.
+CURRENT_CODE_GROUPS += [
+    ("S04", ["app/semantic_families.py", "app/asset_families.py", "web/asset-families.js"]),
+    ("A07", ["app/directory_import.py"]),
+    ("I01 I04", ["app/media.py"]),
+    (
+        "L01 L03 L06 S02",
+        [
+            "app/material_worker.py",
+            "app/visual_candidates.py",
+            "app/asset_index.py",
+            "app/visual_index.py",
+        ],
+    ),
+    ("G02 G03 N04", ["app/batches.py", "app/batch_combinations.py", "web/batch-workspace.js"]),
+    ("E05", ["app/clip_mask.py", "app/media.py"]),
+    ("E06", ["app/batches.py", "app/auto_edits.py"]),
+    ("C07 C09 C11 H06 H07", ["app/providers.py", "app/commands.py"]),
+    ("F01 F02 F04 F09", ["app/batch_publications.py", "web/batch-publications.js"]),
+    ("F04 F05 F06", ["app/tiktok_inbox.py"]),
+    ("F09", ["app/publication_lifecycle.py"]),
+]
+ENDPOINT_GROUPS += [
+    (
+        "S04",
+        [
+            "POST /api/v1/production/asset-families/suggest",
+            "POST /api/v1/production/asset-families/group",
+        ],
+    ),
+    ("L01 L03 L06 S02", ["POST /api/v1/production/asset-index/analyze"]),
+    ("G02 G03 N04 E06", ["POST /api/v1/production/batches"]),
+    (
+        "C07 C09 C11 H06 H07",
+        ["POST /api/v1/providers/team", "POST /api/v1/providers/team/{run_id}/resume"],
+    ),
+    (
+        "F01 F02 F04 F09",
+        [
+            "GET /api/v1/production/batches/{bid}/publications",
+            "POST /api/v1/production/batches/{bid}/publications/prepare",
+        ],
+    ),
+    ("F04 F05", ["POST /api/v1/production/tiktok/inbox/{pid}/send"]),
+    ("F05 F06", ["POST /api/v1/production/tiktok/inbox/{pid}/status"]),
+]
+TEST_GROUPS += [
+    (
+        "A07",
+        "tests/test_material_observations.py",
+        "MaterialObservationsTests.test_empty_cloud_download_does_not_starve_ready_file_in_single_item_pages",
+    ),
+    (
+        "I01 I04 L01",
+        "tests/test_material_observations.py",
+        "MaterialObservationsTests.test_phone_rotation_receipt_image_fallback_and_director_cache_survives_restart",
+    ),
+    (
+        "L03 L06 S02",
+        "tests/test_material_observations.py",
+        "MaterialObservationsTests.test_real_clip_on_still_and_video_with_manual_override",
+    ),
+    (
+        "L06",
+        "tests/test_material_observations.py",
+        "MaterialObservationsTests.test_manual_tag_drives_director_across_asset_and_version_entry_points",
+    ),
+    (
+        "G02 G03 N04",
+        "tests/test_batches.py",
+        "BatchGenerationTransport.test_frozen_image_and_directed_prompt_variants_mix_and_render",
+    ),
+    (
+        "G03 H07",
+        "tests/test_batches.py",
+        "BatchGenerationTransport.test_opt_in_source_fallback_obeys_terminal_receipt_and_preserves_lineage",
+    ),
+    (
+        "E05",
+        "tests/test_media.py",
+        "MediaIntegrationTests.test_rect_mask_after_rotation_and_cover_is_applied_once_to_decoded_pixels",
+    ),
+    (
+        "E06",
+        "tests/test_batches.py",
+        "BatchTests.test_locked_manual_sample_renders_and_protects_nested_parameters_on_next_edit",
+    ),
+    (
+        "C11 H06",
+        "tests/test_team_recovery.py",
+        "TeamRecoveryTests.test_restart_between_provider_receipt_and_checkpoint_keeps_frozen_inputs",
+    ),
+    (
+        "C07 C09",
+        "tests/test_team_recovery.py",
+        "TeamRecoveryTests.test_judge_that_repeats_creator_check_stops_without_decision",
+    ),
+    (
+        "H06 H07",
+        "tests/test_team_recovery.py",
+        "TeamRecoveryTests.test_unknown_looks_up_original_receipt_without_sending_another_call",
+    ),
+    (
+        "F01 F02 F04",
+        "tests/test_batch_publications.py",
+        "BatchPublicationTests.test_resume_pages_scope_large_approval_history_and_conflicts",
+    ),
+    (
+        "F04 F05 F06",
+        "tests/test_batch_publications.py",
+        "BatchPublicationTests.test_inbox_scopes_signed_bytes_status_and_no_duplicate_send",
+    ),
+    (
+        "F05",
+        "tests/test_batch_publications.py",
+        "BatchPublicationTests.test_lost_initial_receipt_prevents_replay_and_binds_authorization_before_init",
+    ),
+    (
+        "F09",
+        "tests/test_batch_publication_migration.py",
+        "BatchPublicationMigrationTests.test_multihop_account_move_prepare_replay_and_distinct_channels",
+    ),
+    (
+        "F09",
+        "tests/test_batch_publication_migration.py",
+        "BatchPublicationMigrationTests.test_concurrent_prepare_and_move_cannot_bind_two_independent_intents",
+    ),
+    (
+        "F09",
+        "tests/test_batch_publication_migration.py",
+        "BatchPublicationMigrationTests.test_legacy_successor_membership_and_project_tenant_guards",
+    ),
+]
+
+TEST_GROUPS += [
+    (
+        "S04",
+        "tests/test_asset_families.py",
+        "AssetFamilyTests.test_complete_link_prevents_transitive_overmerge_and_breaks_ties_stably",
+    ),
+    (
+        "S04",
+        "tests/test_asset_families.py",
+        "AssetFamilyTests.test_clip_suggest_confirm_revoke_and_revalidate_pinned_frame_evidence",
+    ),
+]
+
+TEST_GROUPS += [("S04", "scripts/verify_semantic_families.py", "run")]
+
+
 def read_audit_rows():
     rows = {}
     for line in (ROOT / "docs/source-coverage-review.md").read_text().splitlines():

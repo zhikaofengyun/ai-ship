@@ -115,6 +115,8 @@ def run(output, round_id, engine):
             find("name").fill("声画实测")
             find("goals").fill("Match spoken words to two blue squares")
             dialog.locator("form[data-form] button[type=submit]").click()
+            expect(page).to_have_url(re.compile(r"#production/batches$"))
+            page.locator('.batch-head a[href="#production"]').click()
             expect(page).to_have_url(re.compile("#production$"))
             page.locator("[data-production-files]").set_input_files(str(src))
             expect(page.locator(".director-source input:checked")).to_have_count(1, timeout=40000)

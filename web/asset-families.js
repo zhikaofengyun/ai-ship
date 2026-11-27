@@ -116,6 +116,62 @@ export function compare(ctx) {
     },
   );
 }
+function clipReview(ctx, audit, assets, confirmed = new Set()) {
+  const d = audit.data;
+  const memberLabel = (id) => esc(label(assets.find((r) => r.id === id)));
+  const frameTime = (pts) => (pts / 1000000).toFixed(3) + " 秒";
+  const dialog = modal(
+    "视觉语义候选族",
+    `<p>阈值 ${esc(d.threshold)} · 模型 ${esc(d.space)} · 未归组 ${d.unmatched.length} 项</p>` +
+      (d.unmatched.length
+        ? `<p>${d.unmatched.map(memberLabel).join("、")}</p>`
+        : "") +
+      d.groups
+        .map(
+          (g, i) => `<section><h3>${g.members.map(memberLabel).join("、")}</h3>
+      <p>组内最低相似度 ${g.minimum_score.toFixed(3)}</p>
+      ${g.members
+        .map((id) => {
+          const e = d.evidence[id],
+            url = "/api/v1/media/" + encodeURIComponent(id) + "/file";
+          const r = assets.find((r) => r.id === id),
+            still = r.data.probe?.is_still;
+          return `<figure><figcaption>${memberLabel(id)} · v${e.asset.version} · 采样于 ${e.frames.map((f) => frameTime(f.pts_us)).join("、")}</figcaption>${still ? `<img src="${url}" alt="${memberLabel(id)}" style="max-width:100%;max-height:180px">` : `<video controls preload="metadata" style="max-width:100%;max-height:180px" src="${url}"></video>`}</figure>`;
+        })
+        .join("")}
+      <details><summary>逐对分数与最相似采样时刻</summary><ul>${g.pairs.map((p) => `<li>${memberLabel(p.left)} · ${frameTime(p.left_pts_us)} / ${memberLabel(p.right)} · ${frameTime(p.right_pts_us)}，双向覆盖分 ${p.score.toFixed(3)}，最佳帧分 ${p.best_frame_cosine.toFixed(3)}</li>`).join("")}</ul></details>
+      <button type="button" class="button" data-clip-group="${i}" ${confirmed.has(i) ? "disabled" : ""}>${confirmed.has(i) ? "已确认" : "复核这个族"}</button></section>`,
+        )
+        .join("") +
+      (d.groups.length ? "" : "<p>当前阈值下没有可复核的相似族。</p>"),
+    null,
+    true,
+  );
+  for (const button of dialog.querySelectorAll("[data-clip-group]")) {
+    const i = Number(button.dataset.clipGroup);
+    button.onclick = () =>
+      form(
+        "确认视觉语义族",
+        field("素材族名称", "name", "", "text", "required") +
+          area("人工复核依据", "reason", "", "required"),
+        "确认分组",
+        async (v, key) => {
+          await post(ctx, "group", key, {
+            mode: "review_clip",
+            members: d.groups[i].members.map((id) => pin(d.evidence[id].asset)),
+            audit: pin(audit),
+            name: v.get("name"),
+            reason: v.get("reason"),
+          });
+          confirmed.add(i);
+          await ctx.reloadData();
+          await ctx.refresh();
+          clipReview(ctx, audit, assets, confirmed);
+        },
+      );
+  }
+}
+
 export function families(ctx) {
   const assets = ctx.records("AssetVersion");
   const groups = ctx
@@ -130,12 +186,13 @@ export function families(ctx) {
     select("分组依据", "mode", [
       ["provenance", "共同源素材"],
       ["semantic", "人工语义类目"],
+      ["clip", "AI 视觉语义聚类"],
       ["retire", "撤销人工分组"],
     ]) +
       `<label data-members class="field"><span>素材成员</span><select name="members" multiple size="5">${assets.map((r) => `<option value="${esc(r.id)}">${esc(label(r))}</option>`).join("")}</select></label>` +
       `<div data-group hidden>${select("待撤销的素材族", "group", opts(groups))}</div>` +
-      field("分组名称", "name", "", "text", "required") +
-      area("依据", "reason", "", "required"),
+      `<div data-threshold hidden>${field("组内最低双向视觉相似度", "threshold", "0.80", "number", 'min="0.5" max="1" step="0.01"')}</div>` +
+      `<div data-manual>${field("分组名称", "name", "", "text", "required")}${area("依据", "reason", "", "required")}</div>`,
     "保存分组",
     async (v, key) => {
       const mode = v.get("mode"),
@@ -147,6 +204,16 @@ export function families(ctx) {
                   .getAll("members")
                   .map((id) => pin(assets.find((a) => a.id === id))),
               };
+      if (mode === "clip") {
+        if (payload.members.length < 2 || payload.members.length > 32)
+          throw new Error("请选择 2 至 32 个已建画面索引的照片或视频。");
+        const { audit } = await post(ctx, "suggest", key, {
+          ...payload,
+          threshold: Number(v.get("threshold")),
+        });
+        clipReview(ctx, audit, assets);
+        return;
+      }
       const { cluster } = await post(ctx, "group", key, {
         mode,
         name: v.get("name"),
@@ -164,7 +231,27 @@ export function families(ctx) {
   );
   const mode = dlg.querySelector("[name=mode]");
   const display = () => {
-    const retiring = mode.value === "retire";
+    const retiring = mode.value === "retire",
+      clip = mode.value === "clip";
+    for (const option of dlg.querySelector("[name=members]").options) {
+      const record = assets.find((r) => r.id === option.value);
+      const unavailable =
+        clip &&
+        (!record.data.probe?.has_video ||
+          ["local_cold", "quarantine"].includes(record.data.storage_tier));
+      option.disabled = Boolean(unavailable);
+      if (unavailable) option.selected = false;
+    }
+    dlg.querySelector("[data-threshold]").hidden = !clip;
+    dlg.querySelector("[name=threshold]").disabled = !clip;
+    dlg.querySelector("[data-manual]").hidden = clip;
+    for (const el of dlg.querySelectorAll(
+      "[data-manual] input, [data-manual] textarea",
+    ))
+      el.disabled = clip;
+    dlg.querySelector("form[data-form] [type=submit]").textContent = clip
+      ? "生成待复核候选族"
+      : "保存分组";
     dlg.querySelector("[data-members]").hidden = retiring;
     dlg.querySelector("[data-group]").hidden = !retiring;
     const groupsInput = dlg.querySelector("[name=group]");

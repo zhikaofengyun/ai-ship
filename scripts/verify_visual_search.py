@@ -84,7 +84,9 @@ def verify(out, fixtures, browser):
         )
         with (
             server(
-                tmp / "project", out, fixture_env={"AI_SHIP_CLIP_MODEL_DIR": str(model)}
+                tmp / "project",
+                out,
+                fixture_env={"AI_SHIP_CLIP_MODEL_DIR": str(model), "AI_SHIP_MATERIAL_WORKER": "0"},
             ) as base,
             httpx.Client(base_url=base + "/api/v1", trust_env=False, timeout=90) as client,
         ):

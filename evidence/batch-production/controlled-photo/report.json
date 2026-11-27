@@ -1,0 +1,209 @@
+{
+  "photo_sha256": "98fef48404382e8c56bc834308632092e90a8f4d089174e4677f67fe9fe457cc",
+  "source": {
+    "page_id": 188828736,
+    "title": "File:Traditional Ethiopian Coffee Roasting Ceremony.webm",
+    "mime": "video/webm",
+    "size_bytes": 6112712,
+    "sha1": "0a8930d4fe50dcc98bc792819540b0c4f9e2e850",
+    "description_url": "https://commons.wikimedia.org/wiki/File:Traditional_Ethiopian_Coffee_Roasting_Ceremony.webm",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "author": "Keria T",
+    "credit": "Own work",
+    "attribution_required": "true",
+    "file_timestamp": "2026-04-11T19:00:43Z"
+  },
+  "items": [
+    {
+      "motion": "horizontal",
+      "canvas": {
+        "width": 432,
+        "height": 768,
+        "fps": 24
+      },
+      "template": {
+        "audio_tracks": [],
+        "captions": [],
+        "clips": [
+          {
+            "asset_id": "asset_bf9266a1b15c4e52b2453ae0a5aee878",
+            "fit": "cover",
+            "height": 960,
+            "id": "photo",
+            "keyframes": {
+              "x": [
+                {
+                  "time": 0,
+                  "value": -4
+                },
+                {
+                  "time": 1.9583333333333333,
+                  "value": -104
+                }
+              ]
+            },
+            "name": "咖啡与桌布",
+            "source_in": 0,
+            "source_out": 2,
+            "timeline_start": 0,
+            "track": 0,
+            "width": 540,
+            "x": -54,
+            "y": -96
+          }
+        ],
+        "format": {
+          "fps": 24,
+          "height": 768,
+          "width": 432
+        },
+        "locks": [
+          {
+            "owner": "editor",
+            "path": "clips.0.keyframes"
+          }
+        ],
+        "name": "horizontal"
+      },
+      "template_pin": {
+        "id": "timeline_0b1b1d818a9743eb979e3989fea41030",
+        "version": 1
+      },
+      "batch_id": "batch_4c3126217a970d3052a34729e2d15241d903ad50",
+      "artifact_id": "artifact_9408fe83db054aee8fdee7509f595205",
+      "generation_calls": 0,
+      "requested_axis_displacement_px": -100,
+      "measured_translation": {
+        "dx": -100,
+        "dy": 0,
+        "aligned_mean_luma_error": 0.0752,
+        "unshifted_mean_luma_error": 47.1203,
+        "compared_pixels": 532
+      },
+      "sha256": "ffd37707ea74d1a45e78dd4d6c58180f6805400c6a11d8881f4506756e19a025",
+      "decoded_frames": 48,
+      "distinct_decoded_frames": 48,
+      "mapping": {
+        "clip_use_id": "photo",
+        "contribution_semantics": "layer_weight_before_compositing",
+        "mapping_curve": {
+          "kind": "hold",
+          "source_start_tick": 0
+        },
+        "occlusion_evaluated": false,
+        "precision": "approximate",
+        "role": "visual",
+        "source_interval": [
+          0,
+          0
+        ],
+        "source_ref": {
+          "id": "asset_bf9266a1b15c4e52b2453ae0a5aee878",
+          "kind": "Asset",
+          "version": 1
+        },
+        "transitions": [],
+        "weight_curve": {
+          "kind": "constant",
+          "value": 1
+        }
+      }
+    },
+    {
+      "motion": "vertical",
+      "canvas": {
+        "width": 432,
+        "height": 768,
+        "fps": 24
+      },
+      "template": {
+        "audio_tracks": [],
+        "captions": [],
+        "clips": [
+          {
+            "asset_id": "asset_bf9266a1b15c4e52b2453ae0a5aee878",
+            "fit": "cover",
+            "height": 960,
+            "id": "photo",
+            "keyframes": {
+              "y": [
+                {
+                  "time": 0,
+                  "value": -4
+                },
+                {
+                  "time": 1.9583333333333333,
+                  "value": -188
+                }
+              ]
+            },
+            "name": "咖啡与桌布",
+            "source_in": 0,
+            "source_out": 2,
+            "timeline_start": 0,
+            "track": 0,
+            "width": 540,
+            "x": -54,
+            "y": -96
+          }
+        ],
+        "format": {
+          "fps": 24,
+          "height": 768,
+          "width": 432
+        },
+        "locks": [
+          {
+            "owner": "editor",
+            "path": "clips.0.keyframes"
+          }
+        ],
+        "name": "vertical"
+      },
+      "template_pin": {
+        "id": "timeline_aab76cc9d6504808a0b05884b8accf19",
+        "version": 1
+      },
+      "batch_id": "batch_f27694673ef149b5b0865b01a01bf8ae81e54ff9",
+      "artifact_id": "artifact_fff59240925042158f9c41bc8a76e331",
+      "generation_calls": 0,
+      "requested_axis_displacement_px": -184,
+      "measured_translation": {
+        "dx": 0,
+        "dy": -184,
+        "aligned_mean_luma_error": 0.1241,
+        "unshifted_mean_luma_error": 51.7519,
+        "compared_pixels": 532
+      },
+      "sha256": "e90094489670c91a1282bb17e9a5050a9bd9f4cc33b0446482a76bd7abbb7f52",
+      "decoded_frames": 48,
+      "distinct_decoded_frames": 48,
+      "mapping": {
+        "clip_use_id": "photo",
+        "contribution_semantics": "layer_weight_before_compositing",
+        "mapping_curve": {
+          "kind": "hold",
+          "source_start_tick": 0
+        },
+        "occlusion_evaluated": false,
+        "precision": "approximate",
+        "role": "visual",
+        "source_interval": [
+          0,
+          0
+        ],
+        "source_ref": {
+          "id": "asset_bf9266a1b15c4e52b2453ae0a5aee878",
+          "kind": "Asset",
+          "version": 1
+        },
+        "transitions": [],
+        "weight_curve": {
+          "kind": "constant",
+          "value": 1
+        }
+      }
+    }
+  ]
+}

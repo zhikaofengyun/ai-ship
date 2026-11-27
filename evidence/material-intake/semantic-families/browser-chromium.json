@@ -1,0 +1,15 @@
+{
+  "engine": "chromium",
+  "version": "158.0.8127.0",
+  "threshold": 0.8,
+  "space": "clip-b32/98c718df886ac03f7aeb914c9c6e2a9850f141cb071cadd6f65cc7a812c4715d",
+  "minimum_similarity": 0.9529263662777755,
+  "matched_inputs": [
+    "coffee-table-frame.jpg",
+    "horizontal.mp4"
+  ],
+  "unmatched_input": "astronaut.png",
+  "confirmed_revision": 1,
+  "retired_revision": 2,
+  "page_errors": []
+}

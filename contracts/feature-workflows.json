@@ -3381,8 +3381,8 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "真实浏览器文件上传、SHA-256 原件去重、分块续传及单文件失败条目。",
-            "limits": "后台文件稳定性监视、完整文件夹父批次、连接器续传和所有来源用途选择尚缺。",
+            "operable_scope": "真实浏览器文件上传、SHA-256 原件去重、分块续传及单文件失败条目。 受授权采集目录跟踪文件稳定性，空占位文件可让位给已下载完成文件。",
+            "limits": "多设备和不同网盘客户端的同步语义、云端直连与连接器续传需分别验收。",
             "direct_endpoints": [
               "POST /api/v1/media/import",
               "POST /api/v1/media/uploads",
@@ -3391,12 +3391,18 @@
             ],
             "commands": [],
             "code": [
+              "app/directory_import.py",
               "app/media.py"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_media.py",
                 "symbol": "MediaIntegrationTests.test_chunk_upload_resume_duplicate_chunk_and_full_hash",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_material_observations.py",
+                "symbol": "MaterialObservationsTests.test_empty_cloud_download_does_not_starve_ready_file_in_single_item_pages",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -3765,25 +3771,28 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "本地 ComfyUI 通过真实 SD1.5 权重生成 PNG 单帧，应用核验编码、帧数、尺寸并保留原件。该原件另按用户指定规格生成 24 帧、1 秒的定格视频。需参考图的配置接收项目原图与具体修订，验证上传、读回和图连接。也可指定拍摄视频的源时码，固定原片修订、实际显示帧时间与 PNG 摘要。",
+            "operable_scope": "本地 ComfyUI 通过真实 SD1.5 权重生成 PNG 单帧，应用核验编码、帧数、尺寸并保留原件。该原件另按用户指定规格生成 24 帧、1 秒的定格视频。需参考图的配置接收项目原图与具体修订，验证上传、读回和图连接。也可指定拍摄视频的源时码，固定原片修订、实际显示帧时间与 PNG 摘要。 同一项目静态图的固定修订与 PNG 摘要进入两个不同提示的图生视频任务，并回读校验上传字节。",
             "limits": "静态生成中的参考边界、参考风格和商品身份分别需要内容评估。",
             "direct_endpoints": [
               "GET /api/v1/production/generation",
               "GET /api/v1/production/generation/profiles",
               "GET /api/v1/production/generation/reference/assets",
               "GET /api/v1/production/generation/reference/frame",
+              "POST /api/v1/production/batches",
               "POST /api/v1/production/generation",
               "POST /api/v1/production/generation/{id}/hold",
               "POST /api/v1/production/generation/{id}/refresh"
             ],
             "commands": [],
             "code": [
+              "app/batch_combinations.py",
               "app/batches.py",
               "app/catalog.py",
               "app/execution.py",
               "app/generation.py",
               "app/generation_frames.py",
               "app/schemas.py",
+              "web/batch-workspace.js",
               "web/controls.js",
               "web/generation-controls.js",
               "web/reference-frame.js"
@@ -3833,6 +3842,25 @@
                 "file": "tests/test_generation.py",
                 "symbol": "GenerationTests.test_continuous_segment_receipt_replay_boundaries_permissions_and_mixed_batch",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batches.py",
+                "symbol": "BatchGenerationTransport.test_frozen_image_and_directed_prompt_variants_mix_and_render",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              }
+            ],
+            "verification_runs": [
+              {
+                "id": "same-photo-two-prompts-v1",
+                "path": "evidence/batch-production/directed-still/report.json",
+                "sha256": "0a39e189711d46cc4318215cf2df9514c2bab0835fe3eed27d901772187ac8c8",
+                "checks": [
+                  {
+                    "criterion": "Q04",
+                    "extent": "partial",
+                    "observation": "同一授权实拍 PNG 发送给两个不同提示和种子的真实小模型任务，各得四个不同解码帧。实拍项、两生成项均编码为成片。两个生成项均未通过商品与运镜目检。"
+                  }
+                ]
               }
             ],
             "full_business_acceptance": false
@@ -3993,7 +4021,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "本地 ComfyUI 实际运行 AnimateDiff-Lightning 两步模型与 SD1.5，输入提示词和种子，取得含 8 个不同解码帧的 VP9 视频。原件入库后经过项目提案、批准及 H.264/AAC 输出全片解码，保存来源与成片摘要。参考图路线固定项目图像版本并将已读回校验的像素送到已连接的 LoadImage 节点。批量与单条入口均可从实拍视频按显示时间取参考帧，双浏览器已验证实际像素与协议上传一致。批次内同一镜头槽可在已拍片段与按提示生成的补镜之间选择，生成项保留种子、来源和请求收据。",
+            "operable_scope": "本地 ComfyUI 实际运行 AnimateDiff-Lightning 两步模型与 SD1.5，输入提示词和种子，取得含 8 个不同解码帧的 VP9 视频。原件入库后经过项目提案、批准及 H.264/AAC 输出全片解码，保存来源与成片摘要。参考图路线固定项目图像版本并将已读回校验的像素送到已连接的 LoadImage 节点。批量与单条入口均可从实拍视频按显示时间取参考帧，双浏览器已验证实际像素与协议上传一致。批次内同一镜头槽可在已拍片段与按提示生成的补镜之间选择，生成项保留种子、来源和请求收据。 固定同图给两个方向发出两次真实本机推理，取得各四帧的候选，与一个实拍项共享同一批次；小权重两项均呈噪点，商品和运镜未通过目检。",
             "limits": "双端帧控制、局部蒙版重绘、商品身份与跨镜头连续性尚需独立验收。",
             "direct_endpoints": [
               "GET /api/v1/production/generation",
@@ -4079,6 +4107,35 @@
                 "file": "tests/test_batches.py",
                 "symbol": "BatchGenerationTransport.test_one_shot_can_choose_camera_or_generation_and_bypass_a_full_window",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batches.py",
+                "symbol": "BatchGenerationTransport.test_frozen_image_and_directed_prompt_variants_mix_and_render",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batches.py",
+                "symbol": "BatchGenerationTransport.test_opt_in_source_fallback_obeys_terminal_receipt_and_preserves_lineage",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              }
+            ],
+            "verification_runs": [
+              {
+                "id": "same-photo-two-prompts-v1",
+                "path": "evidence/batch-production/directed-still/report.json",
+                "sha256": "0a39e189711d46cc4318215cf2df9514c2bab0835fe3eed27d901772187ac8c8",
+                "checks": [
+                  {
+                    "criterion": "Q01",
+                    "extent": "partial",
+                    "observation": "同一授权实拍 PNG 发送给两个不同提示和种子的真实小模型任务，各得四个不同解码帧。实拍项、两生成项均编码为成片。两个生成项均未通过商品与运镜目检。"
+                  },
+                  {
+                    "criterion": "Q02",
+                    "extent": "partial",
+                    "observation": "同一授权实拍 PNG 发送给两个不同提示和种子的真实小模型任务，各得四个不同解码帧。实拍项、两生成项均编码为成片。两个生成项均未通过商品与运镜目检。"
+                  }
+                ]
               }
             ],
             "full_business_acceptance": false
@@ -4944,7 +5001,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "FFprobe 探测真实媒体、租户对象目录、内容 hash 与不可变原件。",
+            "operable_scope": "FFprobe 探测真实媒体、租户对象目录、内容 hash 与不可变原件。 手机 MOV 回归保留容器和旋转矩阵，可按显示方向抽帧。",
             "limits": "不是强隔离媒体沙箱；多落点迁移、恶意解码器隔离和冷热存储策略未验。",
             "direct_endpoints": [
               "POST /api/v1/media/import",
@@ -4960,6 +5017,11 @@
               {
                 "file": "tests/test_media.py",
                 "symbol": "MediaIntegrationTests.test_chunk_upload_resume_duplicate_chunk_and_full_hash",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_material_observations.py",
+                "symbol": "MaterialObservationsTests.test_phone_rotation_receipt_image_fallback_and_director_cache_survives_restart",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -5431,7 +5493,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "真实裁切/恒定变速/尺寸/旋转/翻转/调色/锐化/响度配方、实际输出与近似 TimeMap。",
+            "operable_scope": "真实裁切/恒定变速/尺寸/旋转/翻转/调色/锐化/响度配方、实际输出与近似 TimeMap。 MOV、静态图及成片的时长、采样回执和编码路径有定向回归。",
             "limits": "仅固定支持算子；AI 修复/去水印、自动重复帧、随机配方、任意顺序和完整 VFR 映射未实现。",
             "direct_endpoints": [
               "POST /api/v1/media/{asset_id}/transform"
@@ -5446,6 +5508,11 @@
               {
                 "file": "tests/test_media.py",
                 "symbol": "MediaIntegrationTests.test_transform_real_bytes_trim_scale_color_loudness",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_material_observations.py",
+                "symbol": "MaterialObservationsTests.test_phone_rotation_receipt_image_fallback_and_director_cache_survives_restart",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               },
               {
@@ -6235,19 +6302,23 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "既有镜头切分及帧预览；制作台追加按实际源时长抽取的画面样本与采样时刻。",
+            "operable_scope": "既有镜头切分及帧预览；制作台追加按实际源时长抽取的画面样本与采样时刻。 导入后自动排队采样；失败或重启能核对原件版本与加工授权，静态图可用第零秒帧。",
             "limits": "抽样与场景差异不能证明全片镜头边界或全部内容语义。",
             "direct_endpoints": [
               "GET /api/v1/media/{asset_id}/frame",
               "POST /api/v1/media/{asset_id}/detect-shots",
+              "POST /api/v1/production/asset-index/analyze",
               "POST /api/v1/production/auto-edits"
             ],
             "commands": [],
             "code": [
+              "app/asset_index.py",
               "app/execution.py",
+              "app/material_worker.py",
               "app/media.py",
               "app/store.py",
-              "app/visual_candidates.py"
+              "app/visual_candidates.py",
+              "app/visual_index.py"
             ],
             "test_definitions": [
               {
@@ -6261,9 +6332,28 @@
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               },
               {
+                "file": "tests/test_material_observations.py",
+                "symbol": "MaterialObservationsTests.test_phone_rotation_receipt_image_fallback_and_director_cache_survives_restart",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
                 "file": "tests/test_execution.py",
                 "symbol": "ExecutionTests.test_real_transform_then_extract_audio_and_idempotent_replay",
                 "scope": "共享本地执行器的真实媒体示例；不证明本功能的全部领域语义"
+              }
+            ],
+            "verification_runs": [
+              {
+                "id": "material-ingest-real-frames-v1",
+                "path": "evidence/material-intake/result.json",
+                "sha256": "ff38c6dae2e3366765ba47a03458ba5eb5d78e374217c731541f85d56b1ec12a",
+                "checks": [
+                  {
+                    "criterion": "Q02",
+                    "extent": "partial",
+                    "observation": "3 份素材自动入列并完成分析。宇航员图可由实际帧检索命中且没有标签候选；咖啡图和花卉视频有附时码与帧摘要的候选。"
+                  }
+                ]
               }
             ],
             "full_business_acceptance": false
@@ -6546,9 +6636,10 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "人工分段标签保留说明、版本引用、可空置信度与人工锁。从 CLIP 检索命中可预览实际源帧，再由操作员填写场景或动作、区间及依据。实测两种浏览器保存同一 3,400,000 微秒源帧，服务端拒绝错误画面指纹。[帧与标注实测](../evidence/batch-production/visual-search/result.json)",
+            "operable_scope": "人工分段标签保留说明、版本引用、可空置信度与人工锁。从 CLIP 检索命中可预览实际源帧，再由操作员填写场景或动作、区间及依据。实测两种浏览器保存同一 3,400,000 微秒源帧，服务端拒绝错误画面指纹。[帧与标注实测](../evidence/batch-production/visual-search/result.json) 固定版本 CLIP 在花卉视频的多个实帧给出花卉/花园候选，分别保存时码、帧摘要、余弦分和词表版本。",
             "limits": "相隔采样帧尚未进行联合时序分析。动作方向、遮挡前后身份、数量与跨镜连续性缺少自动判定及标注集验收，坐标迁移和标签体系升级仍待完成。",
             "direct_endpoints": [
+              "POST /api/v1/production/asset-index/analyze",
               "POST /api/v1/production/asset-index/frames/build",
               "POST /api/v1/production/asset-index/query",
               "POST /api/v1/production/tags"
@@ -6557,7 +6648,9 @@
             "code": [
               "app/asset_index.py",
               "app/frame_vectors.py",
+              "app/material_worker.py",
               "app/production.py",
+              "app/visual_candidates.py",
               "app/visual_index.py",
               "web/asset-search.js"
             ],
@@ -6570,6 +6663,11 @@
               {
                 "file": "scripts/verify_visual_search.py",
                 "symbol": "verify",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_material_observations.py",
+                "symbol": "MaterialObservationsTests.test_real_clip_on_still_and_video_with_manual_override",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -7090,20 +7188,49 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "人工片段标签、置信度可空、说明证据、版本引用与人工锁字段。",
-            "limits": "多帧视觉识别、遮挡跟踪、数量口径、连续性、坐标迁移和标签体系升级未完成。",
+            "operable_scope": "人工片段标签、置信度可空、说明证据、版本引用与人工锁字段。 机器候选携带实帧证据，人工指定的素材版本及区间可优先进入导演选片。",
+            "limits": "可定制词表、多版本本体迁移和复杂跨镜场景的纠错效果仍需验证。",
             "direct_endpoints": [
+              "POST /api/v1/production/asset-index/analyze",
               "POST /api/v1/production/tags"
             ],
             "commands": [],
             "code": [
-              "app/production.py"
+              "app/asset_index.py",
+              "app/material_worker.py",
+              "app/production.py",
+              "app/visual_candidates.py",
+              "app/visual_index.py"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_production.py",
                 "symbol": "RealMediaCrossDomainTests.test_real_probe_bounds_tags_search_and_audio_anchors",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_material_observations.py",
+                "symbol": "MaterialObservationsTests.test_real_clip_on_still_and_video_with_manual_override",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_material_observations.py",
+                "symbol": "MaterialObservationsTests.test_manual_tag_drives_director_across_asset_and_version_entry_points",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              }
+            ],
+            "verification_runs": [
+              {
+                "id": "material-ingest-real-frames-v1",
+                "path": "evidence/material-intake/result.json",
+                "sha256": "ff38c6dae2e3366765ba47a03458ba5eb5d78e374217c731541f85d56b1ec12a",
+                "checks": [
+                  {
+                    "criterion": "Q02",
+                    "extent": "partial",
+                    "observation": "3 份素材自动入列并完成分析。宇航员图可由实际帧检索命中且没有标签候选；咖啡图和花卉视频有附时码与帧摘要的候选。"
+                  }
+                ]
               }
             ],
             "full_business_acceptance": false
@@ -7680,10 +7807,11 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "可选多语言文本向量与关键词融合，实测中文描述能召回英文素材。另可用本地 CLIP 比较文字与视频采样帧，返回最佳命中的素材版本、源时码与画面指纹。建索引和检索均重验加工授权，名称及标签始终可查。[文本实测](../evidence/batch-production/semantic-retrieval.json) · [画面实测](../evidence/batch-production/visual-search/result.json)",
+            "operable_scope": "可选多语言文本向量与关键词融合，实测中文描述能召回英文素材。另可用本地 CLIP 比较文字与视频采样帧，返回最佳命中的素材版本、源时码与画面指纹。建索引和检索均重验加工授权，名称及标签始终可查。[文本实测](../evidence/batch-production/semantic-retrieval.json) · [画面实测](../evidence/batch-production/visual-search/result.json) 自动分析两张图片和一段视频后，实帧检索返回宇航员原图及其源帧指纹；该图的机器候选标签为空。",
             "limits": "音频向量、文字/视觉/音频与结构信号的统一排序、大规模近邻索引及生产召回率验收仍待完成。视觉专项覆盖两份视频、六帧、三条英文查询。",
             "direct_endpoints": [
               "GET /api/v1/production/search",
+              "POST /api/v1/production/asset-index/analyze",
               "POST /api/v1/production/asset-index/embed",
               "POST /api/v1/production/asset-index/frames/build",
               "POST /api/v1/production/asset-index/query"
@@ -7693,9 +7821,11 @@
               "app/asset_index.py",
               "app/frame_vectors.py",
               "app/index_schema.py",
+              "app/material_worker.py",
               "app/media.py",
               "app/production.py",
               "app/text_vectors.py",
+              "app/visual_candidates.py",
               "app/visual_index.py",
               "scripts/verify_semantic_search.py",
               "web/asset-search.js"
@@ -7725,6 +7855,11 @@
                 "file": "tests/test_visual_index.py",
                 "symbol": "VisualIndexTests.test_missing_or_invalid_weights_preserve_literal_search_and_explicit_build_status",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_material_observations.py",
+                "symbol": "MaterialObservationsTests.test_real_clip_on_still_and_video_with_manual_override",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
             "verification_runs": [
@@ -7747,6 +7882,18 @@
                     "criterion": "Q04",
                     "extent": "partial",
                     "observation": "固定测试素材的跨模型隔离、无向量字面检索及双浏览器源帧定位。"
+                  }
+                ]
+              },
+              {
+                "id": "material-ingest-real-frames-v1",
+                "path": "evidence/material-intake/result.json",
+                "sha256": "ff38c6dae2e3366765ba47a03458ba5eb5d78e374217c731541f85d56b1ec12a",
+                "checks": [
+                  {
+                    "criterion": "Q01",
+                    "extent": "partial",
+                    "observation": "3 份素材自动入列并完成分析。宇航员图可由实际帧检索命中且没有标签候选；咖啡图和花卉视频有附时码与帧摘要的候选。"
                   }
                 ]
               }
@@ -8073,16 +8220,18 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "可核对同源制作谱系，也可人工将素材版本归入语义族并退役关系；活跃素材族参与冷却计算。",
-            "limits": "没有接入可训练的语义聚类模型、自动层级划分或大规模分群评测。",
+            "operable_scope": "保留同源制作谱系与人工语义族。可对选定版本的同模型 CLIP 帧向量计算双向覆盖和完全链接聚类，保存成员、时码与相似性证据。实测四份素材，咖啡照片与其平移裁切视频在 0.8 阈值下入组，另外两份未匹配。人工可核对证据建族或退役。活跃素材族参与冷却计算。",
+            "limits": "跨品类准确率、超过单次候选上限的全库发现、自动层级管理及多人合并拆分的业务验收待补。",
             "direct_endpoints": [
-              "POST /api/v1/production/asset-families/group"
+              "POST /api/v1/production/asset-families/group",
+              "POST /api/v1/production/asset-families/suggest"
             ],
             "commands": [],
             "code": [
               "app/asset_families.py",
               "app/catalog.py",
               "app/schemas.py",
+              "app/semantic_families.py",
               "web/asset-families.js",
               "web/controls.js"
             ],
@@ -8096,6 +8245,40 @@
                 "file": "tests/test_asset_families.py",
                 "symbol": "AssetFamilyTests.test_same_bytes_and_same_source_distinct_from_semantic_and_partial_ranges",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_asset_families.py",
+                "symbol": "AssetFamilyTests.test_complete_link_prevents_transitive_overmerge_and_breaks_ties_stably",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_asset_families.py",
+                "symbol": "AssetFamilyTests.test_clip_suggest_confirm_revoke_and_revalidate_pinned_frame_evidence",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "scripts/verify_semantic_families.py",
+                "symbol": "run",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              }
+            ],
+            "verification_runs": [
+              {
+                "id": "semantic-family-real-clip-v1",
+                "path": "evidence/material-intake/semantic-families/result.json",
+                "sha256": "f27fc8343b567c4913b2892a57f309c6257893b6cf6a1b1fe18af57897e94dd9",
+                "checks": [
+                  {
+                    "criterion": "S04-R3",
+                    "extent": "partial",
+                    "observation": "四份实物素材中，咖啡原图与其移动裁切片同组，最低双向帧匹配分为 0.94954。宇航员与花卉没有入组；确认后的素材族从 v1 退役为 v2。"
+                  },
+                  {
+                    "criterion": "Q01",
+                    "extent": "partial",
+                    "observation": "四份实物素材中，咖啡原图与其移动裁切片同组，最低双向帧匹配分为 0.94954。宇航员与花卉没有入组；确认后的素材族从 v1 退役为 v2。"
+                  }
+                ]
               }
             ],
             "full_business_acceptance": false
@@ -13220,7 +13403,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "生成和比较真实分镜变体、审查素材族与使用历史，遵守人工锁、配额及商品约束，选定版本可继续渲染。同一个混合配方用条目序号和种子决定各槽的素材来源，恢复时重建同样的选择。纯素材组合用完后，后续循环至少有一处生成镜头。",
+            "operable_scope": "生成和比较真实分镜变体、审查素材族与使用历史，遵守人工锁、配额及商品约束，选定版本可继续渲染。同一个混合配方用条目序号和种子决定各槽的素材来源，恢复时重建同样的选择。纯素材组合用完后，后续循环至少有一处生成镜头。 同图可冻结多条提示，逐项保留实际提示、种子和来源；生成失败且回执已确认时，可按配方选择回退原素材。",
             "limits": "跨平台疲劳观测、长期全库近重复阈值和商业作品综合创意验收尚缺。",
             "direct_endpoints": [
               "POST /api/v1/production/batches",
@@ -13260,6 +13443,25 @@
                 "file": "tests/test_batches.py",
                 "symbol": "BatchGenerationTransport.test_one_shot_can_choose_camera_or_generation_and_bypass_a_full_window",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batches.py",
+                "symbol": "BatchGenerationTransport.test_frozen_image_and_directed_prompt_variants_mix_and_render",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              }
+            ],
+            "verification_runs": [
+              {
+                "id": "same-photo-two-prompts-v1",
+                "path": "evidence/batch-production/directed-still/report.json",
+                "sha256": "0a39e189711d46cc4318215cf2df9514c2bab0835fe3eed27d901772187ac8c8",
+                "checks": [
+                  {
+                    "criterion": "Q01",
+                    "extent": "partial",
+                    "observation": "同一授权实拍 PNG 发送给两个不同提示和种子的真实小模型任务，各得四个不同解码帧。实拍项、两生成项均编码为成片。两个生成项均未通过商品与运镜目检。"
+                  }
+                ]
               }
             ],
             "full_business_acceptance": false
@@ -14857,7 +15059,7 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "有限关键帧、图层与五种相邻镜头转场；旋转并适配画幅后可施加归一化矩形遮罩，实际解码像素可核。",
+            "operable_scope": "有限关键帧、图层与五种相邻镜头转场；旋转并适配画幅后可施加归一化矩形遮罩，实际解码像素可核。 椭圆和矩形遮罩均在旋转及画幅适配后生效，椭圆中心和矩形内椭圆外像素用解码帧核对。",
             "limits": "任意轮廓、运动跟踪、非线性曲线和六层继承的综合验收待补。",
             "direct_endpoints": [
               "POST /api/v1/media/render",
@@ -14895,6 +15097,25 @@
                 "file": "tests/test_timeline_exchange.py",
                 "symbol": "TimelineExchangeTests.test_all_five_renderable_transitions_restore_full_ranges_and_source_link",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_media.py",
+                "symbol": "MediaIntegrationTests.test_rect_mask_after_rotation_and_cover_is_applied_once_to_decoded_pixels",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              }
+            ],
+            "verification_runs": [
+              {
+                "id": "sample-photo-motion-v1",
+                "path": "evidence/batch-production/controlled-photo/report.json",
+                "sha256": "4670ab8aef0c6498b79888c77ddbff5488255318b5fbcc71f0aec5a1aa6cbdca",
+                "checks": [
+                  {
+                    "criterion": "Q01",
+                    "extent": "partial",
+                    "observation": "同一咖啡原图经带人工关键帧锁的横移、纵移样片各渲染 48 个不同帧，位移分别为 −100 和 −184 像素，模型调用为零。"
+                  }
+                ]
               }
             ],
             "full_business_acceptance": false
@@ -15047,18 +15268,20 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "AI 提案中替换单个镜头后由人批准，时间线人工锁、版本冲突和变更守卫继续生效。",
+            "operable_scope": "AI 提案中替换单个镜头后由人批准，时间线人工锁、版本冲突和变更守卫继续生效。 手工样片可经锁版后批量替换素材，嵌套关键帧与人工锁在衍生时间线保留。",
             "limits": "该路径处理同一提案上的有界替换；对自然语言任意编辑命令、复杂轨道锁与代理并发重规划未验。",
             "direct_endpoints": [
               "POST /api/v1/dependencies/impact",
               "POST /api/v1/parameters/resolve",
-              "POST /api/v1/production/auto-edits/{run_id}/replace-shot"
+              "POST /api/v1/production/auto-edits/{run_id}/replace-shot",
+              "POST /api/v1/production/batches"
             ],
             "commands": [
               "ApplyChangeSet"
             ],
             "code": [
               "app/auto_edits.py",
+              "app/batches.py",
               "app/commands.py",
               "app/store.py",
               "app/workflow.py",
@@ -15074,6 +15297,25 @@
                 "file": "tests/test_auto_edits.py",
                 "symbol": "AutoEditTests.test_single_shot_fork_retains_unchanged_intervals_and_replays",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batches.py",
+                "symbol": "BatchTests.test_locked_manual_sample_renders_and_protects_nested_parameters_on_next_edit",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              }
+            ],
+            "verification_runs": [
+              {
+                "id": "sample-photo-motion-v1",
+                "path": "evidence/batch-production/controlled-photo/report.json",
+                "sha256": "4670ab8aef0c6498b79888c77ddbff5488255318b5fbcc71f0aec5a1aa6cbdca",
+                "checks": [
+                  {
+                    "criterion": "Q03",
+                    "extent": "partial",
+                    "observation": "同一咖啡原图经带人工关键帧锁的横移、纵移样片各渲染 48 个不同帧，位移分别为 −100 和 −184 像素，模型调用为零。"
+                  }
+                ]
               }
             ],
             "full_business_acceptance": false
@@ -18831,20 +19073,29 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "人工交付意图、预检、审批、回填实际帖子标识与证据；回填标未独立核实。",
-            "limits": "没有自动发送/上传/平台审核轮询、真实权限能力联调或完整平台可见性核对。",
+            "operable_scope": "人工交付意图、预检、审批、回填实际帖子标识与证据；回填标未独立核实。 批次可按序号分页准备人工交付或 TikTok 收件箱意图，限制项目、账号与渠道。",
+            "limits": "其余平台的传输实现、生产账号权限联调和可见性实测仍待验收。",
             "direct_endpoints": [
+              "GET /api/v1/production/batches/{bid}/publications",
+              "POST /api/v1/production/batches/{bid}/publications/prepare",
               "POST /api/v1/production/publications"
             ],
             "commands": [],
             "code": [
               "app/auth.py",
-              "app/production.py"
+              "app/batch_publications.py",
+              "app/production.py",
+              "web/batch-publications.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_production.py",
                 "symbol": "ProductionIntegrationTests.test_publication_reviews_current_rights_and_manual_receipt",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batch_publications.py",
+                "symbol": "BatchPublicationTests.test_resume_pages_scope_large_approval_history_and_conflicts",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -19003,21 +19254,30 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "人工交付意图、预检、审批、回填实际帖子标识与证据；回填标未独立核实。",
-            "limits": "没有自动发送/上传/平台审核轮询、真实权限能力联调或完整平台可见性核对。",
+            "operable_scope": "人工交付意图、预检、审批、回填实际帖子标识与证据；回填标未独立核实。 批次按具体成片及账号核对审批和授权后才可发送，权限变化会拦截。",
+            "limits": "生产平台审批与披露字段完整性、跨平台能力差异需实联。",
             "direct_endpoints": [
+              "GET /api/v1/production/batches/{bid}/publications",
               "GET /api/v1/production/publications/{publication_id}/preflight",
-              "POST /api/v1/production/approvals"
+              "POST /api/v1/production/approvals",
+              "POST /api/v1/production/batches/{bid}/publications/prepare"
             ],
             "commands": [],
             "code": [
               "app/auth.py",
-              "app/production.py"
+              "app/batch_publications.py",
+              "app/production.py",
+              "web/batch-publications.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_production.py",
                 "symbol": "ProductionIntegrationTests.test_publication_reviews_current_rights_and_manual_receipt",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batch_publications.py",
+                "symbol": "BatchPublicationTests.test_resume_pages_scope_large_approval_history_and_conflicts",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -19429,20 +19689,36 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "人工交付意图、预检、审批、回填实际帖子标识与证据；回填标未独立核实。",
-            "limits": "没有自动发送/上传/平台审核轮询、真实权限能力联调或完整平台可见性核对。",
+            "operable_scope": "人工交付意图、预检、审批、回填实际帖子标识与证据；回填标未独立核实。 操作者选中作品后可发起 TikTok 创作者收件箱上传，已验证协议夹具中的真实编码字节和提交身份。",
+            "limits": "公开发布由创作者在平台完成。正式账号的送达状态及生产限额待验。",
             "direct_endpoints": [
-              "POST /api/v1/production/publications"
+              "GET /api/v1/production/batches/{bid}/publications",
+              "POST /api/v1/production/batches/{bid}/publications/prepare",
+              "POST /api/v1/production/publications",
+              "POST /api/v1/production/tiktok/inbox/{pid}/send"
             ],
             "commands": [],
             "code": [
               "app/auth.py",
-              "app/production.py"
+              "app/batch_publications.py",
+              "app/production.py",
+              "app/tiktok_inbox.py",
+              "web/batch-publications.js"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_production.py",
                 "symbol": "ProductionIntegrationTests.test_publication_reviews_current_rights_and_manual_receipt",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batch_publications.py",
+                "symbol": "BatchPublicationTests.test_resume_pages_scope_large_approval_history_and_conflicts",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batch_publications.py",
+                "symbol": "BatchPublicationTests.test_inbox_scopes_signed_bytes_status_and_no_duplicate_send",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -19607,18 +19883,21 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "人工登记发送结果未知、成功或失败回执，按帖子和尝试对账；晚到成功仍会入账并阻止重复交付。",
-            "limits": "没有直接驱动平台分块上传，生产异步回调与平台投递协议尚待实联。",
+            "operable_scope": "人工登记发送结果未知、成功或失败回执，按帖子和尝试对账；晚到成功仍会入账并阻止重复交付。 隔离的 TikTok 协议服务实收分块；初始化回执未知阻止重传，已有交付编号可查询状态。",
+            "limits": "真实 TikTok 账号、服务端异步通知及其他平台的分块与在途恢复需实联。",
             "direct_endpoints": [
               "POST /api/v1/production/publication-lifecycle/{pid}/cancel",
               "POST /api/v1/production/publication-lifecycle/{pid}/change",
-              "POST /api/v1/production/publication-lifecycle/{pid}/observe"
+              "POST /api/v1/production/publication-lifecycle/{pid}/observe",
+              "POST /api/v1/production/tiktok/inbox/{pid}/send",
+              "POST /api/v1/production/tiktok/inbox/{pid}/status"
             ],
             "commands": [],
             "code": [
               "app/catalog.py",
               "app/publication_lifecycle.py",
               "app/schemas.py",
+              "app/tiktok_inbox.py",
               "web/controls.js",
               "web/publication-lifecycle.js"
             ],
@@ -19626,6 +19905,16 @@
               {
                 "file": "tests/test_publication_lifecycle.py",
                 "symbol": "PublicationLifecycleTests.test_changed_schedule_races_and_predecessor_late_evidence_blocks_successor",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batch_publications.py",
+                "symbol": "BatchPublicationTests.test_inbox_scopes_signed_bytes_status_and_no_duplicate_send",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batch_publications.py",
+                "symbol": "BatchPublicationTests.test_lost_initial_receipt_prevents_replay_and_binds_authorization_before_init",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -19820,20 +20109,27 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "人工交付意图、预检、审批、回填实际帖子标识与证据；回填标未独立核实。",
-            "limits": "没有自动发送/上传/平台审核轮询、真实权限能力联调或完整平台可见性核对。",
+            "operable_scope": "人工交付意图、预检、审批、回填实际帖子标识与证据；回填标未独立核实。 TikTok 收件箱送达与公开帖子分开记录，状态查询收到平台公开 ID 后才能建立帖子映射。",
+            "limits": "当前传输验证使用协议夹具，生产账号的可见性、转私密与删除通知待验。",
             "direct_endpoints": [
-              "POST /api/v1/production/publications/{publication_id}/receipt"
+              "POST /api/v1/production/publications/{publication_id}/receipt",
+              "POST /api/v1/production/tiktok/inbox/{pid}/status"
             ],
             "commands": [],
             "code": [
               "app/auth.py",
-              "app/production.py"
+              "app/production.py",
+              "app/tiktok_inbox.py"
             ],
             "test_definitions": [
               {
                 "file": "tests/test_production.py",
                 "symbol": "ProductionIntegrationTests.test_publication_reviews_current_rights_and_manual_receipt",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batch_publications.py",
+                "symbol": "BatchPublicationTests.test_inbox_scopes_signed_bytes_status_and_no_duplicate_send",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -20388,18 +20684,22 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "变更排程创建后继版本，保留原始帖子与指标；原尝试晚到成功会阻断后继发布。",
+            "operable_scope": "变更排程创建后继版本，保留原始帖子与指标；原尝试晚到成功会阻断后继发布。 同一作品改标题、排期或多次迁移账号会保留批次序号，原账号不能再取得后继意图，两条独立目标意图不能并存于一个账号和渠道。",
             "limits": "没有对所有平台在途二进制上传执行无缝迁移。",
             "direct_endpoints": [
+              "GET /api/v1/production/batches/{bid}/publications",
+              "POST /api/v1/production/batches/{bid}/publications/prepare",
               "POST /api/v1/production/publication-lifecycle/{pid}/cancel",
               "POST /api/v1/production/publication-lifecycle/{pid}/change",
               "POST /api/v1/production/publication-lifecycle/{pid}/observe"
             ],
             "commands": [],
             "code": [
+              "app/batch_publications.py",
               "app/catalog.py",
               "app/publication_lifecycle.py",
               "app/schemas.py",
+              "web/batch-publications.js",
               "web/controls.js",
               "web/publication-lifecycle.js"
             ],
@@ -20407,6 +20707,21 @@
               {
                 "file": "tests/test_publication_lifecycle.py",
                 "symbol": "PublicationLifecycleTests.test_changed_schedule_races_and_predecessor_late_evidence_blocks_successor",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batch_publication_migration.py",
+                "symbol": "BatchPublicationMigrationTests.test_multihop_account_move_prepare_replay_and_distinct_channels",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batch_publication_migration.py",
+                "symbol": "BatchPublicationMigrationTests.test_concurrent_prepare_and_move_cannot_bind_two_independent_intents",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_batch_publication_migration.py",
+                "symbol": "BatchPublicationMigrationTests.test_legacy_successor_membership_and_project_tenant_guards",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               }
             ],
@@ -25204,12 +25519,13 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "复核独立读取原片观测、选片区间和顺序。真实运行中复核错引时长、裁决复述同一理由，证据检查拦截两张接受票，保存原始回复。",
+            "operable_scope": "复核独立读取原片观测、选片区间和顺序。真实运行中复核错引时长、裁决复述同一理由，证据检查拦截两张接受票，保存原始回复。 通用团队冻结允许引用的证据，裁决照抄前序角色时记录原回执并阻断采纳。",
             "limits": "仅验证已登记原片的时长、OCR 词和一段理由的原样重复。证据源独立性、转述抄袭和商品语义仍需核验。",
             "direct_endpoints": [
               "POST /api/v1/execution/edit-preferences",
               "POST /api/v1/production/auto-edits",
-              "POST /api/v1/providers/team"
+              "POST /api/v1/providers/team",
+              "POST /api/v1/providers/team/{run_id}/resume"
             ],
             "commands": [
               "RecordDecision",
@@ -25256,6 +25572,11 @@
               {
                 "file": "tests/test_auto_edits.py",
                 "symbol": "AutoEditTests.test_durable_second_director_turn_consumes_failure_and_keeps_original",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_team_recovery.py",
+                "symbol": "TeamRecoveryTests.test_judge_that_repeats_creator_check_stops_without_decision",
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               },
               {
@@ -25627,11 +25948,12 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "真实三个模型处理一个带原片证据的选片问题。两张接受票与原片时长字段冲突，原案禁止采用。编辑身份单镜头接管后保留旧案、审阅并成片。复核或裁决角色可在下一轮读取自身未通过的证据引用。校验器把引用值与原片实测值对照。",
+            "operable_scope": "真实三个模型处理一个带原片证据的选片问题。两张接受票与原片时长字段冲突，原案禁止采用。编辑身份单镜头接管后保留旧案、审阅并成片。复核或裁决角色可在下一轮读取自身未通过的证据引用。校验器把引用值与原片实测值对照。 三模型在两轮重复错误选片后停止，另行人工依据 0.8 秒 OCR 纠正镜头后编码。",
             "limits": "尚未核验真实模型给出相反投票、开放证据权重、商品数量及复杂业务取舍。",
             "direct_endpoints": [
               "POST /api/v1/production/auto-edits",
-              "POST /api/v1/providers/team"
+              "POST /api/v1/providers/team",
+              "POST /api/v1/providers/team/{run_id}/resume"
             ],
             "commands": [
               "RecordDecision",
@@ -25679,6 +26001,11 @@
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               },
               {
+                "file": "tests/test_team_recovery.py",
+                "symbol": "TeamRecoveryTests.test_judge_that_repeats_creator_check_stops_without_decision",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
                 "file": "tests/test_budget.py",
                 "symbol": "BudgetIntegrationTests.test_manual_reservation_blocks_model_before_network_then_releases_exact_hold",
                 "scope": "共享预算准入和精确预留机制；供应商传输为显式模拟"
@@ -25699,6 +26026,35 @@
                     "criterion": "Q06",
                     "extent": "partial",
                     "observation": "三套本地权重的两轮评议被原片证据拦截，另行人工修订的成片通过解码。"
+                  }
+                ]
+              },
+              {
+                "id": "team-resume-real-roles-v1",
+                "path": "evidence/team-recovery/cpu-role-receipts.json",
+                "sha256": "6ad4e35da48244938ebd078afd3fb078b8d24ba429c4445c610950f1fcbb5013",
+                "checks": [
+                  {
+                    "criterion": "Q06",
+                    "extent": "partial",
+                    "observation": "两个本地模型服务承担三个角色，中断后复用原回执。照抄前序内容的裁决遭拦截，共三份费用记录，零条通过决定。"
+                  }
+                ]
+              },
+              {
+                "id": "two-round-real-model-edit-v1",
+                "path": "evidence/team-recovery/two-round-edit.json",
+                "sha256": "2802dc5bb691ea9361dbf6e8fc8f75bc2b3b6274682b48e0d36b066009505f83",
+                "checks": [
+                  {
+                    "criterion": "Q01",
+                    "extent": "partial",
+                    "observation": "三种本地权重运行两轮后重复提出被拒镜头，原案停止。人工按 0.8 秒处的 FRESH LIME 原片 OCR 纠正后，衍生作品通过全片解码。"
+                  },
+                  {
+                    "criterion": "Q06",
+                    "extent": "partial",
+                    "observation": "三种本地权重运行两轮后重复提出被拒镜头，原案停止。人工按 0.8 秒处的 FRESH LIME 原片 OCR 纠正后，衍生作品通过全片解码。"
                   }
                 ]
               }
@@ -26111,11 +26467,12 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "两个模型系列的三套真实权重通过三个受控服务执行固定三步质询。每角色保留身份、返回与 token 数，相同任务键复用收据，有界流程可停驻并由测试编辑接管。",
+            "operable_scope": "两个模型系列的三套真实权重通过三个受控服务执行固定三步质询。每角色保留身份、返回与 token 数，相同任务键复用收据，有界流程可停驻并由测试编辑接管。 通用团队按角色持久记录检查点，恢复时核对冻结模型配置和原调用；实际两种权重的三个角色被独立性检查拦截。",
             "limits": "仍缺动态团队拓扑、完整视听执行和效果分析团队、跨供应商实账及高负载部署。",
             "direct_endpoints": [
               "POST /api/v1/production/auto-edits",
-              "POST /api/v1/providers/team"
+              "POST /api/v1/providers/team",
+              "POST /api/v1/providers/team/{run_id}/resume"
             ],
             "commands": [
               "RecordDecision",
@@ -26151,9 +26508,45 @@
                 "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
               },
               {
+                "file": "tests/test_team_recovery.py",
+                "symbol": "TeamRecoveryTests.test_restart_between_provider_receipt_and_checkpoint_keeps_frozen_inputs",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
                 "file": "tests/test_budget.py",
                 "symbol": "BudgetIntegrationTests.test_manual_reservation_blocks_model_before_network_then_releases_exact_hold",
                 "scope": "共享预算准入和精确预留机制；供应商传输为显式模拟"
+              }
+            ],
+            "verification_runs": [
+              {
+                "id": "team-resume-real-roles-v1",
+                "path": "evidence/team-recovery/cpu-role-receipts.json",
+                "sha256": "6ad4e35da48244938ebd078afd3fb078b8d24ba429c4445c610950f1fcbb5013",
+                "checks": [
+                  {
+                    "criterion": "Q05",
+                    "extent": "partial",
+                    "observation": "两个本地模型服务承担三个角色，中断后复用原回执。照抄前序内容的裁决遭拦截，共三份费用记录，零条通过决定。"
+                  }
+                ]
+              },
+              {
+                "id": "two-round-real-model-edit-v1",
+                "path": "evidence/team-recovery/two-round-edit.json",
+                "sha256": "2802dc5bb691ea9361dbf6e8fc8f75bc2b3b6274682b48e0d36b066009505f83",
+                "checks": [
+                  {
+                    "criterion": "Q01",
+                    "extent": "partial",
+                    "observation": "三种本地权重运行两轮后重复提出被拒镜头，原案停止。人工按 0.8 秒处的 FRESH LIME 原片 OCR 纠正后，衍生作品通过全片解码。"
+                  },
+                  {
+                    "criterion": "Q04",
+                    "extent": "partial",
+                    "observation": "三种本地权重运行两轮后重复提出被拒镜头，原案停止。人工按 0.8 秒处的 FRESH LIME 原片 OCR 纠正后，衍生作品通过全片解码。"
+                  }
+                ]
               }
             ],
             "full_business_acceptance": false
@@ -27287,12 +27680,14 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "事务检查点/事件、幂等键、节点恢复、未知结果拒重做与运行中暂停/取消。",
+            "operable_scope": "事务检查点/事件、幂等键、节点恢复、未知结果拒重做与运行中暂停/取消。 通用团队已实测在提供方回执落盘后中断并恢复，保留原回执，未完成角色从检查点继续。",
             "limits": "不涵盖所有外部写工具的 inbox/outbox、迟到回执和多服务一致性。",
             "direct_endpoints": [
               "GET /api/v1/execution/{run_id}/recovery",
               "POST /api/v1/execution/{run_id}/reconcile",
-              "POST /api/v1/execution/{run_id}/resume"
+              "POST /api/v1/execution/{run_id}/resume",
+              "POST /api/v1/providers/team",
+              "POST /api/v1/providers/team/{run_id}/resume"
             ],
             "commands": [
               "AcquireLease",
@@ -27310,9 +27705,38 @@
             ],
             "test_definitions": [
               {
+                "file": "tests/test_team_recovery.py",
+                "symbol": "TeamRecoveryTests.test_restart_between_provider_receipt_and_checkpoint_keeps_frozen_inputs",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_team_recovery.py",
+                "symbol": "TeamRecoveryTests.test_unknown_looks_up_original_receipt_without_sending_another_call",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
                 "file": "tests/test_execution.py",
                 "symbol": "ExecutionTests.test_real_transform_then_extract_audio_and_idempotent_replay",
                 "scope": "共享本地执行器的真实媒体示例；不证明本功能的全部领域语义"
+              }
+            ],
+            "verification_runs": [
+              {
+                "id": "team-resume-real-roles-v1",
+                "path": "evidence/team-recovery/cpu-role-receipts.json",
+                "sha256": "6ad4e35da48244938ebd078afd3fb078b8d24ba429c4445c610950f1fcbb5013",
+                "checks": [
+                  {
+                    "criterion": "Q01",
+                    "extent": "partial",
+                    "observation": "两个本地模型服务承担三个角色，中断后复用原回执。照抄前序内容的裁决遭拦截，共三份费用记录，零条通过决定。"
+                  },
+                  {
+                    "criterion": "Q11",
+                    "extent": "partial",
+                    "observation": "两个本地模型服务承担三个角色，中断后复用原回执。照抄前序内容的裁决遭拦截，共三份费用记录，零条通过决定。"
+                  }
+                ]
               }
             ],
             "full_business_acceptance": false
@@ -27477,12 +27901,14 @@
           "delivered": {
             "status": "local_business_subset",
             "label": "真实局部路径",
-            "operable_scope": "事务检查点/事件、幂等键、节点恢复、未知结果拒重做与运行中暂停/取消。",
+            "operable_scope": "事务检查点/事件、幂等键、节点恢复、未知结果拒重做与运行中暂停/取消。 通用团队遇到未知调用只核对原键；TikTok 收件箱的初始回执未知时阻止重复上传。",
             "limits": "不涵盖所有外部写工具的 inbox/outbox、迟到回执和多服务一致性。",
             "direct_endpoints": [
               "GET /api/v1/execution/{run_id}/recovery",
               "POST /api/v1/execution/{run_id}/reconcile",
-              "POST /api/v1/execution/{run_id}/resume"
+              "POST /api/v1/execution/{run_id}/resume",
+              "POST /api/v1/providers/team",
+              "POST /api/v1/providers/team/{run_id}/resume"
             ],
             "commands": [
               "AcquireLease",
@@ -27500,6 +27926,16 @@
               "app/store.py"
             ],
             "test_definitions": [
+              {
+                "file": "tests/test_batches.py",
+                "symbol": "BatchGenerationTransport.test_opt_in_source_fallback_obeys_terminal_receipt_and_preserves_lineage",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
+              {
+                "file": "tests/test_team_recovery.py",
+                "symbol": "TeamRecoveryTests.test_unknown_looks_up_original_receipt_without_sending_another_call",
+                "scope": "仅下列已实现子路径的测试定义；不代表整功能通过"
+              },
               {
                 "file": "tests/test_execution.py",
                 "symbol": "ExecutionTests.test_real_transform_then_extract_audio_and_idempotent_replay",

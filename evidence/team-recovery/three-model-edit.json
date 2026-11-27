@@ -1,0 +1,420 @@
+{
+  "passed": true,
+  "models": {
+    "director": {
+      "model": "qwen2.5-1.5b",
+      "weights": "director.gguf",
+      "sha256": "183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4",
+      "bytes": 986048512,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    },
+    "reviewer": {
+      "model": "qwen2.5-0.5b",
+      "weights": "reviewer.gguf",
+      "sha256": "c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515",
+      "bytes": 397807936,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    },
+    "judge": {
+      "model": "smollm2-360m",
+      "weights": "judge.gguf",
+      "sha256": "2fa3f013dcdd7b99f9b237717fa0b12d75bbb89984cc1274be1471a465bac9c2",
+      "bytes": 270590880,
+      "unauthenticated_completion_http": 401,
+      "device": "CPU",
+      "idle_unload_seconds": 2
+    }
+  },
+  "decisions": [
+    {
+      "role": "director",
+      "round": 1,
+      "prompt_hash": "8303fb340a9f9874602da20ced87e6debe6d4dafde7f9643d1d1a4d81672ab51",
+      "context_hash": "975cbbb9aad5f83ed1b7d17e8d85241e66a74716e37b505330f5de818d14fac9",
+      "context_receipt": {
+        "context_limit": 8192,
+        "full_context_hash": "975cbbb9aad5f83ed1b7d17e8d85241e66a74716e37b505330f5de818d14fac9",
+        "full_input_upper_bound": 1755,
+        "omissions": [],
+        "policy": "grounded-edit-context-v1",
+        "reserved_output": 300,
+        "sent_context_hash": "975cbbb9aad5f83ed1b7d17e8d85241e66a74716e37b505330f5de818d14fac9",
+        "sent_input_upper_bound": 1755
+      },
+      "call": {
+        "id": "toolcall_615ac5e9c4a24f01886bab28cae474da",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "875aa846f5c7b194917c4e289752caff79188c24de5ae814a7c368e6bf1891cb"
+      },
+      "provider_request_id": "chatcmpl-tAxmqpuLejZ6znBzrETnQlBNhpjFCqhl",
+      "requested_model": "qwen2.5-1.5b",
+      "reported_model": "qwen2.5-1.5b",
+      "request_hash": "c701962df478cac55cbef7068e0d70e336fcb21b2103044a63c628337ead1066",
+      "measured_tokens": {
+        "completion_tokens": 88,
+        "prompt_tokens": 491,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 579
+      },
+      "decision": {
+        "choice": "C",
+        "reason": "The source 'FRESH LIME.mp4' has the visible words 'FRESH' and 'LIME', which are more relevant to the goal of creating a short shot list for 'FRESH LIME'. The cut sequence prioritizes the source with visible words, and the 'C' option has a duration of 2.0 seconds, which matches the target duration."
+      },
+      "outcome": "succeeded",
+      "error_code": null,
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "reviewer",
+      "round": 1,
+      "prompt_hash": "03df33fd6f74bdf7d2352b90630c1c08c50c0c8d9a5d92b5a49fa4f2db0db230",
+      "context_hash": "5e059331e7ee58e00c83b81eed2b3840835992364ddf549beb498ea34ae4a565",
+      "context_receipt": {
+        "context_limit": 8192,
+        "full_context_hash": "5e059331e7ee58e00c83b81eed2b3840835992364ddf549beb498ea34ae4a565",
+        "full_input_upper_bound": 4417,
+        "omissions": [],
+        "policy": "grounded-edit-context-v1",
+        "reserved_output": 300,
+        "sent_context_hash": "5e059331e7ee58e00c83b81eed2b3840835992364ddf549beb498ea34ae4a565",
+        "sent_input_upper_bound": 4417
+      },
+      "call": {
+        "id": "toolcall_96d6edd43a564be8aa3e73faeae17fcc",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "41c9205e4dc227ddfd68ecd3f99de7e3e4c59f35fe37997e73bfa85b3bc1260b"
+      },
+      "provider_request_id": "chatcmpl-LJw3LhvpHajzrFYYPTTKe9XSNCtsdhs3",
+      "requested_model": "qwen2.5-0.5b",
+      "reported_model": "qwen2.5-0.5b",
+      "request_hash": "f5971d10c5be7aa96382578cc35913e65cfca8d4f9c143e2682422e32d9dc1f4",
+      "measured_tokens": {
+        "completion_tokens": 91,
+        "prompt_tokens": 1638,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 1729
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "1.6",
+        "reason": "The evidence_id 'D1' corresponds to the source 'SAMPLE.mp4' with the observed value '1.6'. This evidence is relevant to the user's goal of prioritizing the source with visible words and aligns with the provided rough cut."
+      },
+      "outcome": "succeeded",
+      "error_code": null,
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    },
+    {
+      "role": "judge",
+      "round": 1,
+      "prompt_hash": "83b3c4e92ad01d8d63de59ad0107503615e1c612ed5e9586bd99ed9696e227c4",
+      "context_hash": "feb78a43deeab901a730af9e7677621cfa112cdd327eb1ed69a1952f5cdef5b8",
+      "context_receipt": {
+        "context_limit": 8192,
+        "full_context_hash": "feb78a43deeab901a730af9e7677621cfa112cdd327eb1ed69a1952f5cdef5b8",
+        "full_input_upper_bound": 5587,
+        "omissions": [],
+        "policy": "grounded-edit-context-v1",
+        "reserved_output": 300,
+        "sent_context_hash": "feb78a43deeab901a730af9e7677621cfa112cdd327eb1ed69a1952f5cdef5b8",
+        "sent_input_upper_bound": 5587
+      },
+      "call": {
+        "id": "toolcall_d30e4aa4315641f89add74d86b92afa4",
+        "kind": "ToolCall",
+        "version": 2,
+        "hash": "5290457c1a1a771027a83eef366d9cab6ccc40e62f76866773c46d1cce9b7ebf"
+      },
+      "provider_request_id": "chatcmpl-9z1Xy7JWZc8hKE8KLkvOsTjerJ2rpB1j",
+      "requested_model": "smollm2-360m",
+      "reported_model": "smollm2-360m",
+      "request_hash": "28c8b386483188550837ddf27c84492d33907c382c27ea57ff43bb5494708ece",
+      "measured_tokens": {
+        "completion_tokens": 89,
+        "prompt_tokens": 2312,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 2401
+      },
+      "decision": {
+        "decision": "accept",
+        "evidence_id": "D1",
+        "observed_value": "1.6",
+        "reason": "The evidence_id 'D1' corresponds to the source 'SAMPLE.mp4' with the observed value '1.6'. This evidence is relevant to the user's goal of prioritizing the source with visible words and aligns with the provided rough cut."
+      },
+      "outcome": "succeeded",
+      "error_code": null,
+      "cost_status": "usage_recorded",
+      "calculated_charge": 0.0
+    }
+  ],
+  "checks": [
+    "three distinct pinned model files, authenticated localhost model endpoints",
+    "authenticated Atlas viewer denied production write; project owner request reached all three real GGUF models",
+    "source OCR plus scoped evidence, measured token usage, provider identities; no external billing",
+    "repeated request preserves the same run and the original calls from every completed round",
+    "independent verdict or measured evidence gate blocked adoption of the original proposal",
+    "authenticated test reviewer adopted the eligible proposal; owner rendered, downloaded video/audio fully decoded"
+  ],
+  "engine": "version: 1.0.0-dev (build 12671, commit ab789a246)\nbuilt with GNU 11.4.0 for Linux x86_64",
+  "server_sha256": "e172daae7f3c14ed9bbcde1753cfcc9bf3d9e058eab478d1ec666138ed97e287",
+  "stage": "blocked",
+  "issue": {
+    "code": "TEAM_EVIDENCE_REQUIRED",
+    "message": "模型复核与原片观测未匹配，方案保留供局部修改。"
+  },
+  "elapsed_seconds": 107.294,
+  "project_id": "project_57887316a4564d39aa50a02739467cc7",
+  "run_id": "edit_3953aded8456dc1d73c15a35374bf48757e2",
+  "goal": "Create a short shot list for FRESH LIME. Prioritize the source with those visible words. No new product claims.",
+  "inputs": [
+    {
+      "id": "asset_b1fabeae8b9e4a6380f2b70c62ad1c9a",
+      "filename": "SAMPLE.mp4",
+      "version": 1,
+      "content_hash": "e1b1ab24e69b610bf4bb9fa107c066f5162c026732323ba0ae9f956b4bda3fc1"
+    },
+    {
+      "id": "asset_8e8dfd7cc70c4f28ba11448aac4d163a",
+      "filename": "FRESH LIME.mp4",
+      "version": 1,
+      "content_hash": "9ab47e1efdc57050fdd596b588cb6b3563085bce7d942e0ec601cbbfe4e88559"
+    }
+  ],
+  "loop_stop": "round_limit",
+  "review_rounds": [
+    {
+      "round": 1,
+      "decision": "revise",
+      "blocker": {
+        "code": "TEAM_EVIDENCE_REQUIRED",
+        "message": "模型复核与原片观测未匹配，方案保留供局部修改。"
+      },
+      "plan": {
+        "id": "plan_159ab89f244d7fb7b1f1156569f377eb",
+        "kind": "Plan",
+        "version": 1
+      }
+    }
+  ],
+  "review_findings": [
+    {
+      "call_ref": {
+        "context_hash": "5e059331e7ee58e00c83b81eed2b3840835992364ddf549beb498ea34ae4a565",
+        "context_receipt": {
+          "context_limit": 8192,
+          "full_context_hash": "5e059331e7ee58e00c83b81eed2b3840835992364ddf549beb498ea34ae4a565",
+          "full_input_upper_bound": 4417,
+          "omissions": [],
+          "policy": "grounded-edit-context-v1",
+          "reserved_output": 300,
+          "sent_context_hash": "5e059331e7ee58e00c83b81eed2b3840835992364ddf549beb498ea34ae4a565",
+          "sent_input_upper_bound": 4417
+        },
+        "id": "toolcall_96d6edd43a564be8aa3e73faeae17fcc",
+        "kind": "ToolCall",
+        "prompt_hash": "03df33fd6f74bdf7d2352b90630c1c08c50c0c8d9a5d92b5a49fa4f2db0db230",
+        "reported_model": "qwen2.5-0.5b",
+        "role": "reviewer",
+        "round": 1,
+        "version": 2
+      },
+      "decision": "accept",
+      "evidence_id": "D1",
+      "evidence_problem": null,
+      "observed_value": "1.6",
+      "reason": "The evidence_id 'D1' corresponds to the source 'SAMPLE.mp4' with the observed value '1.6'. This evidence is relevant to the user's goal of prioritizing the source with visible words and aligns with the provided rough cut.",
+      "role": "reviewer",
+      "verified_observation": {
+        "asset_id": "asset_b1fabeae8b9e4a6380f2b70c62ad1c9a",
+        "kind": "duration_seconds",
+        "observed_value": "1.6",
+        "source": "SAMPLE.mp4"
+      }
+    },
+    {
+      "call_ref": {
+        "context_hash": "feb78a43deeab901a730af9e7677621cfa112cdd327eb1ed69a1952f5cdef5b8",
+        "context_receipt": {
+          "context_limit": 8192,
+          "full_context_hash": "feb78a43deeab901a730af9e7677621cfa112cdd327eb1ed69a1952f5cdef5b8",
+          "full_input_upper_bound": 5587,
+          "omissions": [],
+          "policy": "grounded-edit-context-v1",
+          "reserved_output": 300,
+          "sent_context_hash": "feb78a43deeab901a730af9e7677621cfa112cdd327eb1ed69a1952f5cdef5b8",
+          "sent_input_upper_bound": 5587
+        },
+        "id": "toolcall_d30e4aa4315641f89add74d86b92afa4",
+        "kind": "ToolCall",
+        "prompt_hash": "83b3c4e92ad01d8d63de59ad0107503615e1c612ed5e9586bd99ed9696e227c4",
+        "reported_model": "smollm2-360m",
+        "role": "judge",
+        "round": 1,
+        "version": 2
+      },
+      "decision": "accept",
+      "evidence_id": "D1",
+      "evidence_problem": "复核重复了已有理由，未对当前剪法给出独立判断。",
+      "observed_value": "1.6",
+      "reason": "The evidence_id 'D1' corresponds to the source 'SAMPLE.mp4' with the observed value '1.6'. This evidence is relevant to the user's goal of prioritizing the source with visible words and aligns with the provided rough cut.",
+      "role": "judge",
+      "verified_observation": null
+    }
+  ],
+  "manual_recovery": {
+    "original_blocked": "edit_3953aded8456dc1d73c15a35374bf48757e2",
+    "new_proposal": "edit_525465f164f72c246a9bfea00d6d1733de2b",
+    "changed_shot": 0,
+    "at": 0.8,
+    "observed_ocr": [
+      {
+        "box_px": [
+          101,
+          92,
+          235,
+          57
+        ],
+        "confidence": 0.967,
+        "line": [
+          1,
+          1,
+          1
+        ],
+        "text": "FRESH"
+      },
+      {
+        "box_px": [
+          375,
+          92,
+          166,
+          56
+        ],
+        "confidence": 0.968,
+        "line": [
+          1,
+          1,
+          1
+        ],
+        "text": "LIME"
+      }
+    ]
+  },
+  "proposal": {
+    "title": "Create a short shot list for FRESH LIME. Prioritize the source with those visible words. No new prod",
+    "approach": "The source 'FRESH LIME.mp4' has the visible words 'FRESH' and 'LIME', which are more relevant to the goal of creating a short shot list for 'FRESH LIME'. The cut sequence prioritizes the source with visible words, and the 'C' option has a duration of 2.0 seconds, which matches the target duration.",
+    "shots": [
+      {
+        "asset_id": "asset_8e8dfd7cc70c4f28ba11448aac4d163a",
+        "asset_version": 1,
+        "name": "FRESH LIME.mp4",
+        "reason": "Authenticated test editor selected a measured source showing FRESH LIME for the opening.",
+        "source_in": 0.2,
+        "source_out": 0.8,
+        "timeline_start": 0.0
+      },
+      {
+        "asset_id": "asset_8e8dfd7cc70c4f28ba11448aac4d163a",
+        "asset_version": 1,
+        "name": "FRESH LIME.mp4",
+        "reason": "候选结构采用该段真实原片区间。",
+        "source_in": 0.6,
+        "source_out": 1.6,
+        "timeline_start": 0.6
+      }
+    ],
+    "missing": [
+      "当前可用编排比目标短 0.40 秒。"
+    ],
+    "reviews": null,
+    "model_selection": null
+  },
+  "frame_qc": {
+    "checks": {
+      "audio_presence": true,
+      "bytes_present": true,
+      "dimensions": true,
+      "duration_positive": true,
+      "duration_within_tolerance": true,
+      "full_decode": true
+    },
+    "content_review_required": true,
+    "not_checked": [
+      "商品事实与数量",
+      "来源和使用许可",
+      "字幕语义和可读性",
+      "审美与场景连续性",
+      "人工指定音画语义锚点"
+    ],
+    "probe": {
+      "audio_codec": "aac",
+      "display_height": 180,
+      "display_width": 320,
+      "duration": 1.6,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "fps": "25/1",
+      "has_audio": true,
+      "has_video": true,
+      "height": 180,
+      "is_still": false,
+      "major_brand": "isom",
+      "probe_version": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+      "rotation_degrees": 0,
+      "source_time_base": "1/12800",
+      "streams": [
+        {
+          "avg_frame_rate": "25/1",
+          "codec_name": "h264",
+          "codec_type": "video",
+          "duration": "1.600000",
+          "height": 180,
+          "index": 0,
+          "nb_frames": "40",
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "25/1",
+          "start_time": "0.000000",
+          "time_base": "1/12800",
+          "width": 320
+        },
+        {
+          "avg_frame_rate": "0/0",
+          "channel_layout": "stereo",
+          "channels": 2,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "duration": "1.600000",
+          "index": 1,
+          "nb_frames": "76",
+          "r_frame_rate": "0/0",
+          "sample_rate": "48000",
+          "start_time": "0.000000",
+          "time_base": "1/48000"
+        }
+      ],
+      "video_codec": "h264",
+      "width": 320
+    },
+    "publish_ready": false,
+    "status": "technical_passed"
+  },
+  "movie_sha256": "037f23c1c0cd3e969816d1194751057e5ba810649b1f99a16ad8955cb1253092",
+  "timeline": {
+    "id": "timeline_66939c051a0140ceaba98b0dbd086d38",
+    "kind": "Timeline",
+    "version": 1,
+    "hash": "951c9f22652dc0eb90883d0711749b795a9558663c9700ca524bd3b5762cbcf5"
+  }
+}

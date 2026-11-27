@@ -163,6 +163,8 @@ def run(output, round_id, engine):
             goal = "用真实镜头展示产品细节，保留所有无法核实的内容标记。"
             dialog.locator("[name=goals]").fill(goal)
             dialog.locator("form[data-form] button[type=submit]").click()
+            expect(page).to_have_url(re.compile(r"#production/batches$"))
+            page.locator('.batch-head a[href="#production"]').click()
             expect(page).to_have_url(re.compile("#production$"))
             expect(page.locator("#production-goal")).to_have_value(goal)
             page.set_viewport_size({"width": mw, "height": mh})

@@ -55,6 +55,42 @@
       "profile": "candidate-review-webkit-v1",
       "path": "evidence/batch-production/mixed-routing/visual-review/webkit.json",
       "sha256": "43386b237cfc72e95376bb00481eeea9b3e88b0fad181c7626f77d9c7fed543d"
+    },
+    {
+      "id": "material-ingest-real-frames-v1",
+      "profile": "material-ingest-real-frames-v1",
+      "path": "evidence/material-intake/result.json",
+      "sha256": "ff38c6dae2e3366765ba47a03458ba5eb5d78e374217c731541f85d56b1ec12a"
+    },
+    {
+      "id": "same-photo-two-prompts-v1",
+      "profile": "same-photo-two-prompts-v1",
+      "path": "evidence/batch-production/directed-still/report.json",
+      "sha256": "0a39e189711d46cc4318215cf2df9514c2bab0835fe3eed27d901772187ac8c8"
+    },
+    {
+      "id": "sample-photo-motion-v1",
+      "profile": "sample-photo-motion-v1",
+      "path": "evidence/batch-production/controlled-photo/report.json",
+      "sha256": "4670ab8aef0c6498b79888c77ddbff5488255318b5fbcc71f0aec5a1aa6cbdca"
+    },
+    {
+      "id": "team-resume-real-roles-v1",
+      "profile": "team-resume-real-roles-v1",
+      "path": "evidence/team-recovery/cpu-role-receipts.json",
+      "sha256": "6ad4e35da48244938ebd078afd3fb078b8d24ba429c4445c610950f1fcbb5013"
+    },
+    {
+      "id": "two-round-real-model-edit-v1",
+      "profile": "two-round-real-model-edit-v1",
+      "path": "evidence/team-recovery/two-round-edit.json",
+      "sha256": "2802dc5bb691ea9361dbf6e8fc8f75bc2b3b6274682b48e0d36b066009505f83"
+    },
+    {
+      "id": "semantic-family-real-clip-v1",
+      "profile": "semantic-family-real-clip-v1",
+      "path": "evidence/material-intake/semantic-families/result.json",
+      "sha256": "f27fc8343b567c4913b2892a57f309c6257893b6cf6a1b1fe18af57897e94dd9"
     }
   ],
   "reviews": []

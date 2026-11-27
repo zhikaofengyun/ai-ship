@@ -69,10 +69,15 @@ export async function openAssetSearch(ctx, choose) {
   });
   let previewSerial = 0,
     frameAfter = "";
+  let analyzing = false,
+    stopAnalysis = false;
   let history,
     serial = 0,
     last = null,
-    busy = false;
+    busy = false,
+    staleActivation = false;
+  const analysisStatus = document.createElement("p");
+  analysisStatus.setAttribute("role", "status");
   const status = $("[data-index-status]", dlg),
     form = $(".director-index-query", dlg);
   form.elements.channel.addEventListener("change", () => {
@@ -93,8 +98,24 @@ export async function openAssetSearch(ctx, choose) {
     const canWrite = !["viewer", "reviewer"].includes(
       ctx.state.health?.actor?.role,
     );
-    $("[data-index-history]", dlg).innerHTML =
-      `<div class="director-actions">${canWrite ? `<button type="button" class="button small" data-build="shadow">构建新索引</button><button type="button" class="button small" data-embed>构建语义索引</button><button type="button" class="button small" data-frame-build>提取视频画面索引</button>${v.head.generation ? '<button type="button" class="button small" data-build="incremental">同步变化</button>' : ""}` : ""}</div>${v.snapshots.map((r, i) => `<div class="director-index-version"><span>${esc(new Date(r.stamp).toLocaleString())} · ${r.checked} 份素材${r.reused ? " · 复用 " + r.reused : ""}</span>${r.id === v.head.generation ? "<strong>正在使用</strong>" : canWrite ? `<button type="button" class="button ghost small" data-switch="${i}">${r.previously_active ? "回退到此版本" : "启用此版本"}</button>` : ""}</div>`).join("")}`;
+    const indexTools = $("[data-index-history]", dlg);
+    indexTools.innerHTML = `<div class="director-actions">${canWrite ? `<button type="button" class="button small" data-analyze>批量分析素材</button><button type="button" class="button ghost small" data-stop-analysis hidden>停止后续分析</button><button type="button" class="button small" data-build="shadow">构建新索引</button><button type="button" class="button small" data-embed>构建语义索引</button><button type="button" class="button small" data-frame-build>提取画面语义索引</button>${v.head.generation ? '<button type="button" class="button small" data-build="incremental">同步变化</button>' : ""}` : ""}</div>${v.snapshots.map((r, i) => `<div class="director-index-version"><span>${esc(new Date(r.stamp).toLocaleString())} · ${r.checked} 份素材${r.reused ? " · 复用 " + r.reused : ""}</span>${r.id === v.head.generation ? "<strong>正在使用</strong>" : canWrite ? `<button type="button" class="button ghost small" data-switch="${i}">${r.previously_active ? "回退到此版本" : "启用此版本"}</button>` : ""}</div>`).join("")}`;
+    if (canWrite) {
+      const q = v.analysis_queue || {};
+      if (!analysisStatus.textContent && Object.keys(q).length)
+        analysisStatus.textContent =
+          `自动分析已完成 ${(q.completed || 0) + (q.measured || 0)} 份，待处理 ${(q.queued || 0) + (q.working || 0)} 份。` +
+          (q.failed ? ` ${q.failed} 项失败，可用批量分析重试。` : "");
+      indexTools.append(analysisStatus);
+      if (staleActivation) {
+        const rebuild = document.createElement("button");
+        rebuild.type = "button";
+        rebuild.className = "button small";
+        rebuild.dataset.rebuildActive = "";
+        rebuild.textContent = "按最新素材重建并启用";
+        indexTools.append(rebuild);
+      }
+    }
   }
   async function search(offset = 0) {
     const ticket = ++serial;
@@ -149,7 +170,7 @@ export async function openAssetSearch(ctx, choose) {
     $("[data-hits]", dlg).innerHTML = v.items
       .map(
         (r, i) =>
-          `<li><div><strong>${esc(r.name)}</strong><small>${r.seconds != null ? Number(r.seconds).toFixed(2) + " 秒 · " : ""}${esc(r.tags.map((t) => t.label).join("、") || "原片")}${Number.isFinite(r.semantic_score) && v.vector_available && (v.requested_channel !== "visual" || r.frame_match) ? (r.frame_match ? " · 画面 " + r.frame_match.source_seconds.toFixed(2) + " 秒 · 相似度 " : " · 语义相似度 ") + r.semantic_score.toFixed(3) : ""}</small></div><button type="button" class="button ghost small" data-preview="${i}" aria-label="预览 ${esc(r.name)}">预览</button>${typeof choose === "function" && r.media_type === "video" ? `<button type="button" class="button secondary small" data-choose="${i}">加入制作</button>` : ""}</li>`,
+          `<li><div><strong>${esc(r.name)}</strong><small>${r.seconds != null ? Number(r.seconds).toFixed(2) + " 秒 · " : ""}${esc([...new Set(r.tags.map((t) => t.label))].slice(0, 6).join("、") || "原片")}${Number.isFinite(r.semantic_score) && v.vector_available && (v.requested_channel !== "visual" || r.frame_match) ? (r.frame_match ? " · 画面 " + r.frame_match.source_seconds.toFixed(2) + " 秒 · 相似度 " : " · 语义相似度 ") + r.semantic_score.toFixed(3) : ""}</small></div><button type="button" class="button ghost small" data-preview="${i}" aria-label="预览 ${esc(r.name)}">预览</button>${typeof choose === "function" && r.media_type === "video" ? `<button type="button" class="button secondary small" data-choose="${i}">加入制作</button>` : ""}</li>`,
       )
       .join("");
   }
@@ -171,7 +192,13 @@ export async function openAssetSearch(ctx, choose) {
   );
   async function handle(event) {
     const b = event.target.closest("button");
-    if (!b || busy || !valid()) return;
+    if (!b || !valid()) return;
+    if (b.hasAttribute("data-stop-analysis")) {
+      stopAnalysis = true;
+      b.disabled = true;
+      return;
+    }
+    if (busy || analyzing) return;
     try {
       if (b.hasAttribute("data-next") || b.hasAttribute("data-prev")) {
         if (last)
@@ -209,8 +236,9 @@ export async function openAssetSearch(ctx, choose) {
             : ["audio", "video"].includes(item.media_type)
               ? `<${item.media_type} controls preload="metadata" src="${url}" aria-label="${esc(item.name)}"></${item.media_type}>`
               : "";
-        pane.innerHTML = `<h3 tabindex="-1">${esc(item.name)}</h3><small>素材版本 ${esc(item.revision)}${Number.isFinite(item.seconds) ? " · " + item.seconds.toFixed(2) + " 秒" : ""}</small>${player}<ul class="index-tags">${item.tags.map((t) => `<li>${esc(t.label)}${Array.isArray(t.interval) ? " · " + esc(t.interval.join("–")) + " 秒" : ""}</li>`).join("")}</ul>${item.media_type === "video" ? `<button type="button" class="button secondary small" data-open-source>在剪辑台预览</button>` : ""}`;
-        const frameTime = item.frame_match?.source_seconds,
+        pane.innerHTML = `<h3 tabindex="-1">${esc(item.name)}</h3><small>素材版本 ${esc(item.revision)}${Number.isFinite(item.seconds) ? " · " + item.seconds.toFixed(2) + " 秒" : ""}</small>${player}<ul class="index-tags">${item.tags.map((t) => `<li>${esc(t.label)}${Array.isArray(t.interval) ? " · " + esc(t.interval.join("–")) + " 秒" : Number.isFinite(t.source_seconds) ? " · " + t.source_seconds.toFixed(2) + " 秒" : ""}${t.review_state === "suggested" ? " · 模型候选" : t.method === "tesseract_lstm" ? " · OCR" : ""}</li>`).join("")}</ul>${item.media_type === "video" ? `<button type="button" class="button secondary small" data-open-source>在剪辑台预览</button>` : ""}`;
+        const frameTime =
+            item.frame_match?.source_seconds ?? item.tag_match?.source_seconds,
           video = pane.querySelector("video");
         if (video && Number.isFinite(frameTime))
           video.addEventListener(
@@ -222,7 +250,8 @@ export async function openAssetSearch(ctx, choose) {
             { once: true },
           );
         if (
-          Number.isFinite(frameTime) &&
+          item.media_type === "video" &&
+          Number.isFinite(item.frame_match?.source_seconds) &&
           !["viewer", "reviewer"].includes(ctx.state.health?.actor?.role)
         ) {
           pane.insertAdjacentHTML(
@@ -288,16 +317,57 @@ export async function openAssetSearch(ctx, choose) {
         if (valid()) dlg.close();
         return;
       }
+      if (b.hasAttribute("data-analyze")) {
+        analyzing = true;
+        stopAnalysis = false;
+        b.disabled = true;
+        const stop = $("[data-stop-analysis]", dlg);
+        stop.hidden = false;
+        stop.disabled = false;
+        let after = "",
+          processed = 0,
+          reused = 0,
+          frames = 0,
+          errors = 0,
+          ocrMissing = 0;
+        analysisStatus.textContent = "正在读取素材画面…";
+        try {
+          do {
+            const result = await post("/analyze", { limit: 4, after });
+            if (!valid()) return;
+            processed += result.processed;
+            reused += result.reused;
+            frames += result.clip_frames;
+            errors += result.errors.length;
+            ocrMissing += result.ocr_unavailable;
+            after = result.next_after;
+            analysisStatus.textContent =
+              `新分析 ${processed} 份，复用 ${reused} 份，语义索引新增 ${frames} 帧。` +
+              (result.clip_status !== "available"
+                ? "视觉模型未就绪，已使用实帧颜色、画幅与可用文字识别。"
+                : "") +
+              (ocrMissing ? ` ${ocrMissing} 份缺少文字识别结果。` : "") +
+              (errors ? ` ${errors} 项处理失败。` : "");
+          } while (after && !stopAnalysis);
+          if (after && stopAnalysis)
+            analysisStatus.textContent += " 已停止后续批次。";
+          if (valid()) await search();
+        } finally {
+          analyzing = false;
+          stop.hidden = true;
+        }
+        return;
+      }
       if (b.hasAttribute("data-frame-build")) {
         busy = true;
         b.disabled = true;
-        status.textContent = "正在本机提取视频画面…";
+        status.textContent = "正在本机提取素材画面…";
         const r = await post("/frames/build", { limit: 4, after: frameAfter });
         if (valid()) {
           frameAfter = r.next_after || "";
-          b.textContent = frameAfter ? "继续提取下一批" : "提取视频画面索引";
+          b.textContent = frameAfter ? "继续提取下一批" : "提取画面语义索引";
           status.textContent =
-            `已索引 ${r.processed} 份视频、${r.frames} 帧，后续 ${r.remaining} 份。` +
+            `已索引 ${r.processed} 份素材、${r.frames} 帧，后续 ${r.remaining} 份。` +
             r.errors.map((e) => e.message).join(" ");
         }
         return;
@@ -310,16 +380,28 @@ export async function openAssetSearch(ctx, choose) {
           status.textContent = `本次编码 ${result.processed} 条，剩余 ${result.remaining} 条 · ${result.space}`;
         return;
       }
-      if (!b.hasAttribute("data-build") && !b.hasAttribute("data-switch"))
+      const rebuildActive = b.hasAttribute("data-rebuild-active");
+      if (
+        !b.hasAttribute("data-build") &&
+        !b.hasAttribute("data-switch") &&
+        !rebuildActive
+      )
         return;
       busy = true;
       b.disabled = true;
-      if (b.dataset.build) {
-        await post("/build", {
-          mode: b.dataset.build,
+      if (b.dataset.build || rebuildActive) {
+        const built = await post("/build", {
+          mode: b.dataset.build || "shadow",
           expected_revision: history.head.revision,
           request_key: uid(),
         });
+        if (rebuildActive && valid()) {
+          await post("/switch", {
+            snapshot: built.snapshot,
+            expected_revision: built.head.revision,
+            action: "activate",
+          });
+        }
       } else {
         const target = history.snapshots[Number(b.dataset.switch)];
         await post("/switch", {
@@ -329,11 +411,13 @@ export async function openAssetSearch(ctx, choose) {
         });
       }
       if (valid()) {
-        await loadHistory();
+        staleActivation = false;
         await search();
+        await loadHistory();
       }
     } catch (err) {
       if (valid()) {
+        if (err.code === "INDEX_SOURCE_CHANGED") staleActivation = true;
         status.textContent = err.message;
         toast(err.message, "error");
         await loadHistory().catch(() => {});

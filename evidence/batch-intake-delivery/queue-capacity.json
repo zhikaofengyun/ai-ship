@@ -1,0 +1,19 @@
+{
+  "mixed_slot": {
+    "requested": 100000,
+    "camera_only_items": 80007,
+    "model_items": 19993,
+    "estimated_model_calls": 19993,
+    "enqueue_seconds": 1.48,
+    "inference_submissions": 0,
+    "renders": 0
+  },
+  "requested": 100000,
+  "persisted_rows": 100000,
+  "distinct_generated_cut_combinations": 100000,
+  "enqueue_seconds": 0.714,
+  "last_visible_ordinal": 100000,
+  "idempotent_replay": true,
+  "rows_cancelled": 100000,
+  "scope": "Single-machine admission, durable queue, paging, combination enumeration and controls. Workers disabled. Zero rendered media files in this specific test."
+}

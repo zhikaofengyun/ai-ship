@@ -29,6 +29,9 @@ CREATE TABLE IF NOT EXISTS production_generation_slots(
 CREATE TABLE IF NOT EXISTS production_acceptance_results(
  batch TEXT NOT NULL,ordinal INTEGER NOT NULL,stage TEXT NOT NULL,audit_id TEXT NOT NULL,status TEXT NOT NULL,
  PRIMARY KEY(batch,ordinal,stage),FOREIGN KEY(batch,ordinal) REFERENCES production_items(batch,ordinal));
+CREATE INDEX IF NOT EXISTS batch_publication_roots
+ ON revisions(tenant_id,json_extract(data_json,'$.batch_id'),json_extract(data_json,'$.batch_ordinal'),json_extract(data_json,'$.channel'))
+ WHERE version=1 AND json_extract(data_json,'$.batch_ordinal') IS NOT NULL;
 CREATE INDEX IF NOT EXISTS batch_ready ON production_items(batch,status,due,ordinal);
 CREATE INDEX IF NOT EXISTS batch_states ON production_items(batch,status,ordinal);
 """

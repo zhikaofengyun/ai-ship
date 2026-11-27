@@ -9,6 +9,7 @@ import {
   recentReferences,
   pinnedReference,
 } from "./reference-frame.js";
+import { directoryIntake } from "./directory-intake.js";
 import { chooseBatchMarket } from "./batch-market.js";
 import { chooseBatchContract } from "./batch-contracts.js";
 import { chooseBatchWorkflow } from "./batch-workflow.js";
@@ -132,8 +133,8 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
     segment(s) ? "video" : s.generate?.reference_mode || "image";
   function choiceMarkup(c, i) {
     return `<li data-choice="${i}"><div class="batch-source-name"><img src="/api/v1/media/${encodeURIComponent(c.asset_id)}/frame?time=${encodeURIComponent(c.source_in)}&amp;width=144" alt="" width="72" height="42" loading="lazy" decoding="async"><strong>${esc(c.name)} <small>v${esc(c.version)}</small></strong></div>
-      ${number("入点（秒）", "source_in", c.source_in, 'min="0" step="any" required')}
-      ${number("出点（秒）", "source_out", c.source_out, 'min="0.04" step="any" required')}
+      ${c.isStill ? "" : number("入点（秒）", "source_in", c.source_in, 'min="0" step="any" required')}
+      ${number(c.isStill ? "照片持续时间（秒）" : "出点（秒）", "source_out", c.source_out, 'min="0.04" step="any" required')}
       ${iconBtn("移除这个候选", "remove-choice", "close")}</li>`;
   }
   function slotMarkup(s, i) {
@@ -160,10 +161,12 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
         ${select("生成服务", "profile_id", [["", "选择视频模型"], ...profiles.map((p) => [p.id, p.label || p.model])], gen.profile_id, "required")}
         ${number("使用时长（秒）", "duration", gen.duration, 'min="0.04" max="3600" step="any" required')}
         ${area("画面描述", "prompt", gen.prompt, 'maxlength="6000" required')}
+        ${area("可选拍法（每行一种）", "prompt_variants", (gen.prompt_variants || []).join("\n"), 'placeholder="缓慢推近产品细节&#10;绕产品半圈展示侧面"')}
         ${profile(s)?.requires_reference ? (segment(s) ? "" : referenceSource(mode)) + select(mode === "video" ? "项目参考视频" : "项目参考图", "reference_asset_id", [["", mode === "video" ? "选择视频" : "选择参考图"], ...choices.map((r) => [r.id, mediaName(r) + " · v" + r.version])], chosen?.id, "required") + btn("检索全部参考素材", "search-reference", "search", "button small ghost") + (segment(s) ? segmentFields(chosen, profile(s), gen.reference_time_seconds ?? 0, gen.reference_end_seconds) : mode === "video" ? frameFields(pid, chosen, gen.reference_time_seconds ?? 0) : chosen ? `<img class="generation-still" alt="选中的项目参考图" src="${esc(ctx.assetUrl(chosen))}">` : "") : ""}
       </div>${!profiles.length ? `<p class="batch-notice">${esc(profileError || "当前未配置视频生成服务。")}</p>` : ""}`
           : ""
       }
+      ${s.mixed ? `<label><input type="checkbox" name="allow_source_fallback" ${s.allow_source_fallback ? "checked" : ""}>生成明确失败时改用本镜头的备选原片</label>` : ""}
       ${
         !gen || s.mixed
           ? `<ul class="batch-segments">${(s.choices || []).map(choiceMarkup).join("")}</ul><div class="batch-controls">${btn("选素材", "choose-assets", "plus", "button small secondary")}${btn("检索全部素材", "search-asset", "search", "button small ghost")}</div>`
@@ -174,7 +177,9 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
   function draw() {
     if (disposed) return;
     const canWrite = ["owner", "editor", "worker"].includes(actor.role);
-    main.innerHTML = `<form class="batch-form"><div class="form-grid">
+    main.innerHTML = `<form class="batch-form">
+      <div class="batch-controls">${btn("导入素材", "import-files", "upload", "button small secondary")}${btn("本地文件夹", "import-folder", "folder", "button small ghost")}${btn("采集目录", "capture-directory", "folder", "button small ghost")}
+      <input hidden data-files type="file" multiple accept="image/*,video/*,audio/*,.mov,.mp4"><input hidden data-folder type="file" multiple webkitdirectory></div><div id="import-progress" class="import-list" aria-live="polite"></div><div class="form-grid">
       ${field("批次名称", "name", draft.name, "text", 'maxlength="150" placeholder="例如：冬季系列开场测试" required')}
       ${select("交付目标", "output", [["timeline", "可编辑时间线"], ...(actor.role === "owner" ? [["render", "批量渲染并导出成片"]] : [])], draft.output)}
       </div><div><h2>镜头组合</h2>
@@ -200,6 +205,7 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
       )}</div></details>
       <div class="batch-output"><button class="button primary" type="submit" ${!canWrite || submitting ? "disabled" : ""}>${icon("layers")}${draft.pending ? "核对并提交原批次" : draft.output === "render" ? "提交批量渲染" : "提交批量剪辑"}</button></div>
       <p role="status" data-notice class="batch-notice"></p></form>`;
+    ctx.drawImport();
     forecast();
   }
   function forecast() {
@@ -224,12 +230,14 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
             " 种";
   }
   function candidate(rec, start = 0, end = null, duration = null) {
-    const length = mediaDuration(rec);
+    const isStill = mediaType(rec) === "image";
+    const length = isStill ? 3600 : mediaDuration(rec);
     return {
       asset_id: rec.id,
       version: rec.version,
       name: mediaName(rec),
-      source_in: start,
+      isStill,
+      source_in: isStill ? 0 : start,
       source_out: end ?? Math.min(length, duration ?? 3),
       length,
     };
@@ -252,11 +260,13 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
   }
   function chooseLocal(s) {
     const all = mediaLibrary(ctx.state.records).filter(
-      (r) => mediaType(r) === "video" && mediaDuration(r) > 0,
+      (r) =>
+        mediaType(r) === "image" ||
+        (mediaType(r) === "video" && mediaDuration(r) > 0),
     );
     const dlg = modal(
       "选择候选素材",
-      `<form data-form class="form-stack">${all.length ? `<div class="batch-pins">${all.map((r, i) => `<label><input type="checkbox" name="asset" value="${i}"><span>${esc(mediaName(r))}<small>${mediaDuration(r).toFixed(2)} 秒</small></span></label>`).join("")}</div><button type="submit" class="button primary">加入镜头</button>` : "<p>尚未读取到本项目的视频。可在制作台导入，或检索全部素材。</p>"}</form>`,
+      `<form data-form class="form-stack">${all.length ? `<div class="batch-pins">${all.map((r, i) => `<label><input type="checkbox" name="asset" value="${i}"><span>${esc(mediaName(r))}<small>${mediaType(r) === "image" ? "照片" : mediaDuration(r).toFixed(2) + " 秒"}</small></span></label>`).join("")}</div><button type="submit" class="button primary">加入镜头</button>` : "<p>尚未读取到本项目的视频或照片。可导入文件，或检索全部素材。</p>"}</form>`,
       async (form) => {
         const copy = { ...s, choices: [...s.choices] };
         for (const id of new FormData(form).getAll("asset"))
@@ -311,9 +321,23 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
       throw new Error("作品数超过可用组合数，请添加候选或减少数量。");
     if (!draft.slots.length) throw new Error("至少需要一个镜头位。");
     const slots = draft.slots.map((s) => {
-      const out = {};
+      const out =
+        s.mixed && s.allow_source_fallback
+          ? { allow_source_fallback: true }
+          : {};
       if (s.generate) {
         const g = { ...s.generate, duration: Number(s.generate.duration) };
+        if (g.prompt_variants) {
+          g.prompt_variants = g.prompt_variants
+            .map((line) => line.trim())
+            .filter(Boolean);
+          if (
+            g.prompt_variants.length > 32 ||
+            g.prompt_variants.some((v) => [...v].length > 1000)
+          )
+            throw new Error("每个镜头最多填写 32 种拍法，每种限 1000 字。");
+          if (!g.prompt_variants.length) delete g.prompt_variants;
+        }
         delete g.reference_mode;
         if (profile(s)?.requires_reference && referenceMode(s) === "video")
           g.reference_time_seconds = Number(
@@ -391,9 +415,12 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
     if (row) {
       const s = draft.slots[Number(row.dataset.slot)],
         l = t.closest("[data-choice]");
-      if (l) s.choices[Number(l.dataset.choice)][t.name] = t.value;
+      if (t.name === "allow_source_fallback")
+        s.allow_source_fallback = t.checked;
+      else if (l) s.choices[Number(l.dataset.choice)][t.name] = t.value;
       else if (s.generate) {
-        s.generate[t.name] = t.value;
+        s.generate[t.name] =
+          t.name === "prompt_variants" ? t.value.split("\n") : t.value;
         if (["reference_mode", "profile_id"].includes(t.name)) {
           delete s.generate.reference_asset_id;
           delete s.generate.reference_asset_version;
@@ -412,7 +439,19 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
     forecast();
     persist();
   };
-  main.onchange = (e) => {
+  main.onchange = async (e) => {
+    if (e.target.matches("[data-files],[data-folder]")) {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+      await ctx.importFiles(files);
+      if (disposed) return;
+      for (const r of ctx.state.records) {
+        cache.set(r.id, r);
+        if (r.kind === "Asset") availableRefs.set(r.id, r);
+      }
+      draw();
+      return;
+    }
     if (
       ["reference_time_seconds", "reference_end_seconds"].includes(
         e.target.name,
@@ -448,6 +487,12 @@ export async function mountBatches(root, ctx, requestedWorkflow) {
       i = Number(b.closest("[data-slot]")?.dataset.slot),
       s = draft.slots[i];
     try {
+      if (op === "import-files" || op === "import-folder")
+        return $(
+          op === "import-files" ? "[data-files]" : "[data-folder]",
+          main,
+        ).click();
+      if (op === "capture-directory") return await directoryIntake(ctx);
       if (op === "estimate") {
         const ticket = ++forecastRevision;
         const body = { ...payload(), idempotency_key: "estimate-only" };

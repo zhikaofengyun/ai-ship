@@ -31,6 +31,24 @@ CREATE TABLE IF NOT EXISTS media_retention_items(
 );
 CREATE INDEX IF NOT EXISTS ix_retention_objects ON revisions(tenant_id,json_extract(data_json,'$.object_key'))
  WHERE json_extract(data_json,'$.object_key') IS NOT NULL;
+CREATE TABLE IF NOT EXISTS media_clip_candidates(
+ tenant TEXT NOT NULL, project TEXT NOT NULL, version_id TEXT NOT NULL, pin TEXT NOT NULL,
+ space TEXT NOT NULL, labels_json TEXT NOT NULL, PRIMARY KEY(tenant,project,version_id)
+);
+CREATE TABLE IF NOT EXISTS material_analysis_jobs(
+ tenant TEXT NOT NULL, project TEXT NOT NULL, version_id TEXT NOT NULL, actor TEXT NOT NULL,
+ role TEXT NOT NULL, credential_digest TEXT, auth_mode TEXT NOT NULL,
+ state TEXT NOT NULL DEFAULT 'queued', due REAL NOT NULL DEFAULT 0, attempt INTEGER NOT NULL DEFAULT 0,
+ code TEXT, UNIQUE(tenant,project,version_id)
+);
+CREATE INDEX IF NOT EXISTS ix_material_job_ready ON material_analysis_jobs(due)
+ WHERE state IN ('queued','working');
+CREATE TABLE IF NOT EXISTS media_observations(
+ tenant TEXT NOT NULL, project TEXT NOT NULL, blob_id TEXT NOT NULL, blob_pin TEXT NOT NULL,
+ method TEXT NOT NULL, analysis_json TEXT NOT NULL, tags_json TEXT NOT NULL,
+ PRIMARY KEY(tenant,project,blob_id)
+);
+CREATE INDEX IF NOT EXISTS ix_media_analysis_page ON records(tenant_id,project_id,kind,id);
 CREATE TABLE IF NOT EXISTS media_search_snapshots(
  id TEXT PRIMARY KEY, tenant TEXT NOT NULL, project TEXT NOT NULL, stamp TEXT NOT NULL,
  mode TEXT NOT NULL, space TEXT NOT NULL, watermark INTEGER NOT NULL, source_digest TEXT NOT NULL,

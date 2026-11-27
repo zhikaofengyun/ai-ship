@@ -54,7 +54,7 @@ def health(project_id: str, request: Request, actor: Actor = Depends(current_act
             + scoped
             + """ AND i.status IN ('waiting','running','failed') AND EXISTS
               (SELECT 1 FROM production_generation_slots g WHERE g.batch=i.batch AND g.ordinal=i.ordinal
-                AND g.status NOT IN ('ready','cancelled','failed','reserved'))""",
+                AND g.status NOT IN ('ready','cancelled','failed','reserved','source_fallback'))""",
             scope,
         ).fetchone()[0]
         dag = db.execute(

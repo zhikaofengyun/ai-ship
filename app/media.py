@@ -237,7 +237,10 @@ def media_mime(probe: dict) -> str:
             "bmp": "image/bmp",
         }.get(probe.get("video_codec"), "application/octet-stream")
     fmt = probe.get("format_name") or ""
+    brand = (probe.get("major_brand") or "").strip().lower()
     if probe.get("has_video"):
+        if brand == "qt":
+            return "video/quicktime"
         if "matroska" in fmt:
             return (
                 "video/webm"
@@ -247,6 +250,8 @@ def media_mime(probe: dict) -> str:
         if "avi" in fmt:
             return "video/x-msvideo"
         return "video/mp4"
+    if "mp4" in fmt or "mov" in fmt:
+        return "audio/mp4"
     if "mp3" in fmt:
         return "audio/mpeg"
     if "ogg" in fmt:
@@ -325,6 +330,19 @@ def probe_media(path: Path) -> dict:
         raise DomainError(
             "UNKNOWN_MEDIA_DURATION", "无法确认完整媒体时长，拒绝把它伪装为静态图片", 422
         )
+    # Smartphone cameras commonly store portrait orientation in a display matrix.
+    rotation = next(
+        (
+            item["rotation"]
+            for item in (video or {}).get("side_data_list", [])
+            if "rotation" in item
+        ),
+        (video or {}).get("tags", {}).get("rotate", 0),
+    )
+    try:
+        rotation = round(float(rotation)) % 360
+    except (TypeError, ValueError, OverflowError):
+        rotation = 0
     # Keep bounded technical metadata, not arbitrarily large/secret embedded tags.
     clean_streams = [
         {
@@ -357,6 +375,10 @@ def probe_media(path: Path) -> dict:
         "has_video": bool(video),
         "has_audio": bool(audio),
         "format_name": raw.get("format", {}).get("format_name"),
+        "major_brand": str(raw.get("format", {}).get("tags", {}).get("major_brand", ""))[:16],
+        "rotation_degrees": rotation,
+        "display_width": height if rotation in (90, 270) else width,
+        "display_height": width if rotation in (90, 270) else height,
         "streams": clean_streams,
         "video_codec": (video or {}).get("codec_name"),
         "audio_codec": (audio or {}).get("codec_name"),
@@ -941,6 +963,10 @@ def import_saved_file(
                 refs=[ref(asset), ref(blob), ref(source)],
                 **kwargs,
             )
+        if probe.get("has_video"):
+            from .material_worker import enqueue
+
+            enqueue(store, actor, project_id, version)
         entry_data = {
             "import_batch_id": batch["id"],
             "relative_path": filename,
@@ -1604,6 +1630,9 @@ def render_time_segments(clips: list[dict], duration: float) -> list[dict]:
             if begin <= start and finish >= end:
                 source_start = ticks(clip["source_in"]) + round((start - begin) * clip["speed"])
                 source_end = ticks(clip["source_in"]) + round((end - begin) * clip["speed"])
+                still = bool(clip["probe"].get("is_still"))
+                if still:
+                    source_start = source_end = 0
                 roles = (
                     ["audio"]
                     if clip["audio_only"]
@@ -1615,11 +1644,15 @@ def render_time_segments(clips: list[dict], duration: float) -> list[dict]:
                             "source_ref": ref(clip["record"]),
                             "clip_use_id": clip["id"],
                             "source_interval": [source_start, source_end],
-                            "mapping_curve": {
-                                "kind": "linear",
-                                "source_start_tick": source_start,
-                                "speed": clip["speed"],
-                            },
+                            "mapping_curve": (
+                                {"kind": "hold", "source_start_tick": 0}
+                                if still
+                                else {
+                                    "kind": "linear",
+                                    "source_start_tick": source_start,
+                                    "speed": clip["speed"],
+                                }
+                            ),
                             "weight_curve": (
                                 {
                                     "kind": "piecewise_linear",
@@ -2149,7 +2182,16 @@ def render_timeline(store: Any, actor: Any, body: dict, *, recovery=None) -> dic
                         "asset_version_ref": ref(clip["record"]),
                         "timeline_id": timeline["id"],
                         "artifact_id": artifact["id"],
-                        "source_range": [clip["source_in"], clip["source_out"]],
+                        "source_range": (
+                            [0, 0]
+                            if clip["probe"].get("is_still")
+                            else [clip["source_in"], clip["source_out"]]
+                        ),
+                        **(
+                            {"still_hold_seconds": clip["duration"]}
+                            if clip["probe"].get("is_still")
+                            else {}
+                        ),
                         "output_range": [
                             clip["timeline_start"],
                             clip["timeline_start"] + clip["duration"],
@@ -2724,6 +2766,7 @@ def capabilities() -> dict:
             "loudness_normalization",
             "multi_track_overlay",
             "post_fit_clip_rectangular_alpha_mask",
+            "post_fit_clip_elliptical_alpha_mask",
             "two_source_transitions_with_audio_crossfade",
             "linear_opacity_xy_keyframes",
             "audio_mix",
