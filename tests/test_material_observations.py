@@ -243,9 +243,18 @@ class MaterialObservationsTests(ProductionBase):
         return {key: tag[key] for key in ("source_seconds", "sample_rgb_sha256", "space")}
 
     @unittest.skipUnless(
-        os.getenv("AI_SHIP_CLIP_MODEL_DIR"), "requires configured local CLIP weights"
+        os.getenv("AI_SHIP_TEST_CLIP_MODEL_DIR") or os.getenv("AI_SHIP_CLIP_MODEL_DIR"),
+        "requires configured local CLIP weights",
     )
     def test_real_clip_on_still_and_video_with_manual_override(self):
+        # Load the real weights for this case without enabling inference in unrelated fixtures.
+        fixture_model = os.getenv("AI_SHIP_TEST_CLIP_MODEL_DIR")
+        if fixture_model:
+            from app import frame_vectors, visual_index
+
+            self.addCleanup(frame_vectors._load.cache_clear)
+            self.addCleanup(visual_index.label_vectors.cache_clear)
+            self.enterContext(patch.dict(os.environ, {"AI_SHIP_CLIP_MODEL_DIR": fixture_model}))
         path = self.fixture()
         image = self.folder / "001.png"
         ffmpeg("-i", path, "-frames:v", "1", "-threads", "1", image)

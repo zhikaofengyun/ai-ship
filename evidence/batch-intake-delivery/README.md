@@ -24,4 +24,4 @@
 - 收件箱传输过程中查询平台进度，先前会给交付记录增加版本并打断下一分块。现有测试在真实字节传输的隔离请求中插入查询。另有测试在身份核验后更换授权，以及模拟提交后丢失首笔回执，均检查没有额外提交。
 - Linux WebKit 的首轮预览检查因缺少 GStreamer 的 H.264 解码插件失败。补齐运行环境后，重新执行了实际视频预览、像素验证、锁版、渲染和下载。真机 Safari、真实平台账号、商业视频模型画质仍需分别验收。
 
-普通验收采用独立项目、单独的 SQLite 和真实浏览器。严格后端验收要求零跳过，需安装 `requirements-semantic.txt`，并对后端测试进程设置 `AI_SHIP_CLIP_MODEL_DIR` 指向实际的视觉、文本 ONNX 权重及分词器。[权重版本与安装核对](../../docs/visual-frame-search.md)。浏览器的无模型降级与独立的真实模型运行分别验证；Linux WebKit 预览需要 GStreamer 的 H.264 解码支持。资源受限的主机应错开大型视频模型推理与浏览器验收。
+普通验收采用独立项目、单独的 SQLite 和真实浏览器。严格后端验收要求零跳过，需安装 `requirements-semantic.txt`，并对专项模型测试设置 `AI_SHIP_TEST_CLIP_MODEL_DIR`（也可沿用服务的 `AI_SHIP_CLIP_MODEL_DIR`） 指向实际的视觉、文本 ONNX 权重及分词器。[权重版本与安装核对](../../docs/visual-frame-search.md)。浏览器的无模型降级与独立的真实模型运行分别验证；Linux WebKit 预览需要 GStreamer 的 H.264 解码支持。资源受限的主机应错开大型视频模型推理与浏览器验收。
