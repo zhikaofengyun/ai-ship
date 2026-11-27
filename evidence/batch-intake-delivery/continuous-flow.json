@@ -1,0 +1,338 @@
+{
+  "scope": "One isolated project, one batch, all three stable ordinals and original artifact bytes throughout. Fresh numeric diffusion in an actual local ComfyUI process. The test exercised the application's reviewer role following a separate visual examination of new files. No external human attestation or platform submission.",
+  "project_id": "project_89469bc26a4c4d9c955a60e1b61cec37",
+  "batch_id": "batch_1af733edf5bd55bc8bb091947bb25a973414df3d",
+  "account": "account_9cfe0e0a5b8244c4a8b9a865c47d68bd",
+  "channel": "manual",
+  "batch_title": "{n} · Traditional Ethiopian Coffee Roasting Ceremony (Keria T). Edited excerpt / visual test, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Traditional_Ethiopian_Coffee_Roasting_Ceremony.webm ; https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "page_id": 188828736,
+    "title": "File:Traditional Ethiopian Coffee Roasting Ceremony.webm",
+    "mime": "video/webm",
+    "size_bytes": 6112712,
+    "sha1": "0a8930d4fe50dcc98bc792819540b0c4f9e2e850",
+    "description_url": "https://commons.wikimedia.org/wiki/File:Traditional_Ethiopian_Coffee_Roasting_Ceremony.webm",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "author": "Keria T",
+    "credit": "Own work",
+    "attribution_required": "true",
+    "file_timestamp": "2026-04-11T19:00:43Z"
+  },
+  "source_video": {
+    "id": "asset_e15356b870b543ce8efa0c69ccb4ef8c",
+    "version": 1,
+    "file_sha256": "afacd0313fdcd967f135c6220a326c47c84038cf987b59af9b655a50aec21b48"
+  },
+  "source_still": {
+    "id": "asset_9dbf6fec3a804479b5da68cc5007d5f9",
+    "version": 1,
+    "file_sha256": "98fef48404382e8c56bc834308632092e90a8f4d089174e4677f67fe9fe457cc"
+  },
+  "model": "Hugging Face tiny SD test checkpoint + seeded tiny AnimateDiff test adapter",
+  "worker": {
+    "os": "posix",
+    "comfyui_version": "0.3.70",
+    "pytorch_version": "2.8.0+cpu",
+    "python_version": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]"
+  },
+  "provider_mode": "live CPU inference; no protocol replay",
+  "requested_count": 3,
+  "actual_generation_jobs": 2,
+  "batch_counts": {
+    "queued": 0,
+    "running": 0,
+    "waiting": 0,
+    "succeeded": 3,
+    "failed": 0,
+    "cancelled": 0
+  },
+  "production_seconds": 9.299,
+  "source_to_preflight": [
+    "source imports",
+    "batch estimate",
+    "batch creation with idempotent replay",
+    "three production worker items",
+    "per-artifact download and independent full-frame decode",
+    "prepare all three publication drafts",
+    "record per-artifact, per-account, per-metadata approvals/rejections",
+    "individual preflight",
+    "prepare same batch again",
+    "read batch publication state"
+  ],
+  "works": [
+    {
+      "ordinal": 1,
+      "route": "generated",
+      "timeline_id": "timeline_3834ea827b764040ab5856e3ccc91fc9",
+      "artifact_id": "artifact_5a871c9f89124c849190fd58b9c001cc",
+      "artifact_revision": 1,
+      "artifact_record_hash": "3e05e1d72b27c459bf50842de0dc64f3e76b32acec6b477847b4ee68e54e30d9",
+      "download_sha256": "93eef4854cabf54d897450fb03ba8184982387c10559a8438502e40290ad9bd5",
+      "decoded_frames": 12,
+      "distinct_decoded_frames": 6,
+      "generation_id": "gen_4c37cba14e5fdac8088ba75f78cbf8465cc3",
+      "prompt": "Keep the cup, saucer, tablecloth and table from the reference photograph.\nA gentle lateral slide past the cup handle.",
+      "seed": 48185,
+      "provider_output_sha256": "69ae683320317973a711cb0d43313f6eef2a7a4aca74e7e1d8fb1a475dc19490",
+      "verified_reference_png_sha256": "45272eb21acc21077f73c4d6d2f888ea5e801b68be6453c981bb0d004c51b0b5",
+      "publication_id": "publication_828d9fb969244e789a10bdde9aae4ddc",
+      "metadata_hash": "5155ff689cde17c8efcdc4926cce4a86dcbfa7acf235f2af425ed0a9677e070e",
+      "before_review": {
+        "can_handoff": false,
+        "problems": [
+          {
+            "code": "CONTENT_CHECK_REQUIRED",
+            "message": "当前产物需要未过期的内容确认。"
+          },
+          {
+            "code": "RIGHTS_CHECK_REQUIRED",
+            "message": "当前产物需要未过期的素材与音乐使用权确认。"
+          }
+        ]
+      },
+      "approvals": [
+        {
+          "id": "approval_2aef73b1c69040f0bd8259a5096e4f46",
+          "version": 1,
+          "kind": "content_check",
+          "decision": "rejected",
+          "evidence": "Reviewer-role acceptance test. Freshly decoded first, middle and last frames contain multicolored noise; cup, saucer, table and requested motion cannot be identified.",
+          "subject_id": "artifact_5a871c9f89124c849190fd58b9c001cc",
+          "subject_version": 1,
+          "subject_hash": "3e05e1d72b27c459bf50842de0dc64f3e76b32acec6b477847b4ee68e54e30d9",
+          "artifact_hash": "93eef4854cabf54d897450fb03ba8184982387c10559a8438502e40290ad9bd5",
+          "account_id": "account_9cfe0e0a5b8244c4a8b9a865c47d68bd",
+          "metadata_hash": "5155ff689cde17c8efcdc4926cce4a86dcbfa7acf235f2af425ed0a9677e070e"
+        }
+      ],
+      "final_preflight": {
+        "publication_id": "publication_828d9fb969244e789a10bdde9aae4ddc",
+        "version": 1,
+        "can_handoff": false,
+        "can_send": false,
+        "problems": [
+          {
+            "code": "CONTENT_CHECK_REQUIRED",
+            "message": "当前产物需要未过期的内容确认。"
+          },
+          {
+            "code": "RIGHTS_CHECK_REQUIRED",
+            "message": "当前产物需要未过期的素材与音乐使用权确认。"
+          }
+        ],
+        "checks": [
+          {
+            "check": "current_media_rights",
+            "passed": true
+          },
+          {
+            "check": "content_check",
+            "passed": false,
+            "evidence_refs": []
+          },
+          {
+            "check": "rights_check",
+            "passed": false,
+            "evidence_refs": []
+          }
+        ],
+        "checked_at": "2026-11-27T07:51:23.465347+00:00",
+        "source": "frozen_artifact_current_rights_and_capabilities",
+        "scanned_versions": 14
+      },
+      "previous_review_ids": [
+        "approval_5546279dfd8141f2a6f0ef9d67515554"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "route": "generated",
+      "timeline_id": "timeline_f0eb3f7166df425cb27b5bc8d76c6520",
+      "artifact_id": "artifact_589c8dd79fba488dbff3e808ca74edfe",
+      "artifact_revision": 1,
+      "artifact_record_hash": "d5354efa9429f59a74fd2759de2d044653c866f32639d22cbb38e068ac70ba4f",
+      "download_sha256": "e4d59a7b889d6a3300fa2fe0ff7291a7bc0446d6649be332941ab0d3cec5b588",
+      "decoded_frames": 12,
+      "distinct_decoded_frames": 5,
+      "generation_id": "gen_3b585aa7b0d5314805a6c118327f95f4ca51",
+      "prompt": "Keep the cup, saucer, tablecloth and table from the reference photograph.\nA subtle camera push toward the cup rim.",
+      "seed": 48186,
+      "provider_output_sha256": "25bf1e9939569e912093edf7846b4f56e3934b06df2ab5136a959eb258c68214",
+      "verified_reference_png_sha256": "45272eb21acc21077f73c4d6d2f888ea5e801b68be6453c981bb0d004c51b0b5",
+      "publication_id": "publication_4412b1489b5f4410a65e8588d0d7173d",
+      "metadata_hash": "88e634278c4d5577e60da73ed1aa1cdf166d105d889884183bdb45c90a1ed454",
+      "before_review": {
+        "can_handoff": false,
+        "problems": [
+          {
+            "code": "CONTENT_CHECK_REQUIRED",
+            "message": "当前产物需要未过期的内容确认。"
+          },
+          {
+            "code": "RIGHTS_CHECK_REQUIRED",
+            "message": "当前产物需要未过期的素材与音乐使用权确认。"
+          }
+        ]
+      },
+      "approvals": [
+        {
+          "id": "approval_677771bc47864fbeb447e278e496b17e",
+          "version": 1,
+          "kind": "content_check",
+          "decision": "rejected",
+          "evidence": "Reviewer-role acceptance test. Multicolored noise fills the center band across all three examined frames, with no recognizable cup handle, table or directed motion.",
+          "subject_id": "artifact_589c8dd79fba488dbff3e808ca74edfe",
+          "subject_version": 1,
+          "subject_hash": "d5354efa9429f59a74fd2759de2d044653c866f32639d22cbb38e068ac70ba4f",
+          "artifact_hash": "e4d59a7b889d6a3300fa2fe0ff7291a7bc0446d6649be332941ab0d3cec5b588",
+          "account_id": "account_9cfe0e0a5b8244c4a8b9a865c47d68bd",
+          "metadata_hash": "88e634278c4d5577e60da73ed1aa1cdf166d105d889884183bdb45c90a1ed454"
+        }
+      ],
+      "final_preflight": {
+        "publication_id": "publication_4412b1489b5f4410a65e8588d0d7173d",
+        "version": 1,
+        "can_handoff": false,
+        "can_send": false,
+        "problems": [
+          {
+            "code": "CONTENT_CHECK_REQUIRED",
+            "message": "当前产物需要未过期的内容确认。"
+          },
+          {
+            "code": "RIGHTS_CHECK_REQUIRED",
+            "message": "当前产物需要未过期的素材与音乐使用权确认。"
+          }
+        ],
+        "checks": [
+          {
+            "check": "current_media_rights",
+            "passed": true
+          },
+          {
+            "check": "content_check",
+            "passed": false,
+            "evidence_refs": []
+          },
+          {
+            "check": "rights_check",
+            "passed": false,
+            "evidence_refs": []
+          }
+        ],
+        "checked_at": "2026-11-27T07:51:23.545943+00:00",
+        "source": "frozen_artifact_current_rights_and_capabilities",
+        "scanned_versions": 14
+      },
+      "previous_review_ids": [
+        "approval_b35934e24e3c431a8572d325ec0430aa"
+      ]
+    },
+    {
+      "ordinal": 3,
+      "route": "camera",
+      "timeline_id": "timeline_e3e14dd4d3364544b0826311c4ebf789",
+      "artifact_id": "artifact_83e01366b3d2453f95fab158ba6a7b59",
+      "artifact_revision": 1,
+      "artifact_record_hash": "a15c9a7bfd1cd2f9e2e967bcc4357742f966f194c9d55b5fd6526cd6ac65846b",
+      "download_sha256": "82db70034dde4c73e327e7bfe6aabc0f7cab37fa05707bea8fb0299e6afbc8ad",
+      "decoded_frames": 12,
+      "distinct_decoded_frames": 12,
+      "generation_id": null,
+      "prompt": null,
+      "seed": null,
+      "provider_output_sha256": null,
+      "verified_reference_png_sha256": null,
+      "publication_id": "publication_bace163bbdab4081bcd7e6df80551288",
+      "metadata_hash": "06ff112690489c512ba14526cbbb12914f4fd88f82539c0218fb4086dd089fb3",
+      "before_review": {
+        "can_handoff": false,
+        "problems": [
+          {
+            "code": "CONTENT_CHECK_REQUIRED",
+            "message": "当前产物需要未过期的内容确认。"
+          },
+          {
+            "code": "RIGHTS_CHECK_REQUIRED",
+            "message": "当前产物需要未过期的素材与音乐使用权确认。"
+          }
+        ]
+      },
+      "approvals": [
+        {
+          "id": "approval_9b063c6eb24a4b76a845dfc016b1f341",
+          "version": 1,
+          "kind": "content_check",
+          "decision": "approved",
+          "evidence": "Reviewer-role acceptance test. Source camera excerpt retains identifiable stacked cups, a saucer on the tablecloth and the decorated backdrop across the three decoded frames.",
+          "subject_id": "artifact_83e01366b3d2453f95fab158ba6a7b59",
+          "subject_version": 1,
+          "subject_hash": "a15c9a7bfd1cd2f9e2e967bcc4357742f966f194c9d55b5fd6526cd6ac65846b",
+          "artifact_hash": "82db70034dde4c73e327e7bfe6aabc0f7cab37fa05707bea8fb0299e6afbc8ad",
+          "account_id": "account_9cfe0e0a5b8244c4a8b9a865c47d68bd",
+          "metadata_hash": "06ff112690489c512ba14526cbbb12914f4fd88f82539c0218fb4086dd089fb3"
+        },
+        {
+          "id": "approval_2efa1bbb5227495fae4b2ced22f2e4cd",
+          "version": 1,
+          "kind": "rights_check",
+          "decision": "approved",
+          "evidence": "Isolated reviewer-role test: confirmed source SHA-256 and the repository evidence for Keria T, CC BY-SA 4.0; title carries credit, editing notice, work and license links. Isolated manual handoff only.",
+          "subject_id": "artifact_83e01366b3d2453f95fab158ba6a7b59",
+          "subject_version": 1,
+          "subject_hash": "a15c9a7bfd1cd2f9e2e967bcc4357742f966f194c9d55b5fd6526cd6ac65846b",
+          "artifact_hash": "82db70034dde4c73e327e7bfe6aabc0f7cab37fa05707bea8fb0299e6afbc8ad",
+          "account_id": "account_9cfe0e0a5b8244c4a8b9a865c47d68bd",
+          "metadata_hash": "06ff112690489c512ba14526cbbb12914f4fd88f82539c0218fb4086dd089fb3"
+        }
+      ],
+      "final_preflight": {
+        "publication_id": "publication_bace163bbdab4081bcd7e6df80551288",
+        "version": 1,
+        "can_handoff": true,
+        "can_send": false,
+        "problems": [],
+        "checks": [
+          {
+            "check": "current_media_rights",
+            "passed": true
+          },
+          {
+            "check": "content_check",
+            "passed": true,
+            "evidence_refs": [
+              "approval_9b063c6eb24a4b76a845dfc016b1f341"
+            ]
+          },
+          {
+            "check": "rights_check",
+            "passed": true,
+            "evidence_refs": [
+              "approval_2efa1bbb5227495fae4b2ced22f2e4cd"
+            ]
+          }
+        ],
+        "checked_at": "2026-11-27T07:51:23.604486+00:00",
+        "source": "frozen_artifact_current_rights_and_capabilities",
+        "scanned_versions": 9
+      },
+      "previous_review_ids": [
+        "approval_420c1c43b3f04087802ca40ae04f4dac",
+        "approval_9af031f9e87e40a7a0db68fa2fed7524"
+      ]
+    }
+  ],
+  "final_manual_handoff_ordinals": [
+    3
+  ],
+  "final_can_send_ordinals": [],
+  "platform_requests": 0,
+  "post_records": 0,
+  "binding_observations": {
+    "byte_binding": "Re-downloaded MP4 after model shutdown; bytes identical to pre-review file and Artifact.content_hash. Publication.artifact_hash and Approval.subject_hash match the immutable Artifact record hash, whose contents include content_hash.",
+    "approval_auxiliary_artifact_hash": "Fresh reviewer-role decisions were submitted in a new application process on the same database. All four non-null Approval.artifact_hash fields equal the downloaded artifact checksum; Approval.subject_hash and Publication.artifact_hash independently match the checksum-bearing Artifact record.",
+    "review_resume": "The actual same SQLite file and object directory were relocated without duplicating the project so the inference process could be released before approvals. The second HTTP session re-downloaded each existing output and re-read the same publication IDs before issuing decisions."
+  },
+  "final_decision_count": 4
+}

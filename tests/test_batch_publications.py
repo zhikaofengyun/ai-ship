@@ -120,7 +120,10 @@ class BatchPublicationTests(ProductionBase):
         row = self.post(self.path, self.body)["items"][0]
         art = row["artifact_id"]
         pid = row["publication_id"]
-        self.approve(art, "content_check")
+        approval = self.approve(art, "content_check")
+        self.assertEqual(
+            approval["data"]["artifact_hash"], self.store.get(art, "local")["data"]["content_hash"]
+        )
         self.approve(art, "rights_check")
         path = f"/production/tiktok/inbox/{pid}"
         self.post(path + "/send", {"expected_revision": 1}, 409)

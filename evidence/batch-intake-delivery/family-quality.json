@@ -1,0 +1,217 @@
+{
+  "feature": "S04",
+  "purpose": "Pairwise common photographic origin under two crop conditions",
+  "threshold_fixed_before_inference": 0.8,
+  "algorithm": "clip_bidirectional_frame_coverage_complete_link_v1",
+  "model": "clip-b32/98c718df886ac03f7aeb914c9c6e2a9850f141cb071cadd6f65cc7a812c4715d",
+  "material": "scikit-image 0.25.2 official example photos",
+  "upstream": "https://github.com/scikit-image/scikit-image/tree/v0.25.2/skimage/data",
+  "rights_source": "https://scikit-image.org/docs/0.25.x/api/skimage.data.html",
+  "source_sha256": {
+    "astronaut.png": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+    "camera.png": "b0793d2adda0fa6ae899c03989482bff9a42d3d5690fc7e3648f2795d730c23a",
+    "rocket.jpg": "c2dd0de7c538df8d111e479619b129464d0269d0ae5fd18ca91d33a7fdfea95c",
+    "chelsea.png": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+    "coffee.png": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+    "brick.png": "7966caf324f6ba843118d98f7a07746d22f6a343430add0233eca5f6eaaa8fcf",
+    "grass.png": "b6b6022426b38936c43a4ac09635cd78af074e90f42ffa8227ac8b7452d39f89",
+    "gravel.png": "c48615b451bf1e606fbd72c0aa9f8cc0f068ab7111ef7d93bb9b0f2586440c12",
+    "hubble_deep_field.jpg": "3a19c5dd8a927a9334bb1229a6d63711b1c0c767fb27e2286e7c84a3e2c2f5f4",
+    "clock_motion.png": "f029226b28b642e80113d86622e9b215ee067a0966feaf5e60604a1e05733955"
+  },
+  "pillow": "13.0.0",
+  "paired_sources": [
+    "astronaut.png",
+    "camera.png",
+    "rocket.jpg",
+    "chelsea.png",
+    "coffee.png",
+    "brick.png",
+    "grass.png",
+    "gravel.png"
+  ],
+  "unpaired_sources": [
+    "hubble_deep_field.jpg",
+    "clock_motion.png"
+  ],
+  "derivatives": {
+    "mild": "centered 76% x 76% crop, thumbnail <=352 px, saturation 0.75, contrast 1.12, JPEG 79",
+    "hard": "upper-left crop x/y=2%..30% (28% width and height), thumbnail <=352 px, saturation 0.4, contrast 1.25, JPEG 68"
+  },
+  "ground_truth": "Same upstream source file. Cross-source pairs are negative regardless of visual similarity. No labels or filenames given to grouping.",
+  "imported_sha256": {
+    "astronaut/original": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+    "astronaut/mild": "157d674fb0fdd65d5b6354fa2ace14aa793807baa5cdde8d82c539c356c82b27",
+    "astronaut/hard": "c8ea5e16036c42786e4d02821748d5359872679477bfbb808adeb82262f21e11",
+    "camera/original": "b0793d2adda0fa6ae899c03989482bff9a42d3d5690fc7e3648f2795d730c23a",
+    "camera/mild": "ec7b22428fa7e2210e2ca508e87caa998e775aabbeeed683c94ce8263576908c",
+    "camera/hard": "c9aa7bab3bc7fe1955c28fecd7e74183f4bddfefeb265426170d09fd29d0808c",
+    "rocket/original": "c2dd0de7c538df8d111e479619b129464d0269d0ae5fd18ca91d33a7fdfea95c",
+    "rocket/mild": "2ea3145b79be30525900a7905a1a1ace8b976b4a6a5f57c6ef049d5c008f8b9e",
+    "rocket/hard": "4ec899939f0c5c46571e668fa63a572097d76d4eca367ff56cf0f456e41c88da",
+    "chelsea/original": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+    "chelsea/mild": "fe274a45464a6c7d7e06d16ae27cdefa4d1472ca04021e00104c0cce8f7fd4e1",
+    "chelsea/hard": "49d68348508ec37d827e0decebc9a18d4803a8800b5ac9cdfcbc1c6568cf663b",
+    "coffee/original": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+    "coffee/mild": "e0f29ef7fde2f4f3425b465978830492678c473050e99ead7c58aff6c7ba82a8",
+    "coffee/hard": "a3e4b587d76969636f6ee6ccacef3c13e5ba8c4809ab9880c02d1be09f21fd68",
+    "brick/original": "7966caf324f6ba843118d98f7a07746d22f6a343430add0233eca5f6eaaa8fcf",
+    "brick/mild": "1c62091f945972e75c4d79da28177463c23f5c013f9476c92e9b3da2fea40137",
+    "brick/hard": "fa740d776970b0af5c80f527d70181d52d26721052262a1365bf23d4358231fb",
+    "grass/original": "b6b6022426b38936c43a4ac09635cd78af074e90f42ffa8227ac8b7452d39f89",
+    "grass/mild": "54210ef3a01ca6a7ed8852dce2de421e1980c0933c75da1683b81cb19b4e1212",
+    "grass/hard": "9f31070456dbc847e893de546862a480ed4d879a7984aa32fe41d3b2acd35059",
+    "gravel/original": "c48615b451bf1e606fbd72c0aa9f8cc0f068ab7111ef7d93bb9b0f2586440c12",
+    "gravel/mild": "408d3a7e46ca49c123c4e663965a631f1918a0e1636c1d778efe9238ae39c93b",
+    "gravel/hard": "f51c2ad953271bcd4949a77ef4e70fb79ec66df163f50b350fff7940cef8152b",
+    "hubble_deep_field/original": "3a19c5dd8a927a9334bb1229a6d63711b1c0c767fb27e2286e7c84a3e2c2f5f4",
+    "clock_motion/original": "f029226b28b642e80113d86622e9b215ee067a0966feaf5e60604a1e05733955"
+  },
+  "index_pages": [
+    10,
+    10,
+    6
+  ],
+  "input_count": 26,
+  "ground_truth_positive_pairs": 24,
+  "overall": {
+    "pairs": 325,
+    "tp": 14,
+    "fp": 1,
+    "fn": 10,
+    "tn": 300,
+    "precision": 0.9333333333333333,
+    "recall": 0.5833333333333334
+  },
+  "by_view_pair": {
+    "original_mild": {
+      "pairs": 80,
+      "tp": 8,
+      "fp": 0,
+      "fn": 0,
+      "tn": 72,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "original_hard": {
+      "pairs": 80,
+      "tp": 3,
+      "fp": 0,
+      "fn": 5,
+      "tn": 72,
+      "precision": 1.0,
+      "recall": 0.375
+    },
+    "mild_hard": {
+      "pairs": 64,
+      "tp": 3,
+      "fp": 0,
+      "fn": 5,
+      "tn": 56,
+      "precision": 1.0,
+      "recall": 0.375
+    }
+  },
+  "suggested_clusters": [
+    [
+      "astronaut/hard",
+      "camera/hard"
+    ],
+    [
+      "astronaut/mild",
+      "astronaut/original"
+    ],
+    [
+      "brick/hard",
+      "brick/mild",
+      "brick/original"
+    ],
+    [
+      "camera/mild",
+      "camera/original"
+    ],
+    [
+      "chelsea/mild",
+      "chelsea/original"
+    ],
+    [
+      "coffee/mild",
+      "coffee/original"
+    ],
+    [
+      "grass/hard",
+      "grass/mild",
+      "grass/original"
+    ],
+    [
+      "gravel/hard",
+      "gravel/mild",
+      "gravel/original"
+    ],
+    [
+      "rocket/mild",
+      "rocket/original"
+    ]
+  ],
+  "singletons": [
+    "chelsea/hard",
+    "clock_motion/original",
+    "coffee/hard",
+    "hubble_deep_field/original",
+    "rocket/hard"
+  ],
+  "false_positive_pairs": [
+    [
+      "astronaut/hard",
+      "camera/hard"
+    ]
+  ],
+  "false_negative_pairs": [
+    [
+      "astronaut/hard",
+      "astronaut/mild"
+    ],
+    [
+      "astronaut/hard",
+      "astronaut/original"
+    ],
+    [
+      "camera/hard",
+      "camera/mild"
+    ],
+    [
+      "camera/hard",
+      "camera/original"
+    ],
+    [
+      "chelsea/hard",
+      "chelsea/mild"
+    ],
+    [
+      "chelsea/hard",
+      "chelsea/original"
+    ],
+    [
+      "coffee/hard",
+      "coffee/mild"
+    ],
+    [
+      "coffee/hard",
+      "coffee/original"
+    ],
+    [
+      "rocket/hard",
+      "rocket/mild"
+    ],
+    [
+      "rocket/hard",
+      "rocket/original"
+    ]
+  ],
+  "limits": [
+    "Only eight independently sourced positive families and two singleton sources. The 325 pairs are correlated.",
+    "Still photographs and controlled derivatives only. This score is for common origin, not open-world label accuracy or product identity.",
+    "The severe corner crop can remove the subject entirely. Same origin is still a positive.",
+    "Default threshold fixed at 0.8. No tuning or production acceptance took place."
+  ]
+}

@@ -16,7 +16,7 @@
 
 ## 批量制作与表现回流
 
-[从拍摄素材到下一版剪辑](docs/bulk-video-release.md)列出操作入口、实测容量和复核依据。[剪映公开能力逐类对照](docs/jianying-capability-review.md)列出本系统已有的可调用子集与仍缺的实机验收。
+[从拍摄素材到下一版剪辑](docs/bulk-video-release.md)列出操作入口、实测容量和复核依据。[剪映公开能力逐类对照](docs/jianying-capability-review.md)列出本系统已有的可调用子集与仍缺的实机验收。[本轮成片、批量发布和聚类质量实测](evidence/batch-intake-delivery/README.md)记录具体文件与样本界限。
 
 新建或打开项目默认进入「批量制作」。[从素材到批量交付的完整操作](docs/batch-intake-delivery.md)包括逐镜头多提示词、人工样片复用、具体成片审批和账号收件箱。可混排原片时间段、参考图生成、纯生成、人工时间线模板，并为每条变体绑定版本化工作流。可分页查看、暂停、恢复或取消批次。交付后可把帖子留存映射到制作时的源区间，供后续导演和选材参考。
 

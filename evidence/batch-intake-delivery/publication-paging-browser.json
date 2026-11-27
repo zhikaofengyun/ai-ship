@@ -1,0 +1,51 @@
+{
+  "engine": "Chromium",
+  "browser": "158.0.8127.0",
+  "rendered_outputs": 27,
+  "distinct_artifact_ids": 27,
+  "actual_drafts": 27,
+  "displayed_pages": [
+    [
+      1,
+      25
+    ],
+    [
+      26,
+      27
+    ],
+    [
+      1,
+      25
+    ]
+  ],
+  "displayed_ids_matched_exact_ordinal_and_artifact": 27,
+  "approval_tests": {
+    "ready_originally": [
+      1,
+      25,
+      27
+    ],
+    "second_page_wrong_account_content_approval_blocked": 26,
+    "rights_added_while_on_page_two_was_seen_on_return": 2
+  },
+  "cross_page_selection": {
+    "selected": [
+      1,
+      27
+    ],
+    "retained_after_return": true,
+    "mocked_send_ordinals": [
+      1,
+      27
+    ],
+    "mocked_send_expected_revisions": [
+      1,
+      1
+    ],
+    "exactly_two_mocked_requests": true
+  },
+  "real_external_uploads": 0,
+  "real_external_posts": 0,
+  "send_boundary": "Only two same-origin browser requests to the local send route were intercepted by Playwright before reaching the backend. No platform credentials or servers were used. All 27 publication drafts retained their original state.",
+  "js_errors": []
+}

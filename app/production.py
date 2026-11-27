@@ -915,7 +915,7 @@ def approve(body: ApprovalInput, request: Request, actor: Actor = Depends(curren
             "subject_id": subject["id"],
             "subject_version": subject["version"],
             "subject_hash": subject["hash"],
-            "artifact_hash": subject["data"].get("checksum"),
+            "artifact_hash": subject["data"].get("checksum") or subject["data"].get("content_hash"),
             "kind": body.kind,
             "status": body.decision,
             "decision": body.decision,
